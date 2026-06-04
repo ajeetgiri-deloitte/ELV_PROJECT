@@ -1,0 +1,179 @@
+{% extends "layouts/main.html" %}
+{% load custom_tags %}
+{% block content %}
+
+<div >
+    <div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registrationsModalLabel">Producers Detail ({{ app_type }})</h5>
+                
+            </div>
+            <div class="modal-body w-100">
+                <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-dark text-nowrap text-center">
+                            <tr>
+                                <th>S.no</th>
+                                <!-- <th>GST No</th> -->
+                                <th>Company Name</th>
+                                <!-- <th>Legal Name</th> -->
+                                <!-- <th>Company Email</th> -->
+                                <!-- <th>Authorized Person Name</th> -->
+                                <!-- <th>Authorized Person Designation</th> -->
+                                <th>State</th>
+                                <th>Date of Application Submission</th>
+                                <th>Currently with</th>
+                                <th>Last Comunicated date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-nowrap text-center">
+                            {% for producer in producers %}
+                            
+                            <tr>
+                                
+                                    
+                                    <td>{{ forloop.counter }}</td>
+                                    <!-- <td>{{ producer.gst_no }}</td> -->
+                                    <td>{{ producer.company_name }}</td>
+                                    <!-- <td>{{ producer.legal_name }}</td> -->
+                                    <!-- <td>{{ producer.company_email }}</td> -->
+                                    <!-- <td>{{ producer.authorized_person_name }}</td> -->
+                                    <!-- <td>{{ producer.authorized_person_designation }}</td> -->
+                                    <td>{{ producer.state }}</td>
+                                    <td>
+                                        {% for tx in fees_data %}
+                                            {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                {{ tx.txn_date|date:"d M Y, H:i" }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% with noting_dict|dictkey:producer.id as notings %}
+                                            {% if notings %}
+                                                {% with notings.0 as latest_note %}
+                                                    {% if latest_note.forwarded_to %}
+                                                        {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                        <br>
+                                                        <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                    {% else %}
+                                                        User
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+
+                                    <td>
+                                        {% with noting_dict|dictkey:producer.id as notings %}
+                                            {% if notings %}
+                                                {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        {% if app_type == 'approved' %}
+                                            {% if producer.status != 6 %}
+                                                <!-- 🔹 Generate Certificate (still GET link as before) -->
+                                                <form method="POST" action="{% url 'generate_certificate' %}" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                    <button type="submit" class="btn btn-warning btn-sm text-dark">
+                                                        <i class="bi bi-file-earmark-text"></i> Generate Certificate
+                                                    </button>
+                                                </form>
+
+                                                <!-- 🔹 View Application (POST form) -->
+                                                <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-file-earmark-text"></i> View Application
+                                                    </button>
+                                                </form>
+
+                                            {% else %}
+
+                                                <!-- 🔹 View Application (POST form) -->
+                                                <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-file-earmark-text"></i> View Application
+                                                    </button>
+                                                </form>
+                                                <!-- 🔹 View Certificate -->
+                                                
+                                                <form method="POST" action="{% url 'view_certificate' %}" style="display:inline;" target="_blank">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                    <button type="submit" class="btn btn-success btn-sm" >
+                                                        <i class="bi bi-file-earmark-text"></i> View Certificate
+                                                    </button>
+                                                </form>
+
+                                                <!-- 🔹 Download Certificate -->
+                                                <form method="GET" action="{% url 'view_certificate' %}" style="display:inline;">
+                                                    <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                    <input type="hidden" name="download" value="true">
+                                                    <button type="submit" class="btn btn-warning btn-sm" title="Download Certificate">
+                                                        <i class="bi bi-download"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+
+                                        {% elif app_type == 'forwarded' %}
+                                            <!-- 🔹 View Application (POST form) -->
+                                            <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-file-earmark-text"></i> View Application
+                                                </button>
+                                            </form>
+
+                                        {% elif app_type == 'sent_back' %}
+                                            <!-- 🔹 View Application (POST form) -->
+                                            <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-file-earmark-text"></i> View Application
+                                                </button>
+                                            </form>
+
+                                        {% else %}
+                                            <!-- 🔹 Fallback case (use producer_details URL) -->
+                                            <form method="POST" action="{% url 'producer_details' %}" style="display:inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-file-earmark-text"></i> View Application
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                
+                            </tr>
+                            
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center">No producers found.</td>
+                            </tr>
+                            
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+{% endblock %}

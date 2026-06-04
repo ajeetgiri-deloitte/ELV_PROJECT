@@ -1,0 +1,769 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>EPR ELV - End-of-Life Vehicles</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script defer>
+    document.addEventListener("DOMContentLoaded", function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      [...tooltipTriggerList].forEach(el => new bootstrap.Tooltip(el));
+    });
+  </script>
+
+  <style>
+    .navbar {
+      background: linear-gradient(to right, #0a4d7a, #2d1c68);
+      color: white;
+    }
+
+    .navbar-nav .nav-link {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #fff !important;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .navbar-nav .nav-link:hover {
+      color: #ffcc00 !important;
+    }
+
+    .navbar-nav .active>.nav-link {
+      color: #ffcc00 !important;
+      font-weight: 600;
+    }
+
+    .required::after {
+      content: " *";
+      color: #D9534F;
+      font-weight: bold;
+    }
+
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+    }
+
+    .spinner {
+      width: 70px;
+      height: 70px;
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #007bff;
+      border-right: 8px solid #28a745;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .mainsection {
+      position: relative;
+      height: 595px;
+    }
+
+    .carousel-inner img {
+      object-fit: cover;
+      height: 595px;
+    }
+
+    .loginform {
+      position: absolute;
+      top: 50%;
+      right: 5%;
+      transform: translateY(-50%);
+      width: 470px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1040;
+    }
+
+    .popup_adress {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .popup_adress li {
+      margin-bottom: 10px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+      header img {
+        height: 90px !important;
+      }
+
+      .navbar-nav .nav-link {
+        font-size: 1rem;
+        padding: 8px 12px;
+      }
+
+      .loginform {
+        position: relative;
+        top: auto;
+        right: auto;
+        transform: none;
+        width: 90%;
+        margin: 20px auto;
+      }
+
+      .header-top .text-info h5 {
+        font-size: 1rem;
+      }
+
+      .header-top .text-info h6 {
+        font-size: 0.85rem;
+      }
+
+      .header-top img {
+        height: 80px !important;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .header-top img {
+        height: 70px !important;
+      }
+
+      .navbar-nav {
+        text-align: center;
+      }
+
+      .header-top h5 {
+        font-size: 0.95rem;
+      }
+
+      .header-top h6 {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loader -->
+  <div id="loader" class="loader-overlay">
+    <div class="d-flex flex-column align-items-center">
+      <div class="spinner"></div>
+      <p class="mt-3 fw-bold text-primary">Processing, <span class="text-success">please wait...</span> </p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="container-fluid bg-white">
+    <header class="py-3">
+      <div class="row align-items-center text-center text-md-start g-3">
+
+        <!-- Left -->
+        <div class="col-12 col-md-4 d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start">
+          <img src="{% static 'img/golden_jubilee_logo.png' %}" loading="lazy" style="height:120px; width:auto;">
+          <div class="text-info ms-md-2 mt-2 mt-md-0">
+            <h5 class="mb-0 fw-bold">Central Pollution Control Board</h5>
+            <h6 class="mb-0">(Under Ministry of Environment, Forest and Climate Change)</h6>
+          </div>
+        </div>
+
+        <!-- Center -->
+        <div class="col-12 col-md-4 text-center">
+          <img src="{% static 'img/site_logo.jpg' %}" loading="lazy" class="img-fluid mb-2" style="max-width:70px;" alt="Site Logo">
+          <h5 class="text-dark fw-bold">EPR Portal for End-of-Life Vehicles</h5>
+          <div class="h6">Under Environment Protection (End-of-Life Vehicles) Rules, 2025</div>
+        </div>
+
+        <!-- Right -->
+        <div class="col-12 col-md-4 d-flex justify-content-center justify-content-md-end align-items-center gap-2">
+          <img src="{% static 'img/life_logo.png' %}" loading="lazy" style="height:70px; width:auto;">
+          <img src="{% static 'img/ministry_logo.png' %}" loading="lazy" style="height:130px; width:auto;">
+        </div>
+      </div>
+    </header>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand d-lg-none fw-bold text-white" href="{% url 'home' %}">EPR ELV</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav text-center text-lg-start">
+          <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+    <a class="nav-link px-3" href="{% url 'home' %}" onclick="localStorage.setItem('selectedLoginType', '/')">Home</a>
+</li>
+          <li class="nav-item {% if request.path == '/aboutus/' %}active{% endif %}">
+            <a class="nav-link px-3" href="{% url 'aboutus' %}">About Us</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-3" href="#" data-bs-toggle="dropdown">Rules</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% static 'doc/ELV_Rules_2025.pdf' %}" target="_blank">End-of-Life Vehicles Rules, 2025</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-3" href="#" data-bs-toggle="dropdown">Guidelines / SOPs</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% static 'doc/Producer_Sop.pdf' %}" target="_blank">Registration of Producer</a></li>
+              <li><a class="dropdown-item" href="{% static 'doc/Rvsf_Sop.pdf' %}" target="_blank">Registration of RVSFs</a></li>
+              <li><a class="dropdown-item" href="{% static 'doc/ELV_Guidelines.pdf' %}" target="_blank">Guidelines for Handling and Scrapping of
+End-of- Life Vehicles (ELVs)</a></li>
+            </ul>
+          </li>
+          <li class="nav-item {% if request.path == '/national-dashboard/' %}active{% endif %}">
+            <a class="nav-link px-3" href="{% url 'national_dashboard' %}">National Dashboard</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-3" href="#" data-bs-toggle="dropdown">Important Communication</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% static 'doc/CPCB_Letter_to_SPCBs_PCCs _06052025.pdf' %}" target="_blank">CPCB_Letter_to_SPCBs_PCCs _06052025</a></li>
+              <li><a class="dropdown-item" href="{% static 'doc/CPCB_Letter_toSPCBsPCCs _19012026.pdf' %}" target="_blank">CPCB_Letter_toSPCBsPCCs _19012026</a></li>
+             
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-3" href="{% static 'doc/EPR_ELVs_FAQ.pdf' %}" target="_blank">FAQs</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-3" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">Contact Us</a>
+          </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link px-3" href="#" data-bs-toggle="modal" data-bs-target="#consentModal">Verify Consent</a>
+          </li> -->
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- <div class="col-md-12" style="background: linear-gradient(to right, #d32f2f, #b71c1c);">
+    <div class="pt-2 pb-2">
+        <marquee style=" color: #fff; font-weight: 500;" onmouseover="this.stop();" onmouseout="this.start();">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            The Consent Verification is down due to technical issues. Please try after some time.
+        </marquee>
+    </div>
+</div> -->
+
+  <!-- Contact Modal -->
+  <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="contactModalLabel">Contact Us</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="contactSuccess" class="alert alert-success alert-dismissible fade show d-none" role="alert">
+            Your message has been sent successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          <form name="contact_form" id="contact_form" method="post" action="{% url 'contact_us' %}" class="col-12">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label>Name<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="name" placeholder="Name" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label>Email<span class="text-danger">*</span></label>
+                <input type="email" class="form-control" name="email" placeholder="Email" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label>Phone<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="phone" id="phone" maxlength="10" placeholder="Phone" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label>Designation<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="designation" placeholder="Designation" required>
+              </div>
+              <div class="col-12 mb-3">
+                <label>Subject<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="subject" placeholder="Subject" required>
+              </div>
+              <div class="col-12 mb-3">
+                <label>Description<span class="text-danger">*</span></label>
+                <textarea class="form-control" name="description" placeholder="Description" required></textarea>
+              </div>
+              <div class="my-1 d-flex align-items-center captcha-container1">
+                <div class="me-3" id="captcha-container1">{{ form.captcha }}</div>
+                <button type="button" id="refresh_captcha1" class="btn btn-outline-secondary">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+              </div>
+              <div class="my-3">
+                <button type="submit" class="btn btn-info text-white">Submit</button>
+              </div>
+            </div>
+          </form>
+
+          <ul class="popup_adress mt-3">
+            <li><i class="fa fa-map-pin text-danger me-2"></i> Central Pollution Control Board, Parivesh Bhawan, East Arjun Nagar, Delhi-110032</li>
+            <li><i class="fa fa-phone-volume text-success me-2"></i> +91-11-43102319/439/326</li>
+            <li><i class="fa fa-envelope text-info me-2"></i> eprelv[dot]cpcb[at]gov[dot]in</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consent Modal -->
+  <!-- Consent Modal -->
+<div class="modal fade" id="consentModal" tabindex="-1" aria-labelledby="consentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="consentModalLabel">Verify Consent</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="rvsfForm">
+        {% csrf_token %}
+
+        <!-- REQUIRED hidden fields -->
+        <input type="hidden" id="initial_state" value="{{ general.state|default:'' }}">
+        <input type="hidden" id="initial_consent_number" value="{{ general.cto_number|default:'' }}">
+
+        <div class="modal-body">
+          <div class="row">
+
+            <!-- STATE -->
+            <div class="col-md-6 mb-3">
+              <label for="state" class="form-label required">State / UT</label>
+              <select class="form-select" id="state" name="state" required>
+                <option value="" selected disabled>Select State</option>
+              </select>
+            </div>
+
+            <!-- CONSENT -->
+            <div class="col-md-6 mb-3 position-relative">
+              <label for="id_cto_number" class="form-label required">
+                Consent Application Number (CTO)
+              </label>
+              <input id="id_cto_number"
+                     type="text"
+                     name="cto_number"
+                     value="{{ general.cto_number|default:'' }}"
+                     class="form-control"
+                     placeholder="CTO Number"
+                     required>
+
+              <span id="consent-tick"
+                    style="display:none; position:absolute; right:15px; top:42px; color:green;">✔</span>
+              <span id="consent-cross"
+                    style="display:none; position:absolute; right:15px; top:42px; color:red;">✖</span>
+              <small id="consent-msg" class="validation-msg"></small>
+            </div>
+
+            <!-- GPCB -->
+            <div class="col-md-6 mb-3 position-relative" id="gpcbid-container" style="display:none;">
+              <label class="form-label required">Gujarat Pollution Control Board ID</label>
+              <input type="text"
+                     name="gpcbid"
+                     id="gpcbid-field"
+                     class="form-control"
+                     value="{{ general.gpcbid|default:'' }}"
+                     inputmode="numeric"
+                     pattern="[0-9]+">
+
+              <span id="gpcbid-tick" style="display:none; color:green;">✔</span>
+              <span id="gpcbid-cross" style="display:none; color:red;">✖</span>
+              <small id="gpcbid-msg" class="validation-msg"></small>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- <div class="modal-footer">
+          <button type="submit" id="submitBtn" class="btn btn-primary">
+            Verify & Continue
+          </button>
+        </div> -->
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Cookie Consent Popup -->
+<div id="cookieConsentPopup" class="cookie-popup">
+  <div class="cookie-content">
+    <h6>🍪 Cookie Consent</h6>
+    <p>
+      We use cookies to improve your experience and analyze site usage.  
+      Please accept cookies to continue enjoying all features.
+    </p>
+    <div class="cookie-buttons">
+      <button id="acceptCookies" class="btn btn-success btn-sm">Accept</button>
+      <button id="declineCookies" class="btn btn-outline-secondary btn-sm">Decline</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Popup styles */
+.cookie-popup {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 320px;
+  background: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 16px;
+  display: none;
+  z-index: 9999;
+  animation: slideDown 0.5s ease-out;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+.cookie-content h6 {
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.cookie-content p {
+  margin: 10px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.cookie-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.cookie-buttons .btn {
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const popup = document.getElementById("cookieConsentPopup");
+    const cookiesAccepted = localStorage.getItem("cookiesAccepted");
+
+    // Show popup only if user not logged in and not accepted yet
+    const userLoggedIn = {{ request.user.is_authenticated|yesno:"true,false" }};
+    if (!cookiesAccepted && !userLoggedIn) {
+        popup.style.display = "block";
+    }
+
+    // Accept cookies
+    document.getElementById("acceptCookies").addEventListener("click", function () {
+        localStorage.setItem("cookiesAccepted", "true");
+        popup.style.display = "none";
+
+        // Optional: send consent to server
+        fetch("{% url 'save_cookie_consent' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({ consent: true }),
+        }).catch(() => {});
+    });
+
+    // Decline cookies
+    document.getElementById("declineCookies").addEventListener("click", function () {
+        localStorage.removeItem("cookiesAccepted");
+        popup.style.display = "none";
+    });
+
+    // Helper to get CSRF token
+    function getCSRFToken() {
+        const name = "csrftoken=";
+        const decoded = decodeURIComponent(document.cookie);
+        const parts = decoded.split(";");
+        for (let i = 0; i < parts.length; i++) {
+            let c = parts[i].trim();
+            if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+        }
+        return "";
+    }
+});
+</script>
+
+
+  {% block extra_scripts %}
+  <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.getElementById("phone").addEventListener("input", function (e) {
+      this.value = this.value.replace(/\D/g, '');
+    });
+
+    document.getElementById('refresh_captcha1').addEventListener('click', function () {
+      fetch("{% url 'refresh_captcha' %}")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('captcha-container1').innerHTML = data.captcha_html;
+        })
+        .catch(error => console.error('Error refreshing captcha:', error));
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("loader").style.display = "none";
+    });
+
+    function restrictInput(event) {
+      const regex = /^[a-zA-Z0-9 .,]*$/;
+      if (!regex.test(event.target.value)) {
+        event.target.value = event.target.value.replace(/[^a-zA-Z0-9 .,]/g, '');
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll('input[type="text"], textarea').forEach(function (input) {
+        input.addEventListener("input", restrictInput);
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+    const contactForm = document.getElementById("contact_form");
+    if (!contactForm) return;
+
+    contactForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Processing...";
+
+        try {
+            const response = await fetch("{% url 'contact_us' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: new FormData(contactForm)
+            });
+
+            let data = {};
+            const contentType = response.headers.get("content-type");
+
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                // backend returned HTML / redirect
+                data = {
+                    status: "success",
+                    message: "Your message has been sent successfully!"
+                };
+            }
+
+            alert(data.message);
+
+            if (data.status === "success") {
+                contactForm.reset();
+
+                try {
+                    const modalEl = document.getElementById("contactModal");
+                    if (modalEl && window.bootstrap) {
+                        const modal =
+                            bootstrap.Modal.getInstance(modalEl) ||
+                            new bootstrap.Modal(modalEl);
+                        modal.hide();
+                    }
+                } catch (uiErr) {
+                    console.warn("Modal close skipped:", uiErr);
+                }
+            }
+
+        } catch (err) {
+            console.error("Contact form error:", err);
+            alert("An unexpected error occurred. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit";
+        }
+    });
+});
+  </script>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const stateSelect = document.getElementById("state");
+  const consentInput = document.getElementById("id_cto_number");
+  const gpcbidInput = document.getElementById("gpcbid-field");
+  const gpcbidContainer = document.getElementById("gpcbid-container");
+
+  const consentTick = document.getElementById("consent-tick");
+  const consentCross = document.getElementById("consent-cross");
+  const consentMsg = document.getElementById("consent-msg");
+
+  const gpcbidTick = document.getElementById("gpcbid-tick");
+  const gpcbidCross = document.getElementById("gpcbid-cross");
+  const gpcbidMsg = document.getElementById("gpcbid-msg");
+
+  const form = document.getElementById("rvsfForm");
+
+  const initialConsent = document.getElementById("initial_consent_number").value;
+  const initialState = document.getElementById("initial_state").value;
+
+  const stateMap = {
+    "Karnataka": { code: "KTK", status: 0 },
+    "Madhya Pradesh": { code: "MP", status: 0 },
+    "Maharashtra": { code: "MAH", status: 0 },
+    "Gujarat": { code: "GUJ", status: 0 },
+    "Rajasthan": { code: "RJ", status: 0 }
+  };
+
+  let isConsentValid = false;
+  let isGpcbidValid = false;
+  let consentChanged = false;
+
+  /* ---------------- STATE POPULATION ---------------- */
+  fetch("/rvsf/api/states/")
+    .then(res => res.json())
+    .then(data => {
+      data.states.forEach(state => {
+        const opt = document.createElement("option");
+        opt.value = state.state_id;
+        opt.textContent = state.state_name;
+
+        if (state.state_id == initialState || state.state_name == initialState) {
+          opt.selected = true;
+        }
+        stateSelect.appendChild(opt);
+      });
+      stateSelect.dispatchEvent(new Event("change"));
+    });
+
+  /* ---------------- GPCB TOGGLE ---------------- */
+  function toggleGpcbid() {
+    const text = stateSelect.options[stateSelect.selectedIndex]?.text || "";
+    const show = text === "Gujarat";
+    gpcbidContainer.style.display = show ? "block" : "none";
+    if (gpcbidInput) gpcbidInput.required = show;
+    isGpcbidValid = !show;
+  }
+
+  /* ---------------- VALIDATE CONSENT ---------------- */
+  async function validateConsent() {
+    const consent = consentInput.value.trim();
+    const stateText = stateSelect.options[stateSelect.selectedIndex]?.text || "";
+
+    if (!consent) return;
+
+    if (!consentChanged && consent === initialConsent && stateText === initialState) {
+      consentTick.style.display = "inline";
+      consentMsg.textContent = "Consent already verified";
+      isConsentValid = true;
+      return;
+    }
+
+    const mapping = stateMap[stateText] || { code: "UP", status: 1 };
+    if (mapping.code === "GUJ" && !gpcbidInput.value.trim()) return;
+
+    const payload = {
+      consent_id: consent,
+      statecode: mapping.code,
+      status: mapping.status,
+      gpcbid: gpcbidInput?.value || ""
+    };
+
+    const res = await fetch("/rvsf/consent/details/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+   // alert(data)
+    if (res.ok && data.status === 200 && 
+    data.data && (data.data.applicationType || data.data.applicationNo)) {
+      // consentTick.style.display = "inline";
+      // consentMsg.textContent = "Valid Consent Number";
+      alert("Valid Consent Number")
+      isConsentValid = true;
+
+      if (mapping.code === "GUJ") {
+        // gpcbidTick.style.display = "inline";
+        // gpcbidMsg.textContent = "Valid GPCB ID";
+        alert("Valid GPCB ID")
+        isGpcbidValid = true;
+      }
+    } else {
+      // consentCross.style.display = "inline";
+      // consentMsg.textContent = "Invalid Consent Number";
+      alert("Invalid Consent Number")
+      isConsentValid = false;
+    }
+  }
+
+  function getCookie(name) {
+    return document.cookie
+      .split("; ")
+      .find(row => row.startsWith(name + "="))
+      ?.split("=")[1];
+  }
+
+  /* ---------------- EVENTS ---------------- */
+  stateSelect.addEventListener("change", () => {
+    consentChanged = true;
+    toggleGpcbid();
+  });
+
+  consentInput.addEventListener("blur", validateConsent);
+  gpcbidInput?.addEventListener("blur", validateConsent);
+
+  form.addEventListener("submit", e => {
+    if (!isConsentValid || (gpcbidContainer.style.display === "block" && !isGpcbidValid)) {
+      e.preventDefault();
+      alert("Please verify consent details correctly.");
+    }
+  });
+
+});
+</script>
+
+
+  {% endblock %}
+</body>
+
+</html>
+

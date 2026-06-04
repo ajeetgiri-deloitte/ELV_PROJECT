@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Producer Registration Certificate</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 19px; /* Medium font size */
+            line-height: 1.4;
+        }
+        .legal-text strong {
+            display: inline-block;
+            padding: 0 2px;
+            word-break: keep-all;
+        }
+        p {
+            line-height: 1.5;
+            text-align: justify;
+            margin-bottom: 12px;
+        }
+        .text-indent {
+            text-indent: 2em;
+        }
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #000 !important;
+            padding: 6px 8px;
+        }
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature {
+            margin-top: 40px;
+            clear: both;
+            width: 100%;
+        }
+
+
+        .watermark-section {
+            opacity: 0.48;
+            pointer-events: none;
+            height: 150px; /* Reduced height */
+            margin-bottom: 20px;
+        }
+        /* Page break control */
+        .page-break-before {
+            page-break-before: always;
+        }
+        /* Table formatting for PDF */
+        table {
+            page-break-inside: auto;
+            font-size: 16px;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        thead {
+            display: table-header-group;
+        }
+        /* Ensure sections stay together */
+        .keep-together {
+            border: 2px solid #000;
+            padding: 30px;
+            page-break-inside: avoid;
+        }
+        h5 {
+            font-size: 18px;
+            margin: 15px 0;
+        }
+        h6 {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+        .logo-img {
+            height: 110px !important; /* Smaller logo */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mt-2 keep-together">
+        <div class="watermark-section" style="overflow: hidden;">
+            <div style="float: left; margin: 0;">
+                <img src="{% static 'img/golden_jubilee_logo.png' %}" class="logo-img">
+            </div>
+            <!-- <div style="float: right; margin: 0; text-align: center;">
+                <h5 class="fw-bold">Central Pollution Control Board</h5>
+                <h6>(Ministry of Environment, Forest & Climate Change)</h6>
+                <h6>Government of India</h6>
+                <h6>Parivesh Bhawan, East Arjun Nagar, Shahdara</h6>
+                <h6>Delhi: 110032</h6>
+            </div> -->
+        </div>
+        
+        <h5 class="text-center fw-bold pt-1"><strong>CENTRAL POLLUTION CONTROL BOARD <br> CERTIFICATE OF REGISTRATION OF PRODUCER </strong></h5>
+        <h5 class="text-center">[Under Environment Protection (End-of-Life Vehicles) Rules, 2025]</h5>
+
+        <div class="my-3" style="width: 100%; overflow: hidden; margin-top: 15px;">
+            <p style="float: left; margin: 0;">
+                <strong>Registration No.:</strong> {{ registration_number }}
+            </p>
+            <p style="float: right; margin: 0;">
+                <strong>Date:</strong> {{ issue_date }}
+            </p>
+        </div>
+
+        <p>To,<br>
+        {{ company_name }}<br>
+        {{ registered_address }}</p>
+
+        <!-- <h5 class="fw-bold">Sub: Registration Certificate for Producer</h5> -->
+
+        <p>With reference to the application number ({{application_number}}) dated ({{ application_date|default:"XXXXXXX" }}) for registration as a Producer, M/s {{ company_name}} is hereby granted one-time registration as producer of End-of-Life vehicles in respect of End-of-Life vehicles as per the provisions of Environment Protection (End-of-Life Vehicles) Rules, 2025. Any violation of the provisions of the Environment Protection (End-of-Life Vehicles) Rules, 2025 will attract the penal provision of the Environment (Protection) Act, 1986 (29 of 1986).</p>
+
+        <p class="legal-text"> M/s <strong>{{ company_name }}</strong>, having its registered office at <strong> {{ registered_address }} </strong>, is registered with the Central Pollution Control Board as a Producer under the following categories:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S. No</th>
+                        <th>Category of Producer</th>
+                        <th rowspan="{{ total_business_rows }}">Type of Vehicles Sold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in nature_of_business %}
+                        {% for business in row.get_nature_of_business_names %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ business }}</td>
+
+                                {% if forloop.parentloop.first and forloop.first %}
+                                    <td rowspan="{{ total_business_rows }}">
+                                        {% for category, vehicle_type in vehicle_summary.items %}
+                                            <strong>{{ category }}:</strong>
+                                            {% for vtype in vehicle_type %}
+                                                {{ vtype }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                            <br>
+                                        {% endfor %}
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No records available</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="legal-text">
+            Further, M/s <strong>{{ company_name }}</strong> shall fulfil the EPR obligations under the Environment Protection (End-of-Life Vehicles) Rules, 2025 and terms &amp; conditions at <strong>Annexure-I.</strong>
+        </p>
+    </div>
+    
+    <!-- Page break before Terms and Conditions -->
+    <!-- <div class="page-break-before"></div> -->
+    
+    <div class="keep-together">
+        <div class="watermark-section" style="overflow: hidden;">
+            <div style="float: left; margin: 0;">
+                <img src="{% static 'img/golden_jubilee_logo.png' %}" class="logo-img">
+            </div>
+            <!-- <div style="float: right; margin: 0; text-align: center;">
+                <h5 class="fw-bold">Central Pollution Control Board</h5>
+                <h6>(Ministry of Environment, Forest & Climate Change)</h6>
+                <h6>Government of India</h6>
+                <h6>Parivesh Bhawan, East Arjun Nagar, Shahdara</h6>
+                <h6>Delhi: 110032</h6>
+            </div> -->
+        </div>
+        
+        <h5 class="fw-bold text-end"><b>Annexure-I</b></h5>
+        <h5 class="fw-bold text-center mb-3 mt-3"><strong>Terms and Conditions</strong></h5>
+
+        <ol>
+            <li>Producers are obligated to meet their Extended Producer Responsibility (EPR) requirements by purchasing EPR certificates, proportionate to their obligations, from Registered Vehicle Scrapping Facilities (RVSFs) only.</li>
+            <li>A Producer can purchase Extended Producer Responsibility certificate limited to its Extended Producer Responsibility obligation of current year plus any leftover obligation of preceding years. </li>
+            <li>An Extended Producer Responsibility (EPR) certificate purchased by a Producer shall be automatically adjusted against their obligations under these rules, with priority given to fulfilling earlier or preceding years' obligations.</li>
+            <li>An Extended Producer Responsibility certificate used by the producer to meet its Extended Producer Responsibility obligations shall not be exchanged again.</li>
+            <li>An Extended Producer Responsibility certificate purchased by the producer is not transferrable to any other producer.</li>
+            <li>A Producer may carry forward up to 30% of their Extended Producer Responsibility (EPR) targets from any given year to the subsequent four years for the EPR target compliance.</li>
+            <li>The EPR certificates shall be subject to audit by Central Pollution Control Board or any other agencies authorized in this regard.</li>
+            <li>If the producer submits false information or wilfully conceals information for registration or return or report or information required to be provided or furnished under Environment Protection (End-of-Life Vehicles) Rules, 2025, or in case of any irregularity, the registration of such entity may be revoked by the Central Pollution Control Board after giving an opportunity to be heard and in addition, environmental compensation (EC) charges may also be levied as per rule 15 of Environment Protection (End-of-Life Vehicles) Rules, 2025.</li>
+            <li>The producer shall be responsible to file annual returns before 30th June following the financial year to which the return relates.</li>
+            <li>All the transactions w.r.t purchase of EPR certificate shall be recorded and submitted by the producers on the portal at the time of filing annual returns.</li>
+            <li>The provision of EC as stipulated under rule 15 of Environment Protection (End-of-Life Vehicles) Rules, 2025 shall be applicable in case of any violation/non- compliance.</li>
+            <li>The Board reserves right to cancel/amend/revoke the registration at any time as per the policy of the Board or Government.</li>
+            <li>In case of any violation of the above condition, your registration will be suspended/ cancelled.</li>
+        </ol>
+
+<div class="signature text-end d-flex justify-content-end">
+    <div class="mt-5">
+        <!-- <strong>(e-signature)</strong><br> -->
+        <!-- Member Secretary<br> -->
+        Central Pollution Control Board
+    </div>
+</div>
+    </div>
+
+</body>
+</html>

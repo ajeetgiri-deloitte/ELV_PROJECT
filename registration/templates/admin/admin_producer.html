@@ -1,0 +1,1689 @@
+{% extends "layouts/main.html" %}
+{% load custom_tags %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+<style>
+    .no-edit {
+        pointer-events: none;
+    }
+
+    .form-check-input.no-edit:checked {
+        filter: grayscale(100%);
+    }
+
+    .radio-group {
+        display: flex;
+        padding-left: 20px;
+        gap: 50px; /* spacing between Yes and No */
+    }
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #09baf0;
+        padding: 8px 20px;
+        /* text-align: center; */
+    }
+    textarea {
+        width: 100%;
+    }
+    
+</style>
+<style>
+    .no-edit {
+        pointer-events: none;
+    }
+
+    .form-check-input.no-edit:checked {
+        filter: grayscale(100%);
+    }
+
+    /* Custom colors for tab buttons */
+    #transportTabLink {
+        background-color: #1cc3ec; /* blue */
+        color: white;
+        margin-right: 10px;
+    }
+
+    #nonTransportTabLink {
+        background-color: #21973c; /* green */
+        color: white;
+    }
+
+    /* Active tab highlight */
+    .nav-link.active {
+        font-weight: bold;
+        border: 2px solid black;
+    }
+
+    /* Unique content box colors */
+    #transportTab {
+        background-color: #e3f2fd; /* light blue */
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    #nonTransportTab {
+        background-color: #e8f5e9; /* light green */
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .section-header {
+        cursor: pointer;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sub-section-header {
+        cursor: pointer;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-content {
+        display: none;
+    }
+
+        
+</style>
+
+<style>
+    .status-stamp {
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: 2px solid;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-block;
+        text-transform: uppercase;
+        transform: rotate(-5deg);
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        letter-spacing: 1px;
+        width: 60%;
+        text-align: center;
+        margin: auto;
+    }
+    .approved {
+        color: #28a745;
+        border-color: #28a745;
+        background-color: #eafaf1;
+    }
+    .certificate {
+        color: #ffc107;
+        border-color: #ffc107;
+        background-color: #fff8e1;
+    }
+    .rejected {
+        color: #dc3545;
+        border-color: #dc3545;
+        background-color: #fdecea;
+    }
+</style>
+
+
+<h3>{{general.company_name}}</h3>
+
+<br>
+<ul class="nav nav-tabs d-flex justify-content-between w-100" id="myTab" role="tablist">
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link active btn btn-info text-white w-100" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-tab-pane" type="button" role="tab" aria-controls="general-tab-pane" aria-selected="true">
+            General Details
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="manufacturer-tab" data-bs-toggle="tab" data-bs-target="#manufacturer-tab-pane" type="button" role="tab" aria-controls="manufacturer-tab-pane" aria-selected="false">
+            Manufacturing/Assembly Facility Details 
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales-tab-pane" type="button" role="tab" aria-controls="sales-tab-pane" aria-selected="false">
+            Procurement and Sales Data
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="declaration-tab" data-bs-toggle="tab" data-bs-target="#declaration-tab-pane" type="button" role="tab" aria-controls="declaration-tab-pane" aria-selected="false">
+            Annual Turnover and Declaration
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment-tab-pane" type="button" role="tab" aria-controls="payment-tab-pane" aria-selected="false">
+            Registration Fees
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="comment-tab" data-bs-toggle="tab" data-bs-target="#comment-tab-pane" type="button" role="tab" aria-controls="comment-tab-pane" aria-selected="false">
+            Comments
+        </button>
+    </li>
+</ul>
+
+
+<!-- General details -->
+<div class="tab-content mt-3" id="myTabContent">
+    <!-- General Form Tab -->
+    <div class="tab-pane fade show active p-4 card" id="general-tab-pane" role="tabpanel" aria-labelledby="general-tab">
+        <div id="generalForm">
+    
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Entity Details</h5>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="gst_no" class="form-label required">GST Number <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                    <input type="text" class="form-control" id="gst_no" name="gst_no" value="{{general.gst_no}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+                
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required" for="gst_doc"> GST Document <span class="text-danger">*</span></label> <br>
+                
+                {% if general.gst_doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{% url 'protected_file' general.gst_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i> 
+                        </a>
+                        
+                    </div>
+                {% endif %}
+                
+            </div>
+            
+            
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6 mt-3">
+                <label for="company_name" class="form-label">Name of the Company <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="company_name" name="company_name" value="{{general.company_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-6 mt-3 ">
+                <label for="legal_name" class="form-label">Legal Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="legal_name" name="legal_name" value="{{general.legal_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="company_email" class="form-label required">Company Email <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="company_email" name="company_email" value="{{ general.company_email}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+
+            <!-- <div class="col-md-4">
+                <label for="incorporation_date" class="form-label required">Date of Incorporation <span class="text-danger">*</span></label>
+                <!-- <input type="text" class="form-control" id="incorporation_date" name="incorporation_date" value="{{general.incorporation_date}}" placeholder="Auto Fetched from Registration" readonly> --
+                <input type="date" class="form-control" id="incorporation_date" name="incorporation_date" value="{{ general.incorporation_date|date:'Y-m-d' }}" placeholder="Enter date of Incorporation" required>
+            </div> -->
+            <!-- Year of Establishment -->
+            <div class="col-md-4">
+                <label for="incorporation_date" class="form-label required">Year of Incorporation <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="incorporation_date" name="incorporation_date" value="{{ general.incorporation_date }}" placeholder="Enter date of Incorporation" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="business_category" class="form-label required">Business Category <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="business_category" name="business_category" value="{{general.business_category}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <label for="registered_address" class="form-label required">Registered Address <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="registered_address" name="registered_address" rows="2" placeholder="Auto Fetched from Registration" readonly>{{general.registered_address}}</textarea>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="state" class="form-label required">State/UT <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="state" name="state" value="{{state_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="district" class="form-label required">District <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="district" name="district" value="{{district_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </select>
+            </div>
+            <div class="col-md-4">
+                <label for="pin_code" class="form-label required">Pin Code <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{general.pin_code}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="website" class="form-label">Website Address</label>
+                <input type="url" class="form-control" id="website" name="website" value="{{general.website|default:''}}" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="pan_no" class="form-label required">Company PAN Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="pan_no" name="pan_no" value="{{general.pan_no}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required" for="pan_doc"> Company PAN Card <span class="text-danger">*</span></label><br>
+                
+                {% if general.pan_doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{% url 'protected_file' general.pan_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i> 
+                        </a>
+                        
+                    </div>
+                
+                {% endif %}
+                
+            </div>
+        </div>
+        <div class="row g-3 mb-4">
+            {% if general.tin %}
+            <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="tin" class="form-label required">Tax Identification Number (TIN)</label>
+                        <input type="text" class="form-control" id="tin" name="tin" value="{{general.tin|default:''}}" readonly>
+                    </div>
+                    <div>
+                        <label class="form-label required" for="tin_doc"> TIN Document <span class="text-danger">*</span></label><br>
+                    
+                        {% if general.tin_doc %}
+                            <div class="d-flex mb-2">
+                                <a href="{% url 'protected_file' general.tin_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                                </a>
+                                
+                            </div>
+                        
+                        {% endif %}
+                    </div>
+                
+            </div>
+            {% else %}
+                <div class="col-md-4">
+                    <label for="tin" class="form-label required">Tax Identification Number (TIN)</label>
+                    <input type="text" class="form-control" id="tin" name="tin" value="{{general.tin|default:''}}" readonly>
+                </div>
+            {% endif %}
+
+            
+            {% if general.cin %}
+            <div class="col-md-4">
+                
+                    <div class="mb-3">
+                        <label for="cin" class="form-label required">Corporate Identification Number (CIN)</label>
+                        <input type="text" class="form-control" id="cin" name="cin" value="{{general.cin|default:''}}" readonly>
+                    </div>
+                    <div>
+                        <label class="form-label required" for="cin_doc"> CIN Document <span class="text-danger">*</span></label><br>
+                    
+                        {% if general.cin_doc %}
+                            <div class="d-flex mb-2">
+                                <a href="{% url 'protected_file' general.cin_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                                </a>
+                            
+                            </div>
+                        
+                        {% endif %}
+                    </div>
+                
+            </div>
+            {% else %}
+                <div class="col-md-4">
+                    <label for="cin" class="form-label required">Corporate Identification Number (CIN)</label>
+                    <input type="text" class="form-control" id="cin" name="cin" value="{{general.cin|default:''}}" readonly>
+                </div>
+            {% endif %}
+
+            {% if general.iec %}
+                <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="iec" class="form-label required">Import Export Code (IEC)</label>
+                            <input type="text" class="form-control" id="iec" name="iec" value="{{general.iec|default:'' }}"  readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required" for="iec_doc"> IEC Document <span class="text-danger">*</span></label><br>
+                        
+                            {% if general.iec_doc %}
+                                <div class="d-flex mb-2">
+                                    <a href="{% url 'protected_file' general.iec_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                                    </a>
+                                    
+                                </div>
+                            
+                            {% endif %}
+                        </div>
+                    
+                </div>
+                {% else %}
+                <div class="col-md-4 field-iec">
+                    <label for="iec" class="form-label required">Import Export Code (IEC)</label>
+                    <input type="text" class="form-control" id="iec" name="iec" value="{{general.iec|default:'' }}"  readonly>
+                </div>
+            {% endif %}
+            
+        </div>
+        
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Authorized Person Details</h5>
+        </div>
+        <!-- <h5 class="section-title text-info">Authorized Person Details</h5> <hr> -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label for="authorized_person_name" class="form-label required">Name of Authorized Person <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="authorized_person_name" name="authorized_person_name" value="{{general.authorized_person_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="authorized_person_designation" class="form-label required">Designation of Authorized Person <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="authorized_person_designation" name="authorized_person_designation" value="{{general.authorized_person_designation}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="authorized_person_email" class="form-label required">Authorized Person Email <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span> 
+                    <input type="email" class="form-control" id="authorized_person_email" name="authorized_person_email" value="{{general.authorized_person_email}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label for="authorized_person_mobile" class="form-label required">Authorized Person Mobile Number <span class="text-danger">*</span> </label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                    <input type="text" class="form-control" id="authorized_person_mobile" name="authorized_person_mobile" value="{{general.authorized_person_mobile}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <label for="authorized_pan" class="form-label required">PAN No <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="authorized_pan" name="authorized_pan" value="{{general.authorized_person_pan}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required" for="doc"> Authorized Person PAN Card <span class="text-danger">*</span></label><br>
+                
+                {% if general.doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{% url 'protected_file' general.doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                        </a>
+                    </div>
+                    <!-- <small class="text-info">You can  a new document to replace the existing one before proceeding to payment.</small> -->
+                    
+                {% endif %}
+                
+            </div>
+        </div>
+        
+        </div>
+    </div>
+
+    <div class="tab-pane fade p-4 card" id="manufacturer-tab-pane" role="tabpanel" aria-labelledby="manufacturer-tab">
+        <div id="manufacturerForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"><i class="bi bi-building me-2"></i>Manufacturing/Assembly Facility Details</h5>
+            </div>
+            <div class=" mb-4">
+                <div class="row g-3 mb-4 field-nature-of-business">
+                    <div class="col-md-12">
+                        <label for="nature_of_business" class="form-label fw-bold required">Nature of Business <span class="text-danger">*</span></label>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="1"
+                            {% if '1' in nature_selected %}checked{% endif %}>
+                        <label class="form-check-label" for="entity_producer">P-1: Manufactured/assemble and Sale of Vehicles under Own Brand</label>
+                        </div>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="2" {% if '2' in nature_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_importer">P-2: Sale of Vehicles under Own Brand (Manufactured/assembled by Another Manufacturer)</label>
+                        </div>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="3" {% if '3' in nature_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_collection">P-3: Manufacture/assemble of vehicles and sold to another producer</label>
+                        </div>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="4" {% if '4' in nature_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_recycler">P-4: Manufacture/assemble of vehicles and sold in open market with another producer brand.</label>
+                        </div>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="5" {% if '5' in nature_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_recycler">P-5: Import of Vehicles and sale Under Own brand</label>
+                        </div>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="6" {% if '6' in nature_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_recycler">P-6: Import of Vehicles and sale Under imported brand itself.</label>
+                        </div>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="7" {% if '7' in nature_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_recycler">P-7: Import of Vehicles and sale to other producer. </label>
+                        </div>
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input no-edit" name="nature_of_business[]" value="8" {% if '8' in nature_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_recycler">P-8: Import of Vehicles for Self Use.</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="form-group mb-4">
+                <label class="fw-bold mb-2">Does the Producer have a Manufacturing/Assembly Facility? <span class="text-danger">*</span></label>
+                <!-- <input type="hidden" name="has_facility" id="hasFacilityHidden" value="{{ manufacturing_details.has_facility }}"> -->
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input no-edit" name="manufacturing_facility" id="facilityYes" value="Yes"
+                            
+                            {% if manufacturing_details.has_facility == 'Yes' %}checked{% endif %}>
+                        <label class="form-check-label" for="facilityYes">Yes</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input no-edit" name="manufacturing_facility" id="facilityNo" value="No"
+                        
+                            {% if manufacturing_details.has_facility == 'No' %}checked{% endif %}>
+                        <label class="form-check-label" for="facilityNo">No</label>
+                    </div>
+                </div>
+            </div>
+            
+            {% if manufacturing_details.has_facility == 'Yes' %}
+            <div id="facilityDetails">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle" id="facilityTable" {% if facilities %} style="display:table;" {% else %} style="display:none;" {% endif %}>
+                        <thead class="table-light text-nowrap text-center">
+                            <tr>
+                                <th scope="col">S.No.</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">State</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">GSTIN</th>
+                                <th scope="col">Year of Establishment</th>
+                                <th scope="col">Activity Type</th>
+                                <th scope="col">Manufacturing Capacity (No. units/annum)</th>
+                                <th scope="col">Assembly Capacity (No. units/annum)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="facilityRows" class="text-center text-nowrap">
+                            {% for facility in facilities %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ facility.name }}</td>
+                                <td>{{ facility.state_name }}</td>
+                                <td>{{ facility.address }}</td>
+                                <td>{{ facility.gstin }}</td>
+                                <td>{{ facility.year_of_establishment }}</td>
+                                <td>{{ facility.activity_types }}</td>
+                                <td>{{ facility.manufacturing_capacity|default:"NA" }}</td>
+                                <td>{{ facility.assembly_capacity|default:"NA" }}</td>
+                                
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        
+        </div>
+    </div>
+
+    <div class="tab-pane fade p-4 card" id="sales-tab-pane" role="tabpanel" aria-labelledby="sales-tab">
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Procurement and Sales details</h5>
+        </div>   
+
+        <div class="row mt-4">
+            <!-- <label class="col-md-2 text-info fw-bold">Type :</label> -->
+            <div class="col-md-12">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs d-flex justify-content-between w-100">
+                    {% if grouped_data.non_transport %}
+                    <li class="nav-item flex-grow-1 mx-1">
+                        <a class="nav-link btn btn-info text-white w-100 fs-5 active" data-bs-toggle="tab" href="#nonTransport">Non Transport</a>
+                    </li>
+                    {% endif %}
+                    {% if grouped_data.transport %}
+                    <li class="nav-item flex-grow-1 mx-1">
+                        <a class="nav-link btn btn-secondary text-white fs-5 w-100 {% if not grouped_data.non_transport %}active{% endif %}" data-bs-toggle="tab" href="#transport">Transport</a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content border border-top-0 p-3 fs-5">
+
+                    {% if grouped_data.non_transport %}
+                    <div class="tab-pane fade show active" id="nonTransport" role="tabpanel">
+                        {% for year, types_data in grouped_data.non_transport.items %}
+                        <div class="section mb-3" id="non_transport_{{ forloop.counter }}">
+                            <div class="section-header d-flex justify-content-between align-items-center border p-2 bg-light fw-bold"
+                                onclick="toggleSection('non_transport_section_{{ forloop.counter }}', this)">
+                                <h5 class="m-0 text-success">Financial Year - {{ year }} (Non Transport)</h5>
+                                <span class="toggle-icon text-info">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </div>
+                        
+                            <div class="card p-2 section-body collapse" id="non_transport_section_{{ forloop.counter }}">
+                                {% for vehicle_type, vehicles in types_data.items %}
+                                {% if vehicles %}
+                                <div class="sub-section mb-2" id="vehicle_type_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                    <div class="sub-section-header d-flex justify-content-between align-items-center border p-2 bg-white"
+                                        onclick="toggleSection('non_transport_vehicle_type_section_{{ forloop.parentloop.counter }}_{{ forloop.counter }}', this)">
+                                        <h5 class="m-0 text-info">Vehicle Type - {{ vehicle_type }}</h5>
+                                        <span class="toggle-icon text-info">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </span>
+                                    </div>
+
+                                    <div class="sub-section-body card collapse" id="non_transport_vehicle_type_section_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                        
+                                        {% for vehicle in vehicles %}
+                                        <div class="row p-3 mt-4">
+                                            <div class="col-md-4">
+                                                <label>No. of Vehicles Manufactured</label>
+                                                <input type="number" name="no_of_vehicles_manufactured" class="form-control" value="{{ vehicle.no_of_vehicles_manufactured }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>No. of Vehicles Imported</label>
+                                                <input type="number" name="no_of_vehicles_imported" class="form-control" value="{{ vehicle.no_of_vehicles_imported }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>No. of Vehicles Procurred Domestically</label>
+                                                <input type="number" name="no_of_vehicles_procurred_domestically"  class="form-control" value="{{ vehicle.no_of_vehicles_procurred_domestically }}" readonly>
+                                            </div>
+
+                                            <div class="mt-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-market me-2"></i>Sales Detail</h5>
+                                            </div>
+
+                                            <!-- Sold in Open Market -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Open Market</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="open_market_vehicles" class="form-control" value="{{vehicle.open_market_vehicles}}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="open_market_vehicle_weight" class="form-control" value="{{ vehicle.open_market_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="open_market_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.open_market_steel_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Brand Name</label>
+                                                <input type="text" name="open_market_brand_name" class="form-control" value="{{ vehicle.open_market_brand_name }}" readonly>
+                                            </div>
+
+                                            <!-- Sold to Other Producer -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Other Producer</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="producer_vehicles" class="form-control" value="{{ vehicle.producer_vehicles }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="producer_vehicle_weight" class="form-control" value="{{ vehicle.producer_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="producer_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.producer_steel_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Producer Sale Details
+                                                    <i class="fa fa-info-circle text-info info-icon" 
+                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-placement="right" 
+                                                        title="Please download the Excel format before uploading">
+                                                    </i>
+                                                </label>
+                                                <div class='row'>
+                                                    <div class='col-md-9'>
+                                                        {% if vehicle.producer_sale_file %}
+                                                            <a href="{% url 'protected_file' vehicle.producer_sale_file.name %}" target="_blank">View Uploaded File</a>
+                                                        {% else %}
+                                                            <span class="text-muted">No file uploaded</span>
+                                                        {% endif %}
+                                                    </div>
+                                                
+                                                </div>    
+                                            </div>
+
+                                            <!-- Sold which are Co-branded -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Co-branded</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="cobranded_vehicles" class="form-control" value="{{ vehicle.cobranded_vehicles }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="cobranded_vehicle_weight" class="form-control" value="{{ vehicle.cobranded_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="cobranded_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.cobranded_steel_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-3 mb-4">
+                                                <label>Brand Name</label>
+                                                <input type="text" name="cobranded_brand_name" class="form-control" value="{{ vehicle.cobranded_brand_name }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Co-brand Partner Details 
+                                                    <i class="fa fa-info-circle text-info info-icon" 
+                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-placement="right" 
+                                                        title="Please download the Excel format before uploading">
+                                                    </i>
+                                                </label>
+                                                <div class='row'>
+                                                    <div class='col-md-9'>
+                                                        {% if vehicle.cobranded_partner_file %}
+                                                            <a href="{% url 'protected_file' vehicle.cobranded_partner_file.name %}" target="_blank">View Uploaded File</a>
+                                                        {% else %}
+                                                            <span class="text-muted">No file uploaded</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Put in Self Use -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Self Use</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="selfuse_vehicles" class="form-control" value="{{ vehicle.selfuse_vehicles }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="selfuse_vehicle_weight" class="form-control" value="{{ vehicle.selfuse_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="selfuse_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.selfuse_steel_weight }}" readonly>
+                                            </div>
+
+                                            <!-- Exports -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Exports</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="export_vehicles" class="form-control" value="{{ vehicle.export_vehicles }}" readonly>
+                                            </div>
+
+                                            <!-- EPR Info -->
+                                            <div class="mt-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-recycle me-2"></i>EPR Obligations</h5>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>Total Number of Vehicles</label>
+                                                <input type="number" step="0.01" name="vehicle_number_qty" class="form-control" value="{{ vehicle.vehicle_number_qty }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>Total Weight of Vehicles (MT)</label>
+                                                <input type="number" step="0.01" name="vehicle_weight_qty" class="form-control" value="{{ vehicle.vehicle_weight_qty }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>Quantity Qualified for EPR Liability (MT)</label>
+                                                <input type="number" step="0.01" name="epr_qty" class="form-control" value="{{ vehicle.epr_qty }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>
+                                                    Tentative EPR Target (MT) for FY {{year|add_20_years  }}
+                                                    
+                                                </label>
+                                                <input type="number" step="0.01" name="epr_target" class="form-control tentative-epr-output" readonly value="{{ vehicle.epr_target }}">
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+
+                                <div class="bg-info-subtle border-1 rounded-2 p-3 fs-5 fw-bold d-flex justify-content-between mt-4">
+                                    {% with meta=metadata.non_transport|dict_get:year %}
+                                        <div class="col-md-5 mb-2">
+                                            <label class="form-label" for="total_epr_qty">
+                                                Total Tentative EPR Target  for FY {{year|add_20_years  }}
+                                            </label>
+                                            <input type="number" class="form-control" value="{{ meta.epr_target|default:'' }}" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label required" for="ca_cert">
+                                                CA Certificate 
+                                            </label><br>
+                                            {% if meta.ca_certificate %}
+                                                <a href="{% url 'protected_file' meta.ca_certificate.name %}" target="_blank">View Uploaded File</a>
+                                            {% else %}
+                                                <span class="text-muted">No certificate uploaded</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if grouped_data.transport %}
+                    <div class="tab-pane fade {% if not grouped_data.non_transport %}show active{% endif %}" id="transport" role="tabpanel">
+                        {% for year, types_data in grouped_data.transport.items %}
+                        <div class="section mb-3" id="transport_{{ forloop.counter }}">
+                            <div class="section-header d-flex justify-content-between align-items-center border p-2 bg-light fw-bold"
+                                onclick="toggleSection('transport_section_{{ forloop.counter }}', this)">
+                                <h5 class="m-0 text-success">Financial Year - {{ year }} (Transport)</h5>
+                                <span class="toggle-icon text-info">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </div>
+                            <div class="section-body card p-2 collapse" id="transport_section_{{ forloop.counter }}">
+                                {% for vehicle_type, vehicles in types_data.items %}
+                                {% if vehicles %}
+                                <div class="sub-section mb-2" id="vehicle_type_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                    <div class="sub-section-header d-flex justify-content-between align-items-center border p-2 bg-white"
+                                        onclick="toggleSection('transport_vehicle_type_section_{{ forloop.parentloop.counter }}_{{ forloop.counter }}', this)">
+                                        <h5 class="m-0 text-info">Vehicle Type - {{ vehicle_type }}</h5>
+                                        <span class="toggle-icon text-info">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </span>
+                                    </div>
+
+                                    <div class="sub-section-body card collapse" id="transport_vehicle_type_section_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                        
+                                        {% for vehicle in vehicles %}
+                                        <div class="row p-3 mt-4">
+                                            <div class="col-md-4">
+                                                <label>No. of Vehicles Manufactured</label>
+                                                <input type="number" name="no_of_vehicles_manufactured" class="form-control" value="{{ vehicle.no_of_vehicles_manufactured }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>No. of Vehicles Imported</label>
+                                                <input type="number" name="no_of_vehicles_imported" class="form-control" value="{{ vehicle.no_of_vehicles_imported }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>No. of Vehicles Procurred Domestically</label>
+                                                <input type="number" name="no_of_vehicles_procurred_domestically"  class="form-control" value="{{ vehicle.no_of_vehicles_procurred_domestically }}" readonly>
+                                            </div>
+
+                                            <div class="mt-4 " style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-market me-2"></i>Sales Detail</h5>
+                                            </div>
+
+                                            <!-- Sold in Open Market -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Open Market</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="open_market_vehicles" class="form-control" value="{{vehicle.open_market_vehicles}}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="open_market_vehicle_weight" class="form-control" value="{{ vehicle.open_market_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="open_market_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.open_market_steel_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Brand Name</label>
+                                                <input type="text" name="open_market_brand_name" class="form-control" value="{{ vehicle.open_market_brand_name }}" readonly>
+                                            </div>
+
+                                            <!-- Sold to Other Producer -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Other Producer</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="producer_vehicles" class="form-control" value="{{ vehicle.producer_vehicles }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="producer_vehicle_weight" class="form-control" value="{{ vehicle.producer_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="producer_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.producer_steel_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Producer Sale Details
+                                                    <i class="fa fa-info-circle text-info info-icon" 
+                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-placement="right" 
+                                                        title="Please download the Excel format before uploading">
+                                                    </i>
+                                                </label>
+                                                <div class='row'>
+                                                    <div class='col-md-9'>
+                                                        {% if vehicle.producer_sale_file %}
+                                                            <a href="{% url 'protected_file' vehicle.producer_sale_file.name %}" target="_blank">View Uploaded File</a>
+                                                        {% else %}
+                                                            <span class="text-muted">No file uploaded</span>
+                                                        {% endif %}
+                                                    </div>
+                                                
+                                                </div>    
+                                            </div>
+
+                                            <!-- Sold which are Co-branded -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Co-branded</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="cobranded_vehicles" class="form-control" value="{{ vehicle.cobranded_vehicles }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="cobranded_vehicle_weight" class="form-control" value="{{ vehicle.cobranded_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="cobranded_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.cobranded_steel_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-3 mb-4">
+                                                <label>Brand Name</label>
+                                                <input type="text" name="cobranded_brand_name" class="form-control" value="{{ vehicle.cobranded_brand_name }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Co-brand Partner Details 
+                                                    <i class="fa fa-info-circle text-info info-icon" 
+                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-placement="right" 
+                                                        title="Please download the Excel format before uploading">
+                                                    </i>
+                                                </label>
+                                                <div class='row'>
+                                                    <div class='col-md-9'>
+                                                        {% if vehicle.cobranded_partner_file %}
+                                                            <a href="{% url 'protected_file' vehicle.cobranded_partner_file.name %}" target="_blank">View Uploaded File</a>
+                                                        {% else %}
+                                                            <span class="text-muted">No file uploaded</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Put in Self Use -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Self Use</h5>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="selfuse_vehicles" class="form-control" value="{{ vehicle.selfuse_vehicles }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>Total Weight of Vehicle (MT)</label>
+                                                <input type="number" step="0.01" name="selfuse_vehicle_weight" class="form-control" value="{{ vehicle.selfuse_vehicle_weight }}" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label>Total Weight of Steel Used (MT)</label>
+                                                <input type="number" step="0.01" name="selfuse_steel_weight" class="form-control steel-weight-input" value="{{ vehicle.selfuse_steel_weight }}" readonly>
+                                            </div>
+
+                                            <!-- Exports -->
+                                            <div class="fw-bold mt-4 mb-2">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-shop me-2"></i>Exports</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label>No. of Vehicles</label>
+                                                <input type="number" name="export_vehicles" class="form-control" value="{{ vehicle.export_vehicles }}" readonly>
+                                            </div>
+
+                                            <!-- EPR Info -->
+                                            <div class="mt-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                                                <h5 class="mb-0 text-info"><i class="bi bi-recycle me-2"></i>EPR Obligations</h5>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>Total Number of Vehicles</label>
+                                                <input type="number" step="0.01" name="vehicle_number_qty" class="form-control" value="{{ vehicle.vehicle_number_qty }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>Total Weight of Vehicles (MT)</label>
+                                                <input type="number" step="0.01" name="vehicle_weight_qty" class="form-control" value="{{ vehicle.vehicle_weight_qty }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>Quantity Qualified for EPR Liability (MT)</label>
+                                                <input type="number" step="0.01" name="epr_qty" class="form-control" value="{{ vehicle.epr_qty }}" readonly>
+                                            </div>
+                                            <div class="col-md-6 mt-3">
+                                                <label>
+                                                    Tentative EPR Target (MT) for FY {{year|add_15_years  }}
+                                                    
+                                                </label>
+                                                <input type="number" step="0.01" name="epr_target" class="form-control tentative-epr-output" readonly value="{{ vehicle.epr_target }}">
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                                
+                                <div class="bg-info-subtle border-1 rounded-2 p-3 fs-5 fw-bold d-flex justify-content-between mt-4">
+                                    {% with meta=metadata.transport|dict_get:year %}
+                                        <div class="col-md-5 mb-2">
+                                            <label class="form-label" for="total_epr_qty">
+                                                Total Tentative EPR Target  for FY {{year|add_15_years  }}
+                                            </label>
+                                            <input type="number" class="form-control" value="{{ meta.epr_target|default:'' }}" readonly>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label required" for="ca_cert">
+                                                CA Certificate 
+                                            </label><br>
+                                            {% if meta.ca_certificate %}
+                                                <a href="{% url 'protected_file' meta.ca_certificate.name %}" target="_blank">View Uploaded File</a>
+                                            {% else %}
+                                                <span class="text-muted">No certificate uploaded</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endwith %}
+                                </div>
+                                
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade p-4 card" id="declaration-tab-pane" role="tabpanel" aria-labelledby="declaration-tab">
+        <div id="declarationForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Annual turnover and Declaration</h5>
+            </div>
+            <form action="#" method="post" enctype="multipart/form-data" id="declarationForm" class="mx-4">
+                                {% csrf_token %}
+                                    <div class="d-flex mb-4">
+                                        <h5>Annual turnover(in Crores, INR) 2023-2024 <span class="text-danger">*</span></h5>
+                                        <input type="number" name="turnover_23_24" id="turnover_23_24" class="form-control w-25 mx-5 non-int" step="0.01" value="{{ declaration.turnover_23_24 }}" readonly>
+                                        {% if declaration.ca_certificate_23_24 %}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    CA Certificate
+                                                    <a href="{% url 'protected_file' declaration.ca_certificate_23_24.name %}" target="_blank" class="btn btn-outline-info btn-sm mx-3 px-5 fs-6"><i class="bi bi-file-earmark-text">View Certificate</i> </a>
+                                                </label>
+                                                
+                                            </div>
+                                        {% else %}
+                                            <div class=" mb-3">
+                                                <label class="form-label fw-bold">
+                                                    No CA Certificate uploaded
+                                                </label>
+                                                
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex mb-4">
+                                        <h5>Annual turnover(in Crores, INR) 2024-2025 <span class="text-danger">*</span> </h5>
+                                        <input type="number" name="turnover_24_25" id="turnover_24_25" class="form-control w-25 mx-5 non-int" step="0.01" value="{{ declaration.turnover_24_25 }}" readonly>
+                                        {% if declaration.ca_certificate_24_25 %}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    CA Certificate
+                                                    <a href="{% url 'protected_file' declaration.ca_certificate_24_25.name %}" target="_blank" class="btn btn-outline-info btn-sm mx-3 px-5 fs-6"><i class="bi bi-file-earmark-text">View Certificate</i> </a>
+                                                </label>
+                                                
+                                            </div>
+                                        {% else %}
+                                            <div class=" mb-3">
+                                                <label class="form-label fw-bold">
+                                                    No CA Certificate Uploaded<span class="text-danger">*</span>
+                                                </label>
+                                                
+                                            </div>
+                                        {% endif %}
+                                    
+                                    </div>
+                                
+                                <div class="mb-4">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            Undertaking
+                                            <a href="{% url 'protected_file' declaration.undertaking_file.name %}" target="_blank" class="btn btn-outline-info btn-sm mx-3 px-5 fs-6"><i class="bi bi-file-earmark-text">View Undertaking </i></a>
+                                        </label>
+                                        
+                                    </div>
+                                    
+                                </div>
+
+                        
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input border border-4 border-dark no-edit" type="checkbox" id="declarationCheckbox" name="declarationCheckbox" {% if declaration.declaration %}checked{% endif %}>
+                                    <label class="form-check-label" for="declaration">
+                                        I <strong>{{user.authorized_person_name}}</strong> on behalf of <strong>{{user.company_name}}</strong> hereby declares that the information furnished is true, complete and correct to the best of my knowledge and belief. I understand that in the event of my information being found false or incorrect at any stage, my registration shall be liable to be cancelled without notice or any compensation in lieu thereof.
+                                    </label>
+                                </div>
+                    
+                                <!-- <div class="d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-info" id="saveDeclaration" disabled>Save and Next</button>
+                                </div> -->
+                            </form>
+        </div>
+    </div>
+
+    <div class="tab-pane fade p-4 card" id="payment-tab-pane" role="tabpanel" aria-labelledby="payment-tab">
+        <div id="paymentForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Payment Details</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S. No.</th>
+                            <th>Financial Year</th>
+                            <!-- <th>Unit</th> -->
+                            <th>Annual Turnover (in Crores, INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1.</td>
+                            <td>2023-24</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover22">{{ declaration.turnover_23_24 }}</td>
+                        </tr>
+                        <tr>
+                            <td>2.</td>
+                            <td>2024-25</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover23">{{ declaration.turnover_24_25 }}</td>
+                        </tr>
+                        
+                        
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Total Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_total_turnover">{{ total_turnover }} </td>
+                        </tr>
+
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Average Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_average_turnover">{{ average_turnover|floatformat:2 }}</td>
+                        </tr>
+
+                        <tr class="fw-bold text-success">
+                            <td colspan="2">Registration Fees Amount (INR)</td>
+                            <td id="payment_reg_fee">₹{{ registration_fee|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- Payment Slab -->
+            <h5 class="mt-5 fs-3 text-info text-center mb-4">REGISTRATION FEE STRUCTURE</h5>
+
+            {% if general.user_type == "Producer" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for Producers</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Annual Turn Over</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in producer_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            {% if general.user_type == "Rvsf" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for RVSFs</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Capacity of RVSF Unit (No. ELVs/Year)</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in rvsf_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            {% if all_transactions %}
+                {% for txn in all_transactions %}
+                    <div class="payment-card p-3 mb-3 rounded shadow-sm d-flex justify-content-between align-items-center" style="background: #f8f9fa;">
+                        
+                        <form method="post" action="{% url 'payment_receipt_admin' %}" target="_blank" class="d-flex align-items-center w-100">
+                            {% csrf_token %}
+                            <input type="hidden" name="order_id" value="{{ txn.order_id }}">
+                            <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+
+                            <div class="me-auto">
+                                <span class="fw-bold" style="font-size: 1.1rem;">
+                                    Payment {{ forloop.counter }}:
+                                    <span class="text-info">₹{{ txn.amount_initiated|intcomma }}</span>
+                                </span>
+                                <br>
+                                <small class="text-muted" style="font-size: 0.95rem;">
+                                    {{ txn.ru_date|date:"d M Y" }}
+                                </small>
+                            </div>
+
+                            <button type="submit" class="btn btn-info px-4 py-2">
+                                {% if txn.additional_registration_fee and txn.additional_registration_fee > 0 %}
+                                    View Additional Receipt
+                                {% else %}
+                                    View Initial Receipt
+                                {% endif %}
+                            </button>
+                        </form>
+
+                    </div>
+                {% endfor %}
+            {% else %}
+                <span class="text-muted" style="font-size: 1.1rem;">No payment receipts available</span>
+            {% endif %}
+            
+            <!-- <form method="post" action="{% url 'payment_receipt_admin'  %}" target="_blank">
+                {% csrf_token %}
+                <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-info">View Receipt</button>
+                </div>
+            </form> -->
+        </div>
+    </div>
+
+    <div class="tab-pane fade p-4 card" id="comment-tab-pane" role="tabpanel" aria-labelledby="comment-tab">
+        <div id="commentForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"><i class="bi bi-building me-2"></i>Comments</h5>
+            </div>
+
+            
+            
+                {% if general.status > 0 %}
+                    <div class="mb-4">
+                        <!-- <h5 class="fw-bold text-dark"><i class="bi bi-building me-2"></i>{{ general.company_name }}</h5> -->
+
+                        {% with noting_dict|dictkey:general.id as notings %}
+                            {% if notings %}
+                                <div class="timeline">
+                                {% for note in notings %}
+                                <div class="card mb-4 shadow-sm border-start border-4 border-info">
+                                    <div class="card-body">
+                                        <!-- Top: From & To -->
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div>
+                                                <h5 class="mb-0 text-primary">
+                                                    <i class="bi bi-person-fill me-1"></i>
+                                                    From:
+                                                    {% if note.forwarded_from %}
+                                                        {{ user_dict|dictkey:note.forwarded_from|dictkey:"name" }}
+                                                        <span class="badge bg-info ms-1">{{ user_dict|dictkey:note.forwarded_from|dictkey:"role_name" }}</span>
+                                                    {% else %}
+                                                        User
+                                                    {% endif %}
+                                                </h5>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0 text-success">
+                                                    <i class="bi bi-person-check-fill me-1"></i>
+                                                    To:
+                                                    {% if note.forwarded_to %}
+                                                        {{ user_dict|dictkey:note.forwarded_to|dictkey:"name" }}
+                                                        <span class="badge bg-success ms-1">{{ user_dict|dictkey:note.forwarded_to|dictkey:"role_name" }}</span>
+                                                    {% else %}
+                                                        User
+                                                    {% endif %}
+                                                </h5>
+                                            </div>
+                                        </div>
+
+                                        <!-- Comment -->
+                                        <blockquote class="blockquote mb-3 ps-2 border-start border-3 border-secondary">
+                                            <p class="mb-0"><i class="bi bi-chat-left-text me-2 text-secondary"></i>{{ note.comment }}</p>
+                                        </blockquote>
+
+                                        <!-- Timestamp -->
+                                        <div class="text-end">
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                {{ note.forwarded_at|date:"d M Y, H:i" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            {% else %}
+                                <p class="text-muted fst-italic">No comments for this producer.</p>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                {% endif %}
+            
+        </div>
+    </div>
+
+    {% include 'admin/checklist.html' %}
+    {% if general.status == 5 %}
+        <div class="status-stamp approved mt-3">APPROVED</div>
+    {% elif general.status == 6 %}
+        <div class="status-stamp certificate mt-3">CERTIFICATE GRANTED</div>
+    {% elif general.status == 7 %}
+        <div class="status-stamp rejected mt-3">REJECTED</div>
+    {% else %}
+        {% if not request.path|slice:":21" == "/cpcb/producers/total" %}
+            <form id="forwardForm" method="POST" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+                <div class="card p-4">
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment <span class="text-danger"> *</span> </label>
+                        <textarea name="comment" id="comment" rows="4" class="form-control" placeholder="Enter your comment here..." required></textarea>
+                    </div>
+
+                
+
+                    {% if officer.division == '1' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="user">Back to User</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                                    {% if ro.division == '2' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                            <!-- <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                            
+                                    {% if ro.division == '2' %}
+                                        <option value="{{ ro.id }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select> -->
+                    </div>
+
+                    {% endif %}
+
+                    {% if officer.division == '2' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="ms_cpcb">MS-CPCB</option>
+                                <option value="user">Back to User</option>
+                            </select>
+                        </div>
+            
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                                    {% if ro.division != '2' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% endif %}
+                    
+
+                    {% if officer.division == '4' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="dh">Back to DH</option>
+                                <option value="user">Back to User</option>
+                            </select>
+                        </div>
+            
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                            
+                                    {% if ro.division == '5' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% endif %}
+
+                    {% if officer.division == '5' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="dh">Back to DH</option>
+                            </select>
+                        </div>
+            
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                            
+                                    {% if ro.division == '4' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% endif %}
+
+                    {% if officer.division != '1' %}
+                        <button type="submit" name="submit_noting" class="btn btn-info p-2 rounded-3 mt-2" style="width: 10%;">Submit</button>
+                    {% else %}
+                        
+                            <div class="d-flex justify-content-between mt-5">
+                                <button type="submit" name="submit_noting" class="btn btn-info p-2 rounded-3 mt-2" style="width: 10%;">Submit</button>
+                                <button type="submit" name="approved" class="btn btn-success p-2 rounded-3 mt-2" style="width: 10%;">Approve</button>
+                                <button type="submit" name="rejected" class="btn btn-danger p-2 rounded-3 mt-2" style="width: 10%;">Reject</button>
+                            </div>
+                        
+                    {% endif %}
+
+                </div>
+            </form>
+        {% endif %}
+    {% endif %}
+
+
+</div>
+
+
+<script>
+    const commentBox = document.getElementById("comment");
+    const storageKey = "auto_saved_comment_{{ general.id }}";
+
+    // Load saved comment on page load
+    document.addEventListener("DOMContentLoaded", function() {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            commentBox.value = saved;
+        }
+    });
+
+    // Auto-save comment while typing
+    commentBox.addEventListener("input", function () {
+        localStorage.setItem(storageKey, commentBox.value);
+    });
+
+    // Clear storage after successful submit
+    document.getElementById("forwardForm").addEventListener("submit", function () {
+        localStorage.removeItem(storageKey);
+    });
+</script>
+
+
+<script>
+document.getElementById('forwardForm').addEventListener('submit', function (e) {
+    const submitButton = e.submitter?.name || '';
+    const forwardedTo = document.getElementById('forwarded_to')?.value || '';
+    // const selectedDivision = document.getElementById('id_division')?.value || '';
+    const officerSelect = document.getElementById('id_division');
+    const selectedOption = officerSelect.options[officerSelect.selectedIndex];
+    const selectedOfficerId = selectedOption.value;
+    const selectedDivision = selectedOption.getAttribute('data-division');
+    const currentDivision = parseInt("{{ officer.division }}");
+
+    // Define authority hierarchy (higher number = lower authority)
+    const hierarchy = {
+        '1': 1,  // ms_cpcb
+        '2': 2,  // dh
+        '4': 4,  // ro
+        '5': 5   // do
+    };
+
+    const forwardedDivisionLevel = hierarchy[selectedDivision] || 0;
+    const currentDivisionLevel = hierarchy[currentDivision] || 0;
+    // alert(forwardedDivisionLevel)
+    // alert(currentDivisionLevel)
+
+    // Determine if forwarding to a higher authority
+    const isForwardingUp = forwardedDivisionLevel < currentDivisionLevel;
+
+    // Also run validation if forwarding to ms_cpcb or officers
+    if (isForwardingUp ||  submitButton === 'save_checklist') {
+        let isValid = true;
+        let checklistGroups = new Set();
+        let missingRadios = [];
+        let missingRemarks = [];
+
+        document.querySelectorAll('.checklist-radio').forEach(radio => {
+            checklistGroups.add(radio.name);
+        });
+
+        checklistGroups.forEach(groupName => {
+            const radios = document.querySelectorAll(`input[name="${groupName}"]`);
+            const selectedRadio = [...radios].find(r => r.checked);
+            const remarksField = document.querySelector(`textarea[name="remarks_${groupName}"]`);
+
+            if (!selectedRadio) {
+                isValid = false;
+                missingRadios.push(groupName);
+                radios.forEach(r => {
+                    const label = r.closest('label');
+                    if (label) label.style.color = 'red';
+                });
+
+                if (remarksField) {
+                    remarksField.style.borderColor = 'red';
+                    missingRemarks.push(groupName);
+                }
+
+            } else {
+                radios.forEach(r => {
+                    const label = r.closest('label');
+                    if (label) label.style.color = '';
+                });
+
+                const selectedValue = selectedRadio.value.trim().toLowerCase();
+                if (selectedValue === 'no') {
+                    if (remarksField && !remarksField.value.trim()) {
+                        isValid = false;
+                        remarksField.style.borderColor = 'red';
+                        missingRemarks.push(groupName);
+                    } else if (remarksField) {
+                        remarksField.style.borderColor = '';
+                    }
+                } else {
+                    if (remarksField) {
+                        remarksField.style.borderColor = '';
+                    }
+                }
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            alert(
+                `Please complete all checklist fields before submission.\n` +
+                `Missing Yes/No: ${missingRadios.length}\n` +
+                `Missing remarks (for "No" responses): ${missingRemarks.length}`
+            );
+        }
+    }
+});
+</script>
+
+
+<script>
+    const forwardedTo = document.getElementById('forwarded_to');
+    const officersBox = document.getElementById('officers_select_box');
+    const officersSelect = document.getElementById('id_division');
+    const form = document.getElementById('forwardForm');
+
+    let clickedButton = null;  // to track which button was clicked
+
+    // Track button clicks
+    document.querySelectorAll('#forwardForm button[type="submit"]').forEach(button => {
+        button.addEventListener('click', function () {
+            clickedButton = this.name;
+        });
+    });
+
+    // document.querySelectorAll('#forwardForm button[type="submit"]').forEach(btn => btn.disabled = true);
+
+    // Show/hide officer select based on dropdown
+    forwardedTo?.addEventListener('change', function () {
+        if (this.value === 'officers') {
+            officersBox.classList.remove('d-none');
+            officersSelect?.setAttribute('required', 'required');
+        } else {
+            officersBox.classList.add('d-none');
+            officersSelect?.removeAttribute('required');
+            officersSelect.value = '';  // reset selection when hidden
+        }
+    });
+
+    // Main form submission logic
+    form.addEventListener('submit', function (e) {
+        if (clickedButton === 'approved' || clickedButton === 'rejected') {
+            // Remove required attributes if approving or rejecting
+            forwardedTo?.removeAttribute('required');
+            officersSelect?.removeAttribute('required');
+        }
+
+        // Let HTML5 handle form validation only if not approve/reject
+        if ((clickedButton !== 'approved' && clickedButton !== 'rejected') && !form.checkValidity()) {
+            e.preventDefault(); // block form submission
+            form.classList.add('was-validated');
+            alert('Please fill comment and officers.');
+        }
+    });
+</script>
+
+
+<script>
+function toggleSection(id, header) {
+    const section = document.getElementById(id);
+    const icon = header.querySelector('.toggle-icon i');
+
+    // Toggle collapse class
+    section.classList.toggle('collapse');
+
+    // Toggle icon direction
+    if (section.classList.contains('collapse')) {
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-right');
+    } else {
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+
+function toggleSection(id, headerElement) {
+    const section = document.getElementById(id);
+    const icon = headerElement.querySelector('.toggle-icon i');
+    if (section.classList.contains('show')) {
+        section.classList.remove('show');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-right');
+    } else {
+        section.classList.add('show');
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+</script>
+
+
+{% endblock %}

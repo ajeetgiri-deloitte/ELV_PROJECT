@@ -1,0 +1,172 @@
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #495057;
+            /* padding: 20px; */
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #0a96a8;
+            font-weight: 600;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0f7fc;
+        }
+
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            background-color: #e0f7fc;
+            color: #0a96a8;
+            font-weight: 600;
+            padding: 12px 15px;
+            border-bottom: 1px solid #cef1f7;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .info-value {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 10px 15px;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+        }
+
+        .document-link {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .document-link:hover {
+            text-decoration: underline;
+            color: #0a58ca;
+        }
+
+        .document-link i {
+            margin-right: 5px;
+        }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .table th {
+            background-color: #e0f7fc;
+            color: #0a96a8;
+            font-weight: 600;
+            padding: 12px 15px;
+        }
+
+        .table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        .table-light {
+            background-color: #e0f7fc;
+        }
+
+        .btn-primary {
+            background-color: #0dcaf0;
+            border-color: #0dcaf0;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0ba9c9;
+            border-color: #0ba9c9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3);
+        }
+
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            background-color: #e0f7fc;
+            border-bottom: 1px solid #cef1f7;
+            padding: 15px 20px;
+        }
+
+        .modal-title {
+            color: #0a96a8;
+            font-weight: 600;
+        }
+
+        #mapid {
+            border-radius: 8px;
+            background-color: #e0f7fc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a96a8;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+            }
+        }

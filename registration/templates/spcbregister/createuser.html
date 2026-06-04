@@ -1,0 +1,223 @@
+{% extends 'layouts/main.html' %}
+
+{% load static %}
+
+{% block content %}
+    <div class="page-inner mb-5">
+        <a href="{% url 'admin_dashboard' %}" class="text-info text-decoration-none">
+            <i class="icon-home fs-4"></i>
+        </a>
+        <i class="breadcrumbs icon-arrow-right fs-6 mx-4"></i>
+    
+        <span class="fs-5">Create SPCB User</span>
+    </div>
+    <div class="card mx-5">
+        <!-- Success Message Popup -->
+        {% if success_message %}
+            <div id="success-popup" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <strong>Success!</strong> {{ success_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+        
+        {% if error_message %}
+            <div id="error" class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                <strong>Error!</strong> {{ error_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        <div class="page-inner p-4 border border-2 border-info rounded-3">
+            <div style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Create New User</h5>
+            </div>
+            <hr>
+            
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Success and Error Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row mt-4">
+                <!-- Username -->
+                
+                <div class="col-md-4 mb-3">
+                    <label for="id_auth_email" class="form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email" name="auth_email" id="id_auth_email" class="form-control" placeholder="Enter Email" required>
+                </div>
+                <!-- Password -->
+                <!-- <div class="col-md-4 mb-3">
+                    <label for="id_password" class="form-label">Password <span class="text-danger">*</span></label>
+                    <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter Password" required>
+                </div> -->
+
+                <!-- Mobile Number -->
+                <div class="col-md-4 mb-3">
+                    <label for="id_auth_mobile" class="form-label">Mobile No. <span class="text-danger">*</span></label>
+                    <input type="text" name="auth_mobile" id="id_auth_mobile" pattern="\d{10}" maxlength="10" class="form-control" placeholder="Enter 10-digit Mobile No" required>
+                </div>
+            
+                
+
+                <!-- Officer Name -->
+                <div class="col-md-4 mb-3">
+                    <label for="id_officer_name" class="form-label">Officer Name <span class="text-danger">*</span></label>
+                    <input type="text" name="OfficerName" id="id_officer_name" class="form-control" placeholder="Enter Officer Name" required>
+                </div>
+
+                <!-- Designation -->
+                <div class="col-md-4 mb-3">
+                    <label for="id_designation" class="form-label">Designation <span class="text-danger">*</span></label>
+                    <input type="text" name="officerDesignation" id="id_designation" class="form-control" placeholder="Enter Designation" required>
+                </div>
+            
+                <!-- Role Access -->
+                <div class="col-md-4 mb-3">
+                    <label for="id_role_access" class="form-label">Role Access <span class="text-danger">*</span></label>
+                    <select name="RoleAccess" id="id_role_access" class="form-select" required>
+                        <option  value="" selected disabled>Select Role Access</option>
+                        {% for role in roles %}
+                            <option class="text-black" value="{{ role.id }}">{{ role.Rolename }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- State -->
+                <div class="col-md-4 mb-3">
+                    <label for="state" class="form-label">State <span class="text-danger">*</span></label>
+                    <select name="State_id" id="state" class="form-select" required>
+                        <option  value="" selected disabled>Select State/UT</option>
+                        {% for state in states %}
+                            <option class="text-black" value="{{ state.state_id }}">{{ state.state_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- District -->
+                <div class="col-md-4 mb-3">
+                    <label for="district" class="form-label">District <span class="text-danger">*</span></label>
+                    <select name="District_id" id="district" class="form-select" required>
+                        <option  value="" selected disabled>Select District</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Captcha -->
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Captcha</label>
+                    <div class="d-flex align-items-center">
+                        <div id="captcha-container" class="me-2">{{ form.captcha }}</div>
+                        <button type="button" id="refresh_captcha" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    {% for error in form.captcha.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Hidden Staff Field -->
+            <input type="hidden" name="is_staff" value="True">
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-info mt-3">Create User</button>
+        </form>
+
+        </div>
+    </div>
+
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+ <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+
+<script>
+    // Function to fade out alerts smoothly
+    function fadeOutAlert(id, timeout = 3000) {
+        setTimeout(function() {
+            let alertBox = document.getElementById(id);
+            if (alertBox) {
+                alertBox.classList.add('fade');
+                setTimeout(() => alertBox.style.display = 'none', 500); // Ensures smooth fade-out
+            }
+        }, timeout);
+    }
+
+    // Apply auto-hide on alerts
+    if (document.getElementById('success-popup')) fadeOutAlert('success-popup', 3000);
+    if (document.getElementById('error')) fadeOutAlert('error', 5000);
+    if (document.getElementById('error-popup')) fadeOutAlert('error-popup', 6000);
+</script>
+
+
+<script>
+    document.getElementById('refresh_captcha').addEventListener('click', function() {
+        
+        fetch("{% url 'refresh_captcha' %}")
+            .then(response => response.json())
+            .then(data => {
+                // alert(data.captcha_html);
+                document.getElementById('captcha-container').innerHTML = data.captcha_html;
+            })
+            .catch(error => console.error('Error refreshing captcha:', error));
+    });
+</script>
+
+
+    <script>
+        $(document).ready(function () {
+            // Handle state change manually by user
+            $('#state').change(function () {
+                var stateId = $(this).val();
+                if (stateId) {
+                    $.ajax({
+                        url: "{% url 'load_districts' %}",
+                        data: { 'state_id': stateId },
+                        success: function (data) {
+                            console.log("Districts loaded:", data);
+                            $('#district').empty().append('<option selected disabled>Select District</option>');
+                            $.each(data, function (index, district) {
+                                $('#district').append('<option value="' + district.city_id + '">' + district.city_name + '</option>');
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Define a safe pattern: A-Z, a-z, 0-9, space, -, _, ., /
+    const safePattern = /[^A-Za-z0-9\s\-_,.\/@]/g;
+
+    // Apply to all input and textarea fields
+    document.querySelectorAll("input, textarea").forEach(field => {
+        field.addEventListener("input", function () {
+            // Remove unwanted characters
+            // For email field, allow '@' too
+            if (field.type === "email") {
+                this.value = this.value.replace(/[^A-Za-z0-9@._\-]/g, '');
+            } else {
+                this.value = this.value.replace(safePattern, '');
+            }
+        });
+    });
+});
+</script>
+
+<script>
+    document.querySelector("input[name='auth_mobile']").addEventListener("input", function () {
+    this.value = this.value.replace(/[^0-9]/g, "").slice(0, 10);
+});
+
+</script>
+
+{% endblock %}

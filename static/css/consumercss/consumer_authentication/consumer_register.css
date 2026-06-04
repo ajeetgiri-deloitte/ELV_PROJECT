@@ -1,0 +1,104 @@
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+    background: linear-gradient(to right, #3976a1, #4a339e);
+    color: white;
+    text-align: center;
+}
+
+.card-header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.hidden-field {
+    visibility: hidden;  /* Instead of display: none */
+    height: 0;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    color: #2A6A8E;
+    border-bottom: 3px solid #F4A261;
+    /* display: inline-block; */
+    padding-bottom: 8px;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2A6A8E;
+    font-size: 0.95rem;
+}
+
+.required::after {
+    content: " *";
+    color: #D9534F;
+    font-weight: bold;
+}
+
+.form-control, .form-select {
+    border: 2px solid #2A6A8E;
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #F4A261;
+    box-shadow: 0 0 8px rgba(244, 162, 97, 0.4);
+    outline: none;
+}
+
+.form-control[readonly] {
+    background-color: #e9ecef;
+    opacity: 0.8;
+}
+
+.submit-btn {
+    background: linear-gradient(90deg, #2A6A8E, #1F4D6A);
+    border: none;
+    padding: 12px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(42, 106, 142, 0.3);
+}
+
+.submit-btn:hover {
+    background: linear-gradient(90deg, #1F4D6A, #143B54);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(42, 106, 142, 0.5);
+}
+
+.input-group-text {
+    background-color: #2A6A8E;
+    color: white;
+    border: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 20px;
+    }
+    .submit-btn {
+        width: 100%;
+    }
+}

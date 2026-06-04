@@ -1,0 +1,60 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Launching BillDesk...</title>
+  <link href="https://uat1.billdesk.com/merchant-uat/sdk/dist/billdesksdk/billdesksdk.css" rel="stylesheet" />
+</head>
+<body>
+  <div id="spinner" style="display: block;">Launching BillDesk SDK...</div>
+
+  <!-- SDK -->
+  <script type="module" src="https://uat1.billdesk.com/merchant-uat/sdk/dist/billdesksdk/billdesksdk.esm.js"></script>
+  <script nomodule src="https://uat1.billdesk.com/merchant-uat/sdk/dist/billdesksdk.js"></script>
+
+<script>
+  const responseHandler = function (response) {
+    console.log("Callback received status:", response.status);
+    if (response.status === 200) {
+      const encodedres = btoa(JSON.stringify(response));
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '{{ return_url }}';
+
+      
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'transaction_response';
+      input.value = encodedres;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    } else if (response.status === 111) {
+      // User closed the modal
+      window.location.href = "/producer/";  // 🔁 Redirect here
+    } else {
+      alert("SDK Error");
+    }
+  };
+
+  const config = {
+    responseHandler: responseHandler,
+    flowConfig: {
+      merchantId: "{{ merchant_id }}",
+      bdOrderId: "{{ bd_order_id }}",
+      authToken: "{{ auth_token }}",
+      returnUrl: "{{ return_url }}",
+      childWindow: false,
+    },
+    flowType: "payments"
+  };
+
+  window.onload = function () {
+    document.getElementById("spinner").style.display = "none";
+    window.loadBillDeskSdk(config);
+  };
+</script>
+
+</body>
+</html>

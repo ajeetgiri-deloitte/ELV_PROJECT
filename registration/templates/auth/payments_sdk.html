@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<meta name="description" content="" />
+	<meta name="author" content="" />
+	<link rel="icon" href="index_folder/favicon.ico" />
+	<title>Billdesk SDK</title>
+
+</head>
+
+<body>
+	<div class="container">
+		<div class="jumbotron mt-3">
+			<h1>BillDesk SDK</h1>
+			<a class="btn btn-lg btn-primary" href="#" onclick="loadXMLDoc()" role="button">Launch SDK »</a>
+		</div>
+		<div id="spinner" style="display: none;" class="mt-3 text-center">
+			<div class="spinner-border" role="status" style="width: 5rem; height: 5rem;">
+				<span class="sr-only">Loading...</span>
+			</div>
+		</div>
+		<div id="result" class="jumbotron mt-3">
+		</div>
+	</div>
+	
+	 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+    integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous">
+    </script>
+	 
+	<script type="module" src="https://uat1.billdesk.com/merchant-uat/sdk/dist/billdesksdk/billdesksdk.esm.js"></script>
+	<script nomodule src="https://uat1.billdesk.com/merchant-uat/sdk/dist/billdesksdk.js"></script>
+	<link href="https://uat1.billdesk.com/merchant-uat/sdk/dist/billdesksdk/billdesksdk.css" rel="stylesheet" />
+	<script type="text/javascript">
+
+	function hideSpinner() {
+		document.getElementById('spinner').style.display = 'none';
+	}
+
+	function showSpinner() {
+		document.getElementById('spinner').style.display = 'block';
+	}
+	var responseHandler = function (response) {
+         	console .log( "callback received status:: " ,response.status)
+         	console .log( "callback received response:: " ,response.txnResponse)
+                    if (response.status == 200) {
+                   var encodedres = btoa(JSON.stringify(response))
+                   $("#encodedres").val(encodedres);
+                   $("#pgresponse").attr("action","https://pay.billdesk.com/web/v1_2/txnresponse");
+                document.pgresponse.submit()
+                    }else  if (response.status == 111) {
+                       alert("Modal Window Closed By User");
+                   }
+                   
+                    else {
+                        alert('Error status apart from above');
+                    }                
+             };
+	
+	var flow_config = {
+		merchantId:"XBIHARGRAS",
+        bdOrderId: "OAHV2CLF6AWJA8QP",
+        authToken: "OToken e744764701a8eaf10fe62d73d1441a69b729a90def8d89637110da304a92acedca3c8ce0f89adccc9e736e399c84070d15bad2da4d21e0847345242b4f526c75df1c03858b4fe1296c45bc015b469480b5f92e9c6c3409dff0de2fbfa4bc7f71f8cf76856d043484393c0c95ba8156ce2ab452420775de9ebd98caf8755a26de2d94677d7e5f8005c5ecb5042cbe91f73ef2b63777fd5d1d38404a.4145535f55415431;aHR0cHM6Ly91YXQxLmJpbGxkZXNrLmNvbS91Mg==",
+		childWindow: false,
+		retryCount: 0,
+		returnUrl: "http://103.221.209.90/consent",
+		//prefs: {payment_categories: ["upi,card,nb"]}
+		
+	};
+	var config = {
+		responseHandler: responseHandler,
+		merchantLogo: "",
+		flowConfig: flow_config,
+		flowType: "payments",
+		themeConfig: {
+			sdkPrimaryColor: "#222222",
+			sdkAccentColor: "#767676",
+			sdkBackgroundColor: "#ffffff",
+			sdkBannerColor: "#ffffff"
+			},
+	};
+	
+	function loadXMLDoc() { 
+		showSpinner();
+		document.getElementById("result").innerHTML = "";
+		var xmlhttp = new XMLHttpRequest();
+		var jsonObj = "";
+		
+		{
+			window.loadBillDeskSdk(config);			
+		};
+	}
+	</script>
+</body>
+
+</html>

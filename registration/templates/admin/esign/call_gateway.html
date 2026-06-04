@@ -1,0 +1,15 @@
+<!-- <form method="POST" action="https://demosignergateway.emsigner.com/" id="esignForm">
+    <input type="hidden" name="EncryptedData" value="{{ encjson }}">
+    <input type="hidden" name="EncryptedKey" value="{{ encsession }}">
+    <input type="hidden" name="EncryptedHash" value="{{ enchashof }}">
+</form>
+<script>document.getElementById("esignForm").submit();</script> -->
+
+<form method="POST" action="https://gateway-core.emsigner.com/Secure/index" id="esignForm">
+	<!-- <form method="POST" action="https://demogateway-core.emsigner.com/Secure/index" id="esignForm"> -->
+    {% csrf_token %}
+    <input type="hidden" name="Parameter1" value="{{ parametersData.Parameter1 }}">
+    <input type="hidden" name="Parameter2" value="{{ parametersData.Parameter2 }}">
+    <input type="hidden" name="Parameter3" value="{{ parametersData.Parameter3 }}">
+</form>
+<script>document.getElementById("esignForm").submit();</script>

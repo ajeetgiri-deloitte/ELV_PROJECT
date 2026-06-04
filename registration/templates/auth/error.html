@@ -1,0 +1,19 @@
+{% load static %}
+
+    <div id="app" class="w-100">
+        <!-- Header -->
+        {% include "layouts/header.html" %}
+
+        <!-- Error Message Section -->
+        <div class="mainsection d-flex justify-content-center align-items-center" style="height: 500px; background: linear-gradient(to right, #1d6799, #3e3070);">
+            <div class="card shadow p-5 text-center" style="max-width: 600px;">
+                <h1 class="text-danger">⚠️ Oops!</h1>
+                <p class="fs-5">{{ error_message }}</p>
+                <a href="{% url 'home' %}" class="btn btn-primary mt-3">Back to Login</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        {% include "layouts/footer.html" %}
+    </div>
+

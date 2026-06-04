@@ -1,0 +1,669 @@
+{% extends 'layouts/main.html' %}
+
+{% block content %}
+    <title>EPR ELV - End-of-Life Vehicles</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- <style>
+
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(to top, #332a50, #26485f);
+            color: white;
+            min-height: 100vh;
+            border-right: 3px solid #1d3749;
+        }
+    
+        .sidebar h4 {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #ffffff;
+            padding-top: 15px;
+        }
+    
+        .sidebar a {
+            display: block;
+            color: #c8d1da;
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+    
+        .sidebar a:hover {
+            background-color: #1d3749;
+            color: white;
+            border-radius: 8px;
+        }
+    
+        .main-content {
+            flex-grow: 1;
+            background-color: #f8f9fa;
+        }
+    
+        /* Navbar styling */
+        .navbar {
+            background: linear-gradient(to left, #332a50, #26485f);
+            color: white;
+            border-bottom: 3px solid #1d3749;
+        }
+    
+        .navbar-nav .nav-link {
+            color: white;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+    
+        .navbar-toggler {
+            border: none;
+        }
+    
+        .navbar-toggler-icon {
+            background-color: white;
+        }
+    
+        #userType {
+            background-color: #332a50;
+            color: white;
+            border: none;
+            padding: 5px 20px;
+            border: 1px solid white;
+            cursor: pointer;
+        }
+    
+        #userType option {
+            background-color: white;
+            color: #26485f;
+        }
+        .nav-link.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .nav-link.locked .fa-lock {
+            margin-left: 5px;
+            font-size: 0.9em;
+        }
+        .nav-link:not(.locked):hover {
+            cursor: pointer;
+        }
+    </style> -->
+
+    <div class="d-flex">
+        <!-- <div class="sidebar p-3">
+            <h4 class="text-center mb-4">EPR ELV <br> (End-of-Life Vehicles)</h4>
+            
+            <a href="{% url 'home' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div> -->
+    
+        <div class="main-content">
+            <!-- Navbar -->
+            <!-- <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="mx-5">
+                                <div>
+                                    <select id="userType" class="form-select mt-1" onchange="redirectBasedOnType()">
+                                        <option value="" disabled selected>Select Type</option>
+                                        {% if '3' in entity_types %}
+                                            <option value="{% url 'producer' %}">Producer</option>
+                                        {% endif %}
+                                        {% if '2' in entity_types %}
+                                            <option value="{% url 'consumer' %}">Bulk Consumer</option>
+                                        {% endif %}
+                                        {% if '1' in entity_types %}
+                                            <option value="{% url 'rvsf' %}">RVSFs</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-bell"></i></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-user-circle"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav> -->
+
+            <div class="mx-2">
+                <div class="page-inner">
+                    <div class="page-header">
+                        <nav class="d-flex my-4 align-items-center">
+                            <a href="{% url 'consumer_dashboard' %}" class="me-4  text-decoration-none text-reset">
+                                <i class="icon-home fs-4"></i>
+                            </a>
+                            <i class="breadcrumbs icon-arrow-right fs-6 me-4"></i>
+                            <h5 class="breadcrumbs fw-bold mb-0">Bulk Consumer</h5>
+                        </nav>
+                    </div>
+                </div>
+                <ul class="nav nav-tabs" id="consumerTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="general-details-tab" data-bs-toggle="tab" data-bs-target="#general-details" type="button" role="tab">General Details</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="vehicle-tab" data-bs-toggle="tab" data-bs-target="#vehicle" type="button" role="tab">
+                            Vehicle Details 
+                            <!-- <i class="fas fa-lock"></i> -->
+                        </button>
+                    </li>
+                </ul>
+
+                
+                <!-- Tab Content -->
+                <div class="tab-content my-4">
+                    <!-- General Details Tab -->
+                    <div class="tab-pane fade show active" id="general-details" >
+                            <div class="card shadow-sm p-4">
+                                <h5 class="section-title text-primary">Entity Details</h5>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="gst_no" class="form-label required">GST Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                            <input type="text" class="form-control" id="gst_no" name="gst_no" value="{{user.gst_no}}" placeholder="Auto Fetched from Registration" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="company_name" class="form-label">Name of the Company</label>
+                                        <input type="text" class="form-control" id="company_name" name="company_name" value="{{user.company_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                    <div class="col-md-4 ">
+                                        <label for="legal_name" class="form-label">Legal Name</label>
+                                        <input type="text" class="form-control" id="legal_name" name="legal_name" value="{{user.legal_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="company_email" class="form-label required">Company Email</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                            <input type="email" class="form-control" id="company_email" name="company_email" value="{{user.company_email}}" placeholder="Auto Fetched from Registration" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="incorporation_date" class="form-label required">Date of Incorporation</label>
+                                        <input type="text" class="form-control" id="incorporation_date" name="incorporation_date" value="{{user.incorporation_date}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="business_category" class="form-label required">Business Category</label>
+                                        <input type="text" class="form-control" id="business_category" name="business_category" value="{{user.business_category}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-12">
+                                        <label for="registered_address" class="form-label required">Registered Address</label>
+                                        <textarea class="form-control" id="registered_address" name="registered_address" rows="2" placeholder="Auto Fetched from Registration" readonly>{{user.registered_address}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="state" class="form-label required">State/UT</label>
+                                        <input type="text" class="form-control" id="state" name="state" placeholder="Auto Fetched from Registration" value="{{state_name}}" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="district" class="form-label required">District</label>
+                                        <input type="text" class="form-control" id="district" name="district" value="{{district_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="pin_code" class="form-label required">Pin Code</label>
+                                        <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{user.pin_code}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="website" class="form-label">Website Address</label>
+                                        <input type="url" class="form-control" id="website" name="website" value="{{user.website|default:''}}" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="pan_no" class="form-label required">Company PAN Number</label>
+                                        <input type="text" class="form-control" id="pan_no" name="pan_no" value="{{user.pan_no}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="tin" class="form-label required">TIN No (Tax Identification Number)</label>
+                                        <input type="text" class="form-control" id="tin" name="tin" value="{{user.tin}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="cin" class="form-label required">CIN (Corporate Identification Number)</label>
+                                        <input type="text" class="form-control" id="cin" name="cin" value="{{user.cin}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+
+                                    <h5 class="section-title text-primary">Authorized Person Details</h5>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="authorized_person_name" class="form-label required">Name of Authorized Person</label>
+                                            <input type="text" class="form-control" id="authorized_person_name" name="authorized_person_name" value="{{user.authorized_person_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="authorized_person_email" class="form-label required">Authorized Person Email</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-envelope"></i></span> 
+                                                <input type="email" class="form-control" id="authorized_person_email" name="authorized_person_email" value="{{user.authorized_person_email}}" placeholder="Auto Fetched from Registration" readonly>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <label for="authorized_person_mobile" class="form-label required">Authorized Person Mobile Number</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                                <input type="text" class="form-control" id="authorized_person_mobile" name="authorized_person_mobile" value="{{user.authorized_person_mobile}}" placeholder="Auto Fetched from Registration" readonly>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="authorized_pan" class="form-label required">PAN No/ Authority Letter</label>
+                                            <input type="text" class="form-control" id="authorized_pan" name="authorized_pan" value="{{user.authorized_person_pan}}" placeholder="Auto Fetched from Registration" readonly>
+                                        </div>
+                                    </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label required" for="doc" class="my-2">Upload Document</label>
+                                        <input type="file" name="doc" id="doc" required>
+                                    </div>
+                                </div>
+                            </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-success" id="saveGeneralDetails" onclick="validateDocument()">Save and Next</button>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Facility Tab -->
+                    <div class="tab-pane fade my-4" id="vehicle">
+                        <div class="card shadow-sm p-4">
+                            <h4 class="mb-3 text-primary">Vehicle Details</h4>
+
+                            <!-- Radio Buttons for Vehicle Type -->
+                            <div class="form-group mb-4">
+                                <label class="fw-bold mb-2">Details of Vehicles in Possession - </label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input" name="vehicle_facility" id="transport" value="Yes" onclick="toggleFacilityDetails(true)">
+                                        <label class="form-check-label" for="transport">Transport</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input" name="vehicle_facility" id="non_transport" value="No" onclick="toggleFacilityDetails(false)" checked>
+                                        <label class="form-check-label" for="non_transport">Non-Transport</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Facility Details Section -->
+                            <div id="facilityDetails" class="collapse mt-4">
+                                
+                                <!-- Vehicle Facility Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered align-middle" id="facilityTable" style="display:none;">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">S. No.</th>
+                                                <th scope="col">Type</th>
+                                                <th scope="col">Fuel Type</th>
+                                                <th scope="col">No. of Vehicles as on 01.04.2025</th>
+                                                <th scope="col">Total No. of Vehicles based on Type</th>
+                                                <th scope="col">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="facilityRows">
+                                            <!-- Rows will be added dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Upload Excel Button -->
+                                <div class="mb-3">
+                                    <label for="vehicleExcel" class="form-label">Upload Excel: Details of each vehicle registration No. and Fitness Validity</label>
+                                    <input type="file" class="form-control" id="vehicleExcel" accept=".xlsx, .xls, .csv">
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#facilityModal">
+                                    <i class="bi bi-plus-circle me-2"></i>Add Details
+                                </button>
+                                <button type="button" class="btn btn-success" id="savevehicle">Save and Next</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal for Adding Vehicle Details -->
+                    <div class="modal" id="facilityModal" tabindex="-1" aria-labelledby="facilityModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg">
+                                <div class="modal-header bg-light border-bottom">
+                                    <h5 class="modal-title text-primary" id="facilityModalLabel">Add Vehicle Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    <form id="facilityForm">
+                                        <!-- Type Dropdown -->
+                                        <div class="mb-3">
+                                            <label for="type" class="form-label required">Type</label>
+                                            <select class="form-select" id="type" required>
+                                                <option value="">Select Type</option>
+                                                <option value="2W">2W</option>
+                                                <option value="3W">3W</option>
+                                                <option value="4W">4W</option>
+                                                <option value="Others">Others</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Fuel Type Input -->
+                                        <div class="mb-3">
+                                            <label for="fuel_type" class="form-label required">Fuel Type</label>
+                                            <input type="text" class="form-control" id="fuel_type" required>
+                                        </div>
+
+                                        <!-- Number of Vehicles Input -->
+                                        <div class="mb-3">
+                                            <label for="vehicle_no" class="form-label required">No. of Vehicles as on 01.04.2025</label>
+                                            <input type="number" class="form-control" id="vehicle_no" min="0" required>
+                                        </div>
+
+                                        <!-- Total Vehicles Input -->
+                                        <div class="mb-4">
+                                            <label for="total_vehicle" class="form-label required">Total No. of Vehicles based on Type</label>
+                                            <input type="number" class="form-control" id="total_vehicle" min="0" required>
+                                        </div>
+
+                                        <!-- Add Detail Button -->
+                                        <button type="button" class="btn btn-primary w-25" onclick="addFacility()">Add Detail</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function redirectBasedOnType() {
+            const selectedUrl = document.getElementById('userType').value;
+            if (selectedUrl) {
+                window.location.href = selectedUrl;
+            }
+        }
+    </script>
+
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = {
+                'general-details': {
+                    next: document.getElementById('vehicle-tab'),
+                    saveBtn: document.getElementById('saveGeneralDetails')
+                },
+                'vehicle': {
+                    next: document.getElementById('procurement-tab'),
+                    saveBtn: document.getElementById('savevehicle')
+                },
+            };
+
+            function validateDocument() {
+                const fileInput = document.getElementById('doc');
+                const allowedExtensions = /(\.pdf|\.docx)$/i;
+
+                if (!fileInput.value) {
+                    alert('Please upload the required document.');
+                    return false;
+                }
+                if (!allowedExtensions.test(fileInput.value)) {
+                    alert('Invalid file type. Please upload a PDF or DOCX file.');
+                    fileInput.value = ''; // Clear invalid input
+                    return false;
+                }
+                return true;
+            }
+
+            // Function to unlock next tab
+            function unlockTab(tabElement) {
+                if (tabElement) {
+                    tabElement.classList.remove('locked');
+                    tabElement.removeAttribute('disabled');
+                    tabElement.querySelector('.fa-lock')?.remove();
+                }
+            }
+
+            // // Store active tab and unlocked tabs in localStorage
+            // const navLinks = document.querySelectorAll('.nav-link');
+            // navLinks.forEach(tab => {
+            //     tab.addEventListener('click', function () {
+            //         localStorage.setItem('activeTab', this.id);
+
+            //         // Store unlocked tabs in localStorage (track those not locked)
+            //         const unlockedTabs = Array.from(document.querySelectorAll('.nav-link:not(.locked)'))
+            //             .map(tab => tab.id);
+            //         localStorage.setItem('unlockedTabs', JSON.stringify(unlockedTabs));
+            //     });
+            // });
+
+            // // Restore active tab and unlocked tabs on page load
+            // const activeTabId = localStorage.getItem('activeTab');
+            // const unlockedTabs = JSON.parse(localStorage.getItem('unlockedTabs')) || [];
+
+            // // Unlock and activate the previously selected tabs
+            // unlockedTabs.forEach(id => {
+            //     const tab = document.getElementById(id);
+            //     if (tab) {
+            //         unlockTab(tab);
+            //     }
+            // });
+
+            // if (activeTabId) {
+            //     const activeTab = document.getElementById(activeTabId);
+            //     if (activeTab) {
+            //         activeTab.click(); // Activate the last active tab
+            //     }
+            // }
+                
+            tabs['general-details'].saveBtn.addEventListener('click', function() {
+                // Validate document only on General Details tab before unlocking the next tab
+                if (validateDocument()) {
+                    unlockTab(tabs['general-details'].next);
+                    tabs['general-details'].next.click(); // Automatically switch to the next tab
+                }
+            });
+
+            tabs['vehicle'].saveBtn.addEventListener('click', function() {
+                unlockTab(tabs['vehicle'].next);
+                tabs['vehicle'].next.click(); // Automatically switch to the next tab
+            });
+
+
+            // Prevent clicking on locked tabs
+            document.querySelectorAll('.nav-link.locked').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    if (this.classList.contains('locked')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
+            });
+        });
+    </script> -->
+
+    <!-- <script>
+        const USER_ID = "{{ user_id }}";
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const storageKey = `unlockedTabs_${USER_ID}`;
+
+            const tabs = {
+                'general-details': {
+                    next: document.getElementById('vehicle-tab'),  // Change this for other user types
+                    saveBtn: document.getElementById('saveGeneralDetails')
+                },
+                'vehicle': {
+                    next: document.getElementById('procurement-tab'),
+                    saveBtn: document.getElementById('savevehicle')
+                },
+                // Add more if needed per role (e.g., 'procurement', 'manufacturing', etc.)
+            };
+
+            function validateDocument() {
+                const fileInput = document.getElementById('doc');
+                const allowedExtensions = /(\.pdf|\.docx)$/i;
+
+                if (!fileInput.value) {
+                    alert('Please upload the required document.');
+                    return false;
+                }
+                if (!allowedExtensions.test(fileInput.value)) {
+                    alert('Invalid file type. Please upload a PDF or DOCX file.');
+                    fileInput.value = '';
+                    return false;
+                }
+                return true;
+            }
+
+            function unlockTab(tabElement) {
+                if (tabElement) {
+                    const tabId = tabElement.id;
+                    tabElement.classList.remove('locked');
+                    tabElement.removeAttribute('disabled');
+                    tabElement.querySelector('.fa-lock')?.remove();
+
+                    let unlockedTabs = JSON.parse(localStorage.getItem(storageKey)) || [];
+                    if (!unlockedTabs.includes(tabId)) {
+                        unlockedTabs.push(tabId);
+                        localStorage.setItem(storageKey, JSON.stringify(unlockedTabs));
+                    }
+                }
+            }
+
+            function restoreUnlockedTabs() {
+                const unlockedTabs = JSON.parse(localStorage.getItem(storageKey)) || [];
+                unlockedTabs.forEach(id => {
+                    const tab = document.getElementById(id);
+                    if (tab) unlockTab(tab);
+                });
+            }
+
+            function blockLockedTabs() {
+                document.querySelectorAll('.nav-link.locked').forEach(tab => {
+                    tab.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+                });
+            }
+
+            // Initialization
+            restoreUnlockedTabs();
+            blockLockedTabs();
+
+            // Button handlers
+            Object.values(tabs).forEach(section => {
+                if (section.saveBtn && section.next) {
+                    section.saveBtn.addEventListener('click', function () {
+                        if (section.saveBtn.id === 'saveGeneralDetails') {
+                            if (!validateDocument()) return;
+                        }
+                        unlockTab(section.next);
+                        section.next.click();
+                    });
+                }
+            });
+        });
+    </script> -->
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userTypeSelect = document.getElementById("userType");
+
+            // Load the selected user type from sessionStorage and set it
+            const selectedType = sessionStorage.getItem("userType");
+
+            if (window.location.pathname === "/dashboard/") {
+                // Reset the dropdown if on the dashboard URL
+                sessionStorage.removeItem("userType");
+                userTypeSelect.value = "";
+            } else if (selectedType) {
+                userTypeSelect.value = selectedType; // Retain the selected value on other pages
+            }
+
+            userTypeSelect.addEventListener("change", function () {
+                const selectedOption = userTypeSelect.options[userTypeSelect.selectedIndex].value;
+                sessionStorage.setItem("userType", selectedOption); // Save selection in sessionStorage
+                if (selectedOption) {
+                    window.location.href = selectedOption; // Redirect to the selected page
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Function to handle facility details dynamically
+    function addFacility() {
+        let type = document.getElementById('type').value;
+        let fuelType = document.getElementById('fuel_type').value;
+        let vehicleNo = document.getElementById('vehicle_no').value;
+        let totalVehicle = document.getElementById('total_vehicle').value;
+
+        if (type && fuelType && vehicleNo && totalVehicle) {
+            let table = document.getElementById('facilityRows');
+            let rowCount = table.rows.length;
+            let row = table.insertRow(rowCount);
+
+            row.insertCell(0).innerText = rowCount + 1;
+            row.insertCell(1).innerText = type;
+            row.insertCell(2).innerText = fuelType;
+            row.insertCell(3).innerText = vehicleNo;
+            row.insertCell(4).innerText = totalVehicle;
+            row.insertCell(5).innerHTML = `<button class="btn btn-danger btn-sm" onclick="removeFacility(this)">Remove</button>`;
+            
+            // Clear the form inputs
+            document.getElementById('facilityForm').reset();
+            document.getElementById('facilityModal').modal('hide');
+        } else {
+            alert("Please fill in all fields.");
+        }
+    }
+
+    // Function to remove facility details row
+    function removeFacility(button) {
+        let row = button.closest("tr");
+        row.remove();
+    }
+
+    // Function to toggle facility details display based on vehicle type selection
+    function toggleFacilityDetails(show) {
+        let facilityDetails = document.getElementById("facilityDetails");
+        let facilityTable = document.getElementById("facilityTable");
+        
+        if (show) {
+            facilityDetails.style.display = "block";
+            facilityTable.style.display = "table";
+        } else {
+            facilityDetails.style.display = "none";
+            facilityTable.style.display = "none";
+        }
+    }
+
+    </script>
+{% endblock %}

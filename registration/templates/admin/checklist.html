@@ -1,0 +1,756 @@
+{% load custom_tags %}
+
+<style>
+    /* Section Header Styling */
+    .section-header {
+        cursor: pointer;
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-header:hover {
+        background-color: #e9ecef;
+    }
+
+    .toggle-icon {
+        font-size: 18px;
+        transition: transform 0.3s ease;
+    }
+
+    .section-content {
+        display: none;
+        padding: 15px;
+    }
+
+    /* Table Styling */
+    .table {
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 5px;
+    }
+
+    .table th, .table td {
+        
+        padding: 10px;
+    }
+
+    /* Section Styling */
+    .section {
+        margin-bottom: 20px;
+    }
+
+    .radio-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .radio-option {
+        margin: 5px 0;
+    }
+</style>
+
+<style>
+
+
+/* Make only disabled + checked radio buttons look bold/dark */
+input[type="radio"]:disabled:checked {
+    filter: brightness(0.3); /* or use grayscale(0.4), contrast(1.2), etc. */
+    accent-color: #0f0d0d;
+}
+</style>
+
+
+{% if not request.path|slice:":21" == "/cpcb/producers/total" %}
+<form method="post" action="{% url 'producer_details' %}" class="card p-4">
+    <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+    <div id="checklist-container">
+        {% csrf_token %}
+        
+        <h2 class="text-info mb-3 ">Checklist</h2>
+        <!-- Sign Up Details Section -->
+        <div class="section" id="signup">
+            <div class="section-header" onclick="toggleChecklist('signup')">
+                <h5 class="m-0 text-info">General Details</h5>
+                <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="section-content">
+                <table class="table table-bordered table-striped">
+                    <thead class="text-info text-center fs-5">
+                        <tr>
+                            <th>Checklist</th>
+                            <th>Provided Details</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_name in section_fields.sign_up_details %}
+                            {% with field=form|get_field_by_name:field_name %}
+                                {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                    <tr>
+                                        <td>{{ field.label_tag }}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 20px;">
+                                                {% for choice_value, choice_label in field.field.choices %}
+                                                    <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                        <input type="radio" name="{{ field_name }}" value="{{ choice_value }}" class="checklist-radio {{ field_name }}-radio"
+                                                            {% if checklist_value == choice_value %}checked{% endif %}>
+                                                        {{ choice_label }}
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% with remarks_field_name='remarks_'|add:field_name %}
+                                                <textarea name="{{ remarks_field_name }}" class="form-control checklist-remarks {{ remarks_field_name }}">{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endwith %}
+                            {% endwith %}
+
+                            
+                                <!-- {% with field=form|get_field_by_name:field_name %}
+                                    <tr>
+                                        <td>{{ field.label_tag }}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 20px;">
+                                                {% for radio in field %}
+                                                    <label style="display: inline-flex; align-items: center; gap: 5px;">
+                                                        {{ radio.tag }} {{ radio.choice_label }}
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% with remarks_field_name='remarks_'|add:field_name %}
+                                                {{ form|get_field_by_name:remarks_field_name }}
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endwith %} -->
+                            
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Manufacturing Facility Section -->
+        <div class="section" id="manufacturing">
+            <div class="section-header" onclick="toggleChecklist('manufacturing')">
+                <h5 class="m-0 text-info">Details of Manufacturing/Assembly Facility</h5>
+                <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="section-content">
+                <table class="table table-bordered table-striped">
+                    <thead class="text-info text-center fs-5">
+                        <tr>
+                            <th>Checklist</th>
+                            <th>Provided Details</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_name in section_fields.manufacturing_facility %}
+                            {% with field=form|get_field_by_name:field_name %}
+                                {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                    <tr>
+                                        <td>{{ field.label_tag }}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 20px;">
+                                                {% for choice_value, choice_label in field.field.choices %}
+                                                    <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                        <input type="radio" name="{{ field_name }}" value="{{ choice_value }}" class="checklist-radio {{ field_name }}-radio"
+                                                            {% if checklist_value == choice_value %}checked{% endif %}>
+                                                        {{ choice_label }}
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% with remarks_field_name='remarks_'|add:field_name %}
+                                                <textarea name="{{ remarks_field_name }}" class="form-control checklist-remarks {{ remarks_field_name }}">{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Details of Procurement/Manufacturing/Imports and sales data Section -->
+        <div class="section" id="details">
+            <div class="section-header" onclick="toggleDetails()">
+                <h5 class="m-0 text-info">Details of Procurement and Sales data</h5>
+                <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+            </div>
+
+            <!-- Transport Vehicles Section -->
+            <div id="transport1" class="section-content" style="display: none;">
+                <div class="section-header" onclick="toggleChecklist('transport1')">
+                    <h5 class="m-0 text-info">Transport Vehicles</h5>
+                    <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+                </div>
+                <div class="section-content">
+                    <table class="table table-bordered table-striped">
+                        <thead class="text-info text-center fs-5">
+                            <tr>
+                                <th>Checklist</th>
+                                <th>Provided Details</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for field_name in section_fields.transport_vehicles %}
+                                {% with field=form|get_field_by_name:field_name %}
+                                    {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                        <tr>
+                                            <td>{{ field.label_tag }}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 20px;">
+                                                    {% for choice_value, choice_label in field.field.choices %}
+                                                        <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                            <input type="radio" name="{{ field_name }}" value="{{ choice_value }}" class="checklist-radio {{ field_name }}-radio"
+                                                                {% if checklist_value == choice_value %}checked{% endif %}>
+                                                            {{ choice_label }}
+                                                        </label>
+                                                    {% endfor %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% with remarks_field_name='remarks_'|add:field_name %}
+                                                    <textarea name="{{ remarks_field_name }}" class="form-control checklist-remarks {{ remarks_field_name }}">{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Non-Transport Vehicles Section -->
+            <div id="nontransport1" class="section-content" style="display: none;">
+                <div class="section-header" onclick="toggleChecklist('nontransport1')">
+                    <h5 class="m-0 text-info">Non-Transport Vehicles</h5>
+                    <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+                </div>
+                <div class="section-content">
+                    <table class="table table-bordered table-striped">
+                        <thead class="text-info text-center fs-5">
+                            <tr>
+                                <th>Checklist</th>
+                                <th>Provided Details</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for field_name in section_fields.non_transport_vehicles %}
+                                {% with field=form|get_field_by_name:field_name %}
+                                    {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                        <tr>
+                                            <td>{{ field.label_tag }}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 20px;">
+                                                    {% for choice_value, choice_label in field.field.choices %}
+                                                        <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                            <input type="radio" name="{{ field_name }}" value="{{ choice_value }}" class="checklist-radio {{ field_name }}-radio"
+                                                                {% if checklist_value == choice_value %}checked{% endif %}>
+                                                            {{ choice_label }}
+                                                        </label>
+                                                    {% endfor %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% with remarks_field_name='remarks_'|add:field_name %}
+                                                    <textarea name="{{ remarks_field_name }}" class="form-control checklist-remarks {{ remarks_field_name }}">{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Annual Turnover Section -->
+        <div class="section" id="turnover">
+            <div class="section-header" onclick="toggleChecklist('turnover')">
+                <h5 class="m-0 text-info">Annual Turnover and Declaration</h5>
+                <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="section-content">
+                <table class="table table-bordered table-striped">
+                    <thead class="text-info text-center fs-5">
+                        <tr>
+                            <th>Checklist</th>
+                            <th>Provided Details</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_name in section_fields.annual_turnover %}
+                            {% with field=form|get_field_by_name:field_name %}
+                                    {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                        <tr>
+                                            <td>{{ field.label_tag }}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 20px;">
+                                                    {% for choice_value, choice_label in field.field.choices %}
+                                                        <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                            <input type="radio" name="{{ field_name }}" value="{{ choice_value }}" class="checklist-radio {{ field_name }}-radio"
+                                                                {% if checklist_value == choice_value %}checked{% endif %}>
+                                                            {{ choice_label }}
+                                                        </label>
+                                                    {% endfor %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% with remarks_field_name='remarks_'|add:field_name %}
+                                                    <textarea name="{{ remarks_field_name }}" class="form-control checklist-remarks {{ remarks_field_name }}">{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                    {% endwith %}
+                                {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Registration Fees Section -->
+        <div class="section" id="payment">
+            <div class="section-header" onclick="toggleChecklist('payment')">
+                <h5 class="m-0 text-info">Registration Fees</h5>
+                <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="section-content">
+                <table class="table table-bordered table-striped">
+                    <thead class="text-info text-center fs-5">
+                        <tr>
+                            <th>Checklist</th>
+                            <th>Provided Details</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_name in section_fields.registration_fee %}
+                            {% with field=form|get_field_by_name:field_name %}
+                                    {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                        <tr>
+                                            <td>{{ field.label_tag }}</td>
+                                            <td>
+                                                <div style="display: flex; gap: 20px;">
+                                                    {% for choice_value, choice_label in field.field.choices %}
+                                                        <label class="radio-label text-dark fw-bold">
+                                                            <input type="radio" name="{{ field_name }}" value="{{ choice_value }}"
+                                                                {% if choice_value == "yes" %}checked{% endif %}
+                                                                disabled>
+                                                            {{ choice_label }}
+                                                        </label>
+                                                    {% endfor %}
+                                                </div>
+
+                                                <input type="hidden" name="{{ field_name }}" value="yes">
+                                                <!-- <div style="display: flex; gap: 20px;">
+                                                    {% for choice_value, choice_label in field.field.choices %}
+                                                        <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                            <input type="radio" name="{{ field_name }}" value="{{ choice_value }}" class="checklist-radio {{ field_name }}-radio"
+                                                                {% if checklist_value == choice_value %}checked{% endif %}>
+                                                            {{ choice_label }}
+                                                        </label>
+                                                    {% endfor %}
+                                                </div> -->
+                                            </td>
+                                            <td>
+                                                {% with remarks_field_name='remarks_'|add:field_name %}
+                                                    <textarea name="{{ remarks_field_name }}" class="form-control checklist-remarks {{ remarks_field_name }}">{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                    {% endwith %}
+                                {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- <button type="submit">Save</button> -->
+    <div class="text-end">
+        <button type="submit" class="btn btn-success rounded-2" name="save_checklist">
+            <i class="bi bi-save"></i> Save
+        </button>
+    </div>
+
+</form>
+{% else %}
+
+<form method="post" action="{% url 'producer_details' %}" class="card p-4">
+    {% csrf_token %}
+    <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+    <h2 class="text-info mb-3 ">Checklist</h2>
+    <!-- Sign Up Details Section -->
+    <div class="section" id="signup">
+        <div class="section-header" onclick="toggleChecklist('signup')">
+            <h5 class="m-0 text-info">General Details</h5>
+            <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="section-content">
+            <table class="table table-bordered table-striped">
+                <thead class="text-info text-center fs-5">
+                    <tr>
+                        <th>Checklist</th>
+                        <th>Provided Details</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field_name in section_fields.sign_up_details %}
+                        {% with field=form|get_field_by_name:field_name %}
+                            {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                <tr>
+                                    <td>{{ field.label_tag }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 20px;">
+                                            {% for choice_value, choice_label in field.field.choices %}
+                                                <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                    <input type="radio" disabled {% if checklist_value == choice_value %}checked{% endif %}>
+                                                    {{ choice_label }}
+                                                </label>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% with remarks_field_name='remarks_'|add:field_name %}
+                                            <textarea class="form-control" readonly>{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                            {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Manufacturing Facility Section -->
+    <div class="section" id="manufacturing">
+        <div class="section-header" onclick="toggleChecklist('manufacturing')">
+            <h5 class="m-0 text-info">Details of Manufacturing/Assembly Facility</h5>
+            <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="section-content">
+            <table class="table table-bordered table-striped">
+                <thead class="text-info text-center fs-5">
+                    <tr>
+                        <th>Checklist</th>
+                        <th>Provided Details</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field_name in section_fields.manufacturing_facility %}
+                        {% with field=form|get_field_by_name:field_name %}
+                            {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                <tr>
+                                    <td>{{ field.label_tag }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 20px;">
+                                            {% for choice_value, choice_label in field.field.choices %}
+                                                <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                    <input type="radio" disabled {% if checklist_value == choice_value %}checked{% endif %}>
+                                                    {{ choice_label }}
+                                                </label>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% with remarks_field_name='remarks_'|add:field_name %}
+                                            <textarea class="form-control" readonly>{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                            {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Details of Procurement/Manufacturing/Imports and sales data Section -->
+    <div class="section" id="details">
+        <div class="section-header" onclick="toggleDetails()">
+            <h5 class="m-0 text-info">Details of Procurement and Sales data</h5>
+            <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+        </div>
+
+        <!-- Transport Vehicles Section -->
+        <div id="transport1" class="section-content" style="display: none;">
+            <div class="section-header" onclick="toggleChecklist('transport1')">
+                <h5 class="m-0 text-info">Transport Vehicles</h5>
+                <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="section-content">
+                <table class="table table-bordered table-striped">
+                    <thead class="text-info text-center fs-5">
+                        <tr>
+                            <th>Checklist</th>
+                            <th>Provided Details</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_name in section_fields.transport_vehicles %}
+                            {% with field=form|get_field_by_name:field_name %}
+                                {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                    <tr>
+                                        <td>{{ field.label_tag }}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 20px;">
+                                                {% for choice_value, choice_label in field.field.choices %}
+                                                    <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                        <input type="radio" disabled {% if checklist_value == choice_value %}checked{% endif %}>
+                                                        {{ choice_label }}
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% with remarks_field_name='remarks_'|add:field_name %}
+                                                <textarea class="form-control" readonly>{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Non-Transport Vehicles Section -->
+        <div id="nontransport1" class="section-content" style="display: none;">
+            <div class="section-header" onclick="toggleChecklist('nontransport1')">
+                <h5 class="m-0 text-info">Non-Transport Vehicles</h5>
+                <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="section-content">
+                <table class="table table-bordered table-striped">
+                    <thead class="text-info text-center fs-5">
+                        <tr>
+                            <th>Checklist</th>
+                            <th>Provided Details</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_name in section_fields.non_transport_vehicles %}
+                            {% with field=form|get_field_by_name:field_name %}
+                                {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                    <tr>
+                                        <td>{{ field.label_tag }}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 20px;">
+                                                {% for choice_value, choice_label in field.field.choices %}
+                                                    <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                        <input type="radio" disabled {% if checklist_value == choice_value %}checked{% endif %}>
+                                                        {{ choice_label }}
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% with remarks_field_name='remarks_'|add:field_name %}
+                                                <textarea class="form-control" readonly>{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Annual Turnover Section -->
+    <div class="section" id="turnover">
+        <div class="section-header" onclick="toggleChecklist('turnover')">
+            <h5 class="m-0 text-info">Annual Turnover and Declaration</h5>
+            <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="section-content">
+            <table class="table table-bordered table-striped">
+                <thead class="text-info text-center fs-5">
+                    <tr>
+                        <th>Checklist</th>
+                        <th>Provided Details</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field_name in section_fields.annual_turnover %}
+                        {% with field=form|get_field_by_name:field_name %}
+                            {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                <tr>
+                                    <td>{{ field.label_tag }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 20px;">
+                                            {% for choice_value, choice_label in field.field.choices %}
+                                                <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                    <input type="radio" disabled {% if checklist_value == choice_value %}checked{% endif %}>
+                                                    {{ choice_label }}
+                                                </label>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% with remarks_field_name='remarks_'|add:field_name %}
+                                            <textarea class="form-control" readonly>{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                            {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- Registration Fees Section -->
+    <div class="section" id="payment">
+        <div class="section-header" onclick="toggleChecklist('payment')">
+            <h5 class="m-0 text-info">Registration Fees</h5>
+            <span class="toggle-icon text-info"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="section-content">
+            <table class="table table-bordered table-striped">
+                <thead class="text-info text-center fs-5">
+                    <tr>
+                        <th>Checklist</th>
+                        <th>Provided Details</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field_name in section_fields.registration_fee %}
+                        {% with field=form|get_field_by_name:field_name %}
+                            {% with checklist_value=checklist|get_checklist_item:field_name %}
+                                <tr>
+                                    <td>{{ field.label_tag }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 20px;">
+                                            {% for choice_value, choice_label in field.field.choices %}
+                                                <label class="radio-label {% if checklist_value == choice_value %}text-dark fw-bold{% endif %}">
+                                                    <input type="radio" disabled {% if checklist_value == choice_value %}checked{% endif %}>
+                                                    {{ choice_label }}
+                                                </label>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% with remarks_field_name='remarks_'|add:field_name %}
+                                            <textarea class="form-control" readonly>{{ checklist|get_checklist_item:remarks_field_name }}</textarea>
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                            {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- <button type="submit">Save</button> -->
+    <!-- <div class="text-end">
+        <button type="submit" class="btn btn-success rounded-2" name="save_checklist">
+            <i class="bi bi-save"></i> Save
+        </button>
+    </div> -->
+
+</form>
+
+{% endif %}
+<script>
+    function toggleDetails() {
+        const transportSection = document.getElementById('transport1');
+        const nonTransportSection = document.getElementById('nontransport1');
+
+        // alert(transportSection.style.display)
+        // alert(nonTransportSection.style.display)
+
+        // Toggle both transport and non-transport sections when clicking the Details header
+        if (transportSection.style.display === 'none' && nonTransportSection.style.display === 'none') {
+            transportSection.style.display = 'block';
+            nonTransportSection.style.display = 'block';
+        } else {
+            transportSection.style.display = 'none';
+            nonTransportSection.style.display = 'none';
+        }
+    }
+
+    function toggleChecklist(id) {
+        const section = document.getElementById(id);
+        const content = section.querySelector(".section-content");
+        const icon = section.querySelector(".toggle-icon");
+
+        content.style.display = content.style.display === "block" ? "none" : "block";
+        icon.innerHTML = content.style.display === "block" ? "<i class='fas fa-chevron-down'></i>" : "<i class='fas fa-chevron-right'></i>";
+
+        // Add the text-info class to the icon element
+        icon.classList.add("text-info");
+    }
+
+
+</script>
+
+<script>
+    function toggleChecklist(id) {
+        const section = document.getElementById(id);
+        const content = section.querySelector(".section-content");
+        const icon = section.querySelector(".toggle-icon i");
+
+        if (content.style.display === "none" || content.style.display === "") {
+            content.style.display = "block";
+            icon.classList.remove("fa-chevron-right");
+            icon.classList.add("fa-chevron-down");
+        } else {
+            content.style.display = "none";
+            icon.classList.remove("fa-chevron-down");
+            icon.classList.add("fa-chevron-right");
+        }
+    }
+</script>
+
+
+
+

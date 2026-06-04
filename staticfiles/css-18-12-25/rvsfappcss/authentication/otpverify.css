@@ -1,0 +1,30 @@
+body {
+  background: #f4f6f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.otp-card {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  padding: 30px;
+  max-width: 400px;
+  width: 100%;
+}
+.otp-input {
+  width: 50px;
+  height: 55px;
+  text-align: center;
+  font-size: 20px;
+  margin: 5px;
+  border-radius: 10px;
+  border: 1px solid #ced4da;
+  transition: all 0.2s ease;
+}
+.otp-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 6px rgba(13, 110, 253, 0.4);
+  outline: none;
+}

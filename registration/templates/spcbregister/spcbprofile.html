@@ -1,0 +1,168 @@
+{% extends 'layouts/main.html' %} 
+{% block content %}
+
+<style>
+.alert-danger {
+    background-color: #ffe5e5;
+    color: #cc0000;
+    border: 1px solid #cc0000;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.alert-success {
+    background-color: #e7f7e7;
+    color: #008000;
+    border: 1px solid #008000;
+    padding: 10px;
+    border-radius: 5px;
+}
+</style>
+
+
+<form action="{% url "updatespcbprofile" %}" method="post">
+    {% csrf_token %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div 
+            class="alert 
+                {% if message.tags == 'error' %}
+                    alert-danger
+                {% elif message.tags == 'success' %}
+                    alert-success
+                {% else %}
+                    alert-info
+                {% endif %}
+                mt-2 p-2 rounded"
+            style="font-weight:500;"
+        >
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+    <div class="row mt-4">
+        <!-- Username -->
+
+        <input type="hidden" name="hid_id" value="{{ profile.id }}">
+        <input type="hidden" name="username" value="{{profile.username}}">
+        
+        <div class="col-md-4 mb-3">
+            <label for="id_auth_email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" name="auth_email" id="id_auth_email" class="form-control" placeholder="Enter Email" required value="{{ profile.auth_email }}">
+        </div>
+        <!-- Password -->
+        <!-- <div class="col-md-4 mb-3">
+            <label for="id_password" class="form-label">Current Password <span class="text-danger">*</span></label>
+            <input type="password" name="current_password" id="id_password" class="form-control" placeholder="Please Enter Current Password" required>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="id_password" class="form-label">New Password <span class="text-danger">*</span></label>
+            <input type="text" name="updatedpassword" id="id_password" class="form-control" placeholder="Please Enter New Password" required>
+        </div> -->
+        
+
+        <!-- Email -->
+        <div class="col-md-4 mb-3">
+            <label for="id_auth_mobile" class="form-label">Mobile No. <span class="text-danger">*</span></label>
+            <input type="text" name="auth_mobile" id="id_auth_mobile" pattern="\d{10}" maxlength="10" class="form-control" value="{{ profile.auth_mobile }}" required>
+        </div>
+
+        <!-- Officer Name -->
+        <div class="col-md-4 mb-3">
+            <label for="id_officer_name" class="form-label">Officer Name <span class="text-danger">*</span></label>
+            <input type="text" name="OfficerName" id="id_officer_name" class="form-control" value="{{ profile.OfficerName }}" required>
+        </div>
+
+        <!-- Designation -->
+        <div class="col-md-4 mb-3">
+            <label for="id_designation" class="form-label">Designation <span class="text-danger">*</span></label>
+            <input type="text" name="officerDesignation" id="id_designation" class="form-control" placeholder="Enter Designation" value="{{ profile.officerDesignation }}" required>
+        </div>
+
+        <!-- Role Access -->
+        <div class="col-md-4 mb-3">
+            <label for="id_role_access" class="form-label">Role Access <span class="text-danger">*</span></label>
+            <select name="RoleAccess" id="id_role_access" class="form-select" required>
+                
+                {% for role in roles %}
+                    <option class="text-black" value="{{ role.id }}">{{ role.Rolename }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- State -->
+        <div class="col-md-4 mb-3">
+            <label for="state" class="form-label">State <span class="text-danger">*</span></label>
+            <input type="text" name="statename" class="form-control" value="{{ statename }}"disabled="disabled" >
+        </div>
+
+        <!-- District -->
+        <div class="col-md-4 mb-3">
+            <label for="district" class="form-label">District <span class="text-danger">*</span></label>
+            <input type="text" name="District_id" class="form-control" value="{{ districtname }}"disabled="disabled" >
+            
+        </div>
+    </div>
+
+    <!-- Captcha -->
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Captcha</label>
+            <div class="d-flex align-items-center">
+                <div id="captcha-container" class="me-2">{{ form.captcha }}</div>
+                <button type="button" id="refresh_captcha" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            {% for error in form.captcha.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Hidden Staff Field -->
+    <input type="hidden" name="is_staff" value="True">
+
+    <!-- Submit -->
+    <button type="submit" class="btn btn-info mt-3">Update Profile</button>
+</form>
+
+
+<script>
+    document.getElementById('refresh_captcha').addEventListener('click', function() {
+        
+        fetch("{% url 'refresh_captcha' %}")
+            .then(response => response.json())
+            .then(data => {
+                // alert(data.captcha_html);
+                document.getElementById('captcha-container').innerHTML = data.captcha_html;
+            })
+            .catch(error => console.error('Error refreshing captcha:', error));
+    });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Define a safe pattern: A-Z, a-z, 0-9, space, -, _, ., /
+    const safePattern = /[^A-Za-z0-9\s\-_,.\/@]/g;
+
+    // Apply to all input and textarea fields
+    document.querySelectorAll("input, textarea").forEach(field => {
+        field.addEventListener("input", function () {
+            // Remove unwanted characters
+            // For email field, allow '@' too
+            if (field.type === "email") {
+                this.value = this.value.replace(/[^A-Za-z0-9@._\-]/g, '');
+            } else {
+                this.value = this.value.replace(safePattern, '');
+            }
+        });
+    });
+});
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,981 @@
+{% extends 'layouts/main.html' %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPR ELV - End-of-Life Vehicles</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- <style>
+        body {
+            
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa; /* Light background for contrast */
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(to top, #332a50, #26485f);
+            color: white;
+            min-height: 100vh;
+            border-right: 3px solid #1d3749;
+        }
+    
+        .sidebar h4 {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #ffffff;
+            padding-top: 15px;
+        }
+    
+        .sidebar a {
+            display: block;
+            color: #c8d1da;
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+    
+        .sidebar a:hover {
+            background-color: #1d3749;
+            color: white;
+            border-radius: 8px;
+        }
+    
+        .main-content {
+            flex-grow: 1;
+            background-color: #f8f9fa;
+        }
+    
+        /* Navbar styling */
+        .navbar {
+            background: linear-gradient(to left, #332a50, #26485f);
+            color: white;
+            border-bottom: 3px solid #1d3749;
+        }
+    
+        .navbar-nav .nav-link {
+            color: white;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+    
+        .navbar-toggler {
+            border: none;
+        }
+    
+        .navbar-toggler-icon {
+            background-color: white;
+        }
+    
+        #userType {
+            background-color: #332a50;
+            color: white;
+            border: none;
+            text-align: center;
+            border: 1px solid white;
+            cursor: pointer;
+        }
+    
+        #userType option {
+            background-color: white;
+            color: #26485f;
+        }
+        .nav-link.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .nav-link.locked .fa-lock {
+            margin-left: 5px;
+            font-size: 0.9em;
+        }
+        .nav-link:not(.locked):hover {
+            cursor: pointer;
+        }
+    </style> -->
+</head>
+<body>
+    <div class="d-flex">
+        <!-- <div class="sidebar p-3">
+            <h4 class="text-center mb-4">EPR ELV <br> (End-of-Life Vehicles)</h4>
+        
+            <a href="{% url 'home' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+     -->
+        <div class="main-content">
+            <!-- Navbar -->
+            <!-- <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    
+                    
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="mx-5">
+                                <div>
+                                    <select id="userType" class="form-select mt-1" onchange="redirectBasedOnType()">
+                                        <option value="" disabled selected>Select Type</option>
+                                        {% if '3' in entity_types %}
+                                            <option value="{% url 'producer' %}">Producer</option>
+                                        {% endif %}
+                                        {% if '2' in entity_types %}
+                                            <option value="{% url 'consumer' %}">Bulk Consumer</option>
+                                        {% endif %}
+                                        {% if '1' in entity_types %}
+                                            <option value="{% url 'rvsf' %}">RVSFs</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-bell"></i></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-user-circle"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav> -->
+
+            <div class="mx-2">
+                <div class="page-inner">
+                    <div class="page-header">
+                        <nav class="d-flex my-4 align-items-center">
+                            <a href="{% url 'rvsf_dashboard' %}" class="me-4  text-decoration-none text-reset">
+                                <i class="icon-home fs-4"></i>
+                            </a>
+                            <i class="breadcrumbs icon-arrow-right fs-6 me-4"></i>
+                            <h5 class="breadcrumbs fw-bold mb-0">RVSFs</h5>
+                        </nav>
+                    </div>
+                </div>
+                
+                <ul class="nav nav-tabs" id="producerTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="general-details-tab" data-bs-toggle="tab" data-bs-target="#general-details" type="button" role="tab">General Details</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link " id="rvsf-doc-tab" data-bs-toggle="tab" data-bs-target="#rvsf-doc" type="button" role="tab" >
+                            RVSFs Related Documents  
+                            <!-- <i class="fas fa-lock"></i> -->
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link " id="rvsf-tab" data-bs-toggle="tab" data-bs-target="#rvsf" type="button" role="tab" >
+                            Details of RVSFs 
+                            <!-- <i class="fas fa-lock"></i> -->
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link " id="waste-cat-tab" data-bs-toggle="tab" data-bs-target="#waste-cat" type="button" role="tab" >
+                            Waste Category Details 
+                            <!-- <i class="fas fa-lock"></i> -->
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content my-4">
+                    <!-- General Details Tab -->
+                    <div class="tab-pane fade show active" id="general-details" >
+                            <div class="card shadow-sm p-4">
+                                <h5 class="section-title text-primary">Entity Details</h5>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <label for="gst_no" class="form-label required">GST Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                            <input type="text" class="form-control" id="gst_no" name="gst_no" value="{{user.gst_no}}" placeholder="Auto Fetched from Registration" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="company_name" class="form-label">Name of the Company</label>
+                                        <input type="text" class="form-control" id="company_name" name="company_name" value="{{user.company_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="incorporation_date" class="form-label required">Date of Incorporation</label>
+                                        <input type="text" class="form-control" id="incorporation_date" name="incorporation_date"value="{{user.incorporation_date}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <label for="business_category" class="form-label required">Business Category</label>
+                                        <input type="text" class="form-control" id="business_category" name="business_category" value="{{user.business_category}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+
+                                    <div class="col-md-8">
+                                        <label for="registered_address" class="form-label required">Registered Address</label>
+                                        <textarea class="form-control" id="registered_address" name="registered_address" rows="2" placeholder="Auto Fetched from Registration" readonly>{{user.registered_address}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="state" class="form-label required">State/UT</label>
+                                        <input type="text" class="form-control" id="state" name="state" value="{{state_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="district" class="form-label required">District</label>
+                                        <input type="text" class="form-control" id="district" name="district" value="{{district_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="pin_code" class="form-label required">Pin Code</label>
+                                        <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{user.pin_code}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="website" class="form-label">Website Address</label>
+                                        <input type="url" class="form-control" id="website" name="website" value="{{user.website|default:''}}" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="pan_no" class="form-label required">Company PAN Number</label>
+                                        <input type="text" class="form-control" id="pan_no" name="pan_no" value="{{user.pan_no}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="tin" class="form-label required">TIN No (Tax Identification Number)</label>
+                                        <input type="text" class="form-control" id="tin" name="tin" value="{{user.tin}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label for="cin" class="form-label required">CIN (Corporate Identification Number)</label>
+                                        <input type="text" class="form-control" id="cin" name="cin" value="{{user.cin}}" placeholder="Auto Fetched from Registration" readonly>
+                                    </div>
+
+                                </div>
+
+                                    <h5 class="section-title text-primary">Authorized Person Details</h5>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="authorized_person_name" class="form-label required">Name of Authorized Person</label>
+                                            <input type="text" class="form-control" id="authorized_person_name" name="authorized_person_name" value="{{user.authorized_person_name}}" placeholder="Auto Fetched from Registration" readonly>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="authorized_person_email" class="form-label required">Authorized Person Email</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-envelope"></i></span> 
+                                                <input type="email" class="form-control" id="authorized_person_email" name="authorized_person_email" value="{{user.authorized_person_email}}" placeholder="Auto Fetched from Registration" readonly>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <label for="authorized_person_mobile" class="form-label required">Authorized Person Mobile Number</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                                <input type="text" class="form-control" id="authorized_person_mobile" name="authorized_person_mobile" value="{{user.authorized_person_mobile}}" placeholder="Auto Fetched from Registration" readonly>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-4">
+                                            <label for="authorized_pan" class="form-label required">PAN No/ Authority Letter</label>
+                                            <input type="text" class="form-control" id="authorized_pan" name="authorized_pan" placeholder="Auto Fetched from Registration" value="{{user.authorized_person_pan}}" readonly>
+                                        </div>
+                                    </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label required" for="doc" class="my-2">Upload Document <span class="text-danger">*</span> </label>
+                                        <input type="file" name="doc" id="doc" required>
+                                    </div>
+                                </div>
+                            </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-success" id="saveGeneralDetails" onclick="validateDocument()">Save and Next</button>
+                        </div>
+                    
+                    </div>
+                    
+
+                    <!-- rvsf-doc Facility Tab -->
+                    <div class="tab-pane fade my-4" id="rvsf-doc">
+                        <div class="card shadow-sm p-4">
+                            <h5 class="section-title text-primary">RVSFs Related Documents</h5>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="consent_validity" class="form-label required">Consent Validity</label>
+                                    <input type="date" class="form-control" id="consent_validity" name="consent_validity" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="consent_certificate" class="form-label required">Upload Consent Validity Certificate</label>
+                                    <input type="file" class="form-control" id="consent_certificate" name="consent_certificate" required>
+                                </div>
+                            </div>
+                    
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="hazardous_validity" class="form-label required">Validity of authorization under rule 6 of the Hazardous Wastes
+                                        (Management and Handling) Rules, 2016</label>
+                                    <input type="date" class="form-control" id="hazardous_validity" name="hazardous_validity" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="authorization_copy" class="form-label required">Copy of Authorization</label>
+                                    <input type="file" class="form-control" id="authorization_copy" name="authorization_copy" required>
+                                </div>
+                            </div>
+                    
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="registration_validity" class="form-label required">Validity of certification of registration with District Industries Centre</label>
+                                    <input type="date" class="form-control" id="registration_validity" name="registration_validity" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="registration_copy" class="form-label required">Copy of Registration</label>
+                                    <input type="file" class="form-control" id="registration_copy" name="registration_copy" required>
+                                </div>
+                            </div>
+                    
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="tsdf_details" class="form-label required">Details of the TSDF Membership</label>
+                                    <textarea class="form-control" id="tsdf_details" name="tsdf_details" rows="3" required></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="membership_copy" class="form-label required">Copy of Membership</label>
+                                    <input type="file" class="form-control" id="membership_copy" name="membership_copy" required>
+                                </div>
+                            </div>
+                    
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="rvsf_video" class="form-label required">Video/Photography of the RVSF</label>
+                                    <input type="file" class="form-control" id="rvsf_video" name="rvsf_video" accept="video/*,image/*" required>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-success" id="saveRvsfDoc">Save and Next</button>
+                        </div>
+                    </div>
+                    
+
+
+                    <!-- rvsf & Import Tab -->
+                    <div class="tab-pane fade py-4 border border-5" id="rvsf">
+                        <div class="mx-3">
+                        <h5 class="section-title text-primary">Registered Vehicle Scrapping Facility (RVSF) Details</h5>
+
+                        <button type="button" class="btn btn-secondary my-3" data-bs-toggle="modal" data-bs-target="#rvsfModal">
+                            <i class="bi bi-plus-circle me-2"></i>Add Vehicle Scrapping Details
+                        </button>
+                        </div>
+                        <div class="card shadow-sm p-4">
+                            <!-- Table to Display Added Entries -->
+                            <table class="border border-5 text-center" id="rvsfTable">
+                                <thead class="table-light text-center border border-5">
+                                    <tr class="border border-4">
+                                        <th rowspan="2" class="border border-4">S. No</th>
+                                        <th rowspan="2" class="border border-4">Category of Vehicle</th>
+                                        <th rowspan="2" class="border border-4">Installed Capacity <br> (No. of vehicles per annum)</th>
+                                        <th colspan="3" class="border border-4">Operating (No. of vehicles per annum)</th>
+                                        <th rowspan="2" class="border border-4">Action</th>
+                                    </tr>
+                                    <tr class="border border-4">
+                                        <th class="border border-4">2022-2023</th>
+                                        <th class="border border-4">2023-2024</th>
+                                        <th class="border border-4">2024-2025</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="border border-4">
+                                    <!-- Dynamic rows will be appended here -->
+                                </tbody>
+                            </table>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn btn-success" id="savervsf">Save and Next</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="rvsfModal" tabindex="-1" aria-labelledby="rvsfModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="rvsfModalLabel">Add Scrapping Facility Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="rvsfForm">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Category of Vehicle</label>
+                                                    <select class="form-select" id="vehicle_category" required>
+                                                        <option value="">Select Category</option>
+                                                        <option value="2W">2W</option>
+                                                        <option value="3W">3W</option>
+                                                        <option value="4W">4W</option>
+                                                        <option value="Others">Others</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Installed capacity (No. of vehicles per annum)</label>
+                                                    <input type="number" class="form-control" id="installed_capacity" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Operating (No. of vehicles per annum) (2022-2023)</label>
+                                                    <input type="number" class="form-control" id="operating_2022" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Operating (No. of vehicles per annum) (2023-2024)</label>
+                                                    <input type="number" class="form-control" id="operating_2023" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Operating (No. of vehicles per annum) (2024-2025)</label>
+                                                    <input type="number" class="form-control" id="operating_2024" required>
+                                                </div>
+                                                <button type="button" class="btn btn-success" onclick="addRVSFDetails()">Add</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+
+                    <!-- Waste Category Tab -->
+                    <div class="tab-pane fade my-4" id="waste-cat">
+                        <div class="card shadow-sm p-4">
+                            <h4 class="text-primary mb-4">Details of the categories of waste recycled/refurbished in the unit/sent to registered entities or reuse, recycling and refurbishing</h4>
+                            
+                            <table class="table table-bordered text-center" id="wasteCatTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>S. No</th>
+                                        <th>Category of Waste</th>
+                                        <th>Quantity of Waste Recycled in RVSF</th>
+                                        <th>Quantity of Waste Recycled/Refurbished by Authorized Recyclers</th>
+                                        <th>Name(s) of Registered Recycler(s)/Refurbisher(s)</th>
+                                        <th>Agreement Details between RVSFs and Registered Recycler(s)/Refurbisher(s)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Used Oil</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Plastic Waste</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>Battery Waste</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>Tyre Waste</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td>E-Waste</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>6</td>
+                                        <td>Other Waste (if any)</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addWasteDataModal">
+                                    Add Data
+                                </button>
+                                <button type="button" class="btn btn-success" id="submit">Proceed to Payment</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add/Edit Sales Data Modal -->
+                    <!-- <div class="modal fade" id="addWasteDataModal" tabindex="-1" aria-labelledby="addWasteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-primary" id="addWasteModalLabel">Add Data</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="wasteDataForm">
+                                        <input type="hidden" id="rowIndex" value="-1">
+
+                                        <div class="row">
+                                            
+                                            <div class="col mb-3">
+                                                <label for="fy" class="form-label">Financial Year (FY)</label>
+                                                <input type="text" class="form-control" id="fy" placeholder="Enter FY" required>
+                                            </div>
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="type" class="form-label">Type</label>
+                                                <select class="form-select" id="type" required>
+                                                    <option value="">Select Type</option>
+                                                    <option value="2W">2W</option>
+                                                    <option value="3W">3W</option>
+                                                    <option value="4W">4W</option>
+                                                    <option value="Others">Others</option>
+                                                </select>
+                                            </div>
+
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="category" class="form-label">Vehicle Category</label>
+                                                <select class="form-select" id="category">
+                                                    <option value="Transport">Transport</option>
+                                                    <option value="Non-Transport">Non-Transport</option>
+                                                </select>
+                                            </div>
+
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="vehicles" class="form-label">Number of Vehicles</label>
+                                                <input type="number" class="form-control" id="vehicles" placeholder="Number of Vehicles" required>
+                                            </div>
+
+                                            <div class=" col-md-12 mb-3">
+                                                <label for="soldData" class="form-label">Sold to Other Producer/Open Market</label>
+                                                <input type="text" class="form-control" id="soldData" placeholder="Enter Sold Data" required>
+                                            </div>
+
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="avgWeight" class="form-label">Average Weight</label>
+                                                <input type="number" class="form-control" id="avgWeight" placeholder="Average Weight" required>
+                                            </div>
+
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="steelWeight" class="form-label">Weight of Steel Used</label>
+                                                <input type="number" class="form-control" id="steelWeight" placeholder="Weight of Steel" required>
+                                            </div>
+
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="total" class="form-label">Total </label>
+                                                <input type="number" class="form-control" id="total" placeholder="Total" required>
+                                            </div>
+
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="eprLiability" class="form-label">Total Tentative EPR Liability</label>
+                                                <input type="number" class="form-control" id="eprLiability" placeholder="Total EPR Liability" required>
+                                            </div>
+
+                                            
+                                            <div class=" col-md-6 mb-3">
+                                                <label for="caCertificate" class="form-label">CA Certificate (PDF)</label>
+                                                <input type="file" class="form-control" id="caCertificate" accept=".pdf" required>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" id="saveSalesData">Save Sales Data</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function toggleFacilityDetails(show) {
+        document.getElementById('facilityDetails').style.display = show ? 'block' : 'none';
+    }
+
+    function addFacilityRow() {
+        const tableBody = document.getElementById('facilityRows');
+        const rowCount = tableBody.rows.length + 1;
+        const row = `<tr>
+            <td>${rowCount}</td>
+            <td><input type="text" class="form-control" placeholder="Enter Name, Address and GST"></td>
+            <td><input type="number" class="form-control" placeholder="Year"></td>
+            <td><input type="text" class="form-control" placeholder="Activity Type"></td>
+            <td><input type="text" class="form-control" placeholder="Current Capacity"></td>
+            <td><button class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+        </tr>`;
+        tableBody.insertAdjacentHTML('beforeend', row);
+    }
+
+    function removeRow(button) {
+        const row = button.closest('tr');
+        row.remove();
+    }
+
+    let facilityCount = 0;
+
+    function addFacility() {
+        // Form validation
+        const form = document.getElementById('facilityForm');
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated'); // Add Bootstrap validation class
+            return; // Exit function if validation fails
+        }
+
+        // Increment facility count
+        facilityCount++;
+        const table = document.getElementById('facilityTable');
+        const tbody = document.getElementById('facilityRows');
+
+        // Show table once data is added
+        table.style.display = 'table';
+
+        // Retrieve input values
+        const nameAddress = document.getElementById('facilityNameAddress').value;
+        const year = document.getElementById('facilityYear').value;
+        const activityType = document.getElementById('facilityActivityType').value;
+        const capacity = document.getElementById('facilityCapacity').value;
+
+        // Add a new row to the table
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${facilityCount}</td>
+            <td>${nameAddress}</td>
+            <td>${year}</td>
+            <td>${activityType}</td>
+            <td>${capacity}</td>
+            <td class="center"><button class="btn btn-danger" onclick="removeFacility(this)"><i class="fas fa-remove"></i></button></td>
+        `;
+        tbody.appendChild(row);
+
+        // Reset form and close the modal
+        form.reset();
+        form.classList.remove('was-validated'); // Reset validation state
+        const modal = bootstrap.Modal.getInstance(document.getElementById('facilityModal'));
+        modal.hide();
+    }
+
+    function removeFacility(button) {
+        button.closest('tr').remove();
+        facilityCount--;
+        if (facilityCount === 0) {
+            document.getElementById('facilityTable').style.display = 'none';
+        }
+    }
+
+</script>
+
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = {
+            'general-details': {
+                next: document.getElementById('rvsf-doc-tab'),
+                saveBtn: document.getElementById('saveGeneralDetails')
+            },
+            'rvsf-doc': {
+                next: document.getElementById('rvsf-tab'),
+                saveBtn: document.getElementById('saveRvsfDoc')
+            },
+            'rvsf': {
+                next: document.getElementById('waste-cat-tab'),
+                saveBtn: document.getElementById('savervsf')
+            }
+        };
+
+        function validateDocument() {
+            const fileInput = document.getElementById('doc');
+            const allowedExtensions = /(\.pdf|\.docx)$/i;
+
+            if (!fileInput.value) {
+                alert('Please upload the required document.');
+                return false;
+            }
+            if (!allowedExtensions.test(fileInput.value)) {
+                alert('Invalid file type. Please upload a PDF or DOCX file.');
+                fileInput.value = ''; // Clear invalid input
+                return false;
+            }
+            return true;
+        }
+
+        // Function to unlock next tab
+        function unlockTab(tabElement) {
+            if (tabElement) {
+                tabElement.classList.remove('locked');
+                tabElement.removeAttribute('disabled');
+                tabElement.querySelector('.fa-lock')?.remove();
+            }
+        }
+
+        // Store active tab and unlocked tabs in localStorage
+        // const navLinks = document.querySelectorAll('.nav-link');
+        // navLinks.forEach(tab => {
+        //     tab.addEventListener('click', function () {
+        //         localStorage.setItem('activeTab', this.id);
+
+        //         // Store unlocked tabs in localStorage (track those not locked)
+        //         const unlockedTabs = Array.from(document.querySelectorAll('.nav-link:not(.locked)'))
+        //             .map(tab => tab.id);
+        //         localStorage.setItem('unlockedTabs', JSON.stringify(unlockedTabs));
+        //     });
+        // });
+
+        // // Restore active tab and unlocked tabs on page load
+        // const activeTabId = localStorage.getItem('activeTab');
+        // const unlockedTabs = JSON.parse(localStorage.getItem('unlockedTabs')) || [];
+
+        // // Unlock and activate the previously selected tabs
+        // unlockedTabs.forEach(id => {
+        //     const tab = document.getElementById(id);
+        //     if (tab) {
+        //         unlockTab(tab);
+        //     }
+        // });
+
+        // if (activeTabId) {
+        //     const activeTab = document.getElementById(activeTabId);
+        //     if (activeTab) {
+        //         activeTab.click(); // Activate the last active tab
+        //     }
+        // }
+            
+        tabs['general-details'].saveBtn.addEventListener('click', function() {
+            // Validate document only on General Details tab before unlocking the next tab
+            if (validateDocument()) {
+                unlockTab(tabs['general-details'].next);
+                tabs['general-details'].next.click(); // Automatically switch to the next tab
+            }
+        });
+
+        tabs['rvsf-doc'].saveBtn.addEventListener('click', function() {
+            unlockTab(tabs['rvsf-doc'].next);
+            tabs['rvsf-doc'].next.click(); // Automatically switch to the next tab
+        });
+
+        tabs['rvsf'].saveBtn.addEventListener('click', function() {
+            unlockTab(tabs['rvsf'].next);
+            tabs['rvsf'].next.click(); // Automatically switch to the next tab
+        });
+
+        // Prevent clicking on locked tabs
+        document.querySelectorAll('.nav-link.locked').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                if (this.classList.contains('locked')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        });
+    });
+</script> -->
+
+<script>
+    const currentUserId = "{{ user_id }}";
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const tabs = {
+        'general-details': {
+            next: document.getElementById('rvsf-doc-tab'),
+            saveBtn: document.getElementById('saveGeneralDetails')
+        },
+        'rvsf-doc': {
+            next: document.getElementById('rvsf-tab'),
+            saveBtn: document.getElementById('saveRvsfDoc')
+        },
+        'rvsf': {
+            next: document.getElementById('waste-cat-tab'),
+            saveBtn: document.getElementById('savervsf')
+        }
+    };
+
+    function unlockTab(tabElement) {
+        if (tabElement) {
+            tabElement.classList.remove('locked');
+            tabElement.removeAttribute('disabled');
+            tabElement.querySelector('.fa-lock')?.remove();
+        }
+    }
+
+    function saveTabProgress(tabId) {
+        let unlockedTabs = JSON.parse(localStorage.getItem(`unlockedTabs_${currentUserId}`)) || [];
+        if (!unlockedTabs.includes(tabId)) {
+            unlockedTabs.push(tabId);
+            localStorage.setItem(`unlockedTabs_${currentUserId}`, JSON.stringify(unlockedTabs));
+        }
+    }
+
+    function restoreUnlockedTabs() {
+        const unlockedTabs = JSON.parse(localStorage.getItem(`unlockedTabs_${currentUserId}`)) || [];
+        unlockedTabs.forEach(id => {
+            const tab = document.getElementById(id);
+            if (tab) unlockTab(tab);
+        });
+    }
+
+    restoreUnlockedTabs();  // Call on page load
+
+    tabs['general-details'].saveBtn.addEventListener('click', function() {
+        if (validateDocument()) {
+            const nextTab = tabs['general-details'].next;
+            unlockTab(nextTab);
+            saveTabProgress(nextTab.id);
+            nextTab.click();
+        }
+    });
+
+    tabs['rvsf-doc'].saveBtn.addEventListener('click', function() {
+        const nextTab = tabs['rvsf-doc'].next;
+        unlockTab(nextTab);
+        saveTabProgress(nextTab.id);
+        nextTab.click();
+    });
+
+    tabs['rvsf'].saveBtn.addEventListener('click', function() {
+        const nextTab = tabs['rvsf'].next;
+        unlockTab(nextTab);
+        saveTabProgress(nextTab.id);
+        nextTab.click();
+    });
+
+    // Prevent locked tab clicks
+    document.querySelectorAll('.nav-link.locked').forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            if (this.classList.contains('locked')) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    });
+
+    function validateDocument() {
+        const fileInput = document.getElementById('doc');
+        const allowedExtensions = /(\.pdf|\.docx)$/i;
+
+        if (!fileInput.value) {
+            alert('Please upload the required document.');
+            return false;
+        }
+        if (!allowedExtensions.test(fileInput.value)) {
+            alert('Invalid file type. Please upload a PDF or DOCX file.');
+            fileInput.value = '';
+            return false;
+        }
+        return true;
+    }
+});
+
+</script>
+
+
+<script>
+    function redirectBasedOnType() {
+        const selectedUrl = document.getElementById('userType').value;
+        if (selectedUrl) {
+            window.location.href = selectedUrl;
+        }
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const userTypeSelect = document.getElementById("userType");
+
+        // Load the selected user type from sessionStorage and set it
+        const selectedType = sessionStorage.getItem("userType");
+
+        if (window.location.pathname === "/dashboard/") {
+            // Reset the dropdown if on the dashboard URL
+            sessionStorage.removeItem("userType");
+            userTypeSelect.value = "";
+        } else if (selectedType) {
+            userTypeSelect.value = selectedType; // Retain the selected value on other pages
+        }
+
+        userTypeSelect.addEventListener("change", function () {
+            const selectedOption = userTypeSelect.options[userTypeSelect.selectedIndex].value;
+            sessionStorage.setItem("userType", selectedOption); // Save selection in sessionStorage
+            if (selectedOption) {
+                window.location.href = selectedOption; // Redirect to the selected page
+            }
+        });
+    });
+</script>
+
+<script>
+    let rowCount = 1; // To track row numbers
+
+    function addRVSFDetails() {
+        let category = document.getElementById("vehicle_category").value;
+        let installedCapacity = document.getElementById("installed_capacity").value;
+        let op2022 = document.getElementById("operating_2022").value;
+        let op2023 = document.getElementById("operating_2023").value;
+        let op2024 = document.getElementById("operating_2024").value;
+
+        if (!category || !installedCapacity || !op2022 || !op2023 || !op2024) {
+            alert("Please fill in all fields before adding.");
+            return;
+        }
+
+        let table = document.getElementById("rvsfTable").getElementsByTagName("tbody")[0];
+        let newRow = table.insertRow();
+
+        newRow.innerHTML = `
+            <td class="border border-4">${rowCount}</td>
+            <td class="border border-4">${category}</td>
+            <td class="border border-4">${installedCapacity}</td>
+            <td class="border border-4">${op2022}</td>
+            <td class="border border-4">${op2023}</td>
+            <td class="border border-4">${op2024}</td>
+            <td class="border border-4"><button class="btn btn-danger btn-sm" onclick="removeRow(this)">Delete</button></td>
+        `;
+
+        rowCount++;
+
+        // Clear modal inputs
+        document.getElementById("rvsfForm").reset();
+
+        // Close modal
+        var modal = new bootstrap.Modal(document.getElementById('rvsfModal'));
+        modal.hide();
+    }
+
+    function removeRow(button) {
+        let row = button.closest("tr");
+        row.remove();
+    }
+</script>
+
+</body>
+</html>
+
+{% endblock %}

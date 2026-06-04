@@ -1,0 +1,519 @@
+{% load static %}
+{% include 'layouts/header.html' %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/generaldetails.css' %}">
+    
+    <style>
+        
+        /* ---------- Page Layout ---------- */
+.page-container {
+    /* min-height: 100vh; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #eef2f7, #f8f9fb);
+    padding: 20px;
+}
+
+/* ---------- Center Card ---------- */
+.form-card {
+    max-width: 900px;
+    /* width: 100%; */
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+}
+
+/* ---------- Card Body ---------- */
+.form-card .card-body {
+    padding: 30px 35px;
+}
+
+/* ---------- Section Header ---------- */
+.section-header {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2c3e50;
+    position: relative;
+}
+
+.section-title::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #0d6efd;
+    margin: 8px auto 0;
+    border-radius: 2px;
+}
+
+/* ---------- Form Rows ---------- */
+.form-row {
+    margin-bottom: 20px;
+}
+
+/* ---------- Inputs & Select ---------- */
+.form-control,
+.form-select {
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+/* ---------- Cust Border Box ---------- */
+.custborder {
+    background: #f9fbfd;
+    border: 1px dashed #cfd8e3;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* ---------- Labels ---------- */
+.form-label {
+    font-weight: 500;
+    color: #34495e;
+}
+
+/* ---------- Validation Messages ---------- */
+.validation-msg {
+    margin-top: 4px;
+    font-size: 0.85rem;
+}
+
+.validation-msg.success {
+    color: #198754;
+}
+
+.validation-msg.error {
+    color: #dc3545;
+}
+
+/* ---------- Verify Button ---------- */
+.verify-btn {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.verify-btn i {
+    font-size: 0.9rem;
+}
+
+/* ---------- Response Container ---------- */
+.response-container {
+    margin-top: 25px;
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    overflow: hidden;
+}
+
+.response-header {
+    background: #0d6efd;
+    color: #ffffff;
+    padding: 10px 15px;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.response-data {
+    padding: 15px;
+    font-size: 0.85rem;
+    background: #ffffff;
+    max-height: 300px;
+    overflow-y: auto;
+    border-top: 1px solid #dee2e6;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .form-card .card-body {
+        padding: 20px;
+    }
+
+    .verify-btn {
+        margin-top: 10px;
+    }
+}
+
+        .custborder{
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .validation-msg {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.9em;
+        }
+        .validation-msg.success {
+            color: green;
+        }
+        .validation-msg.error {
+            color: red;
+        }
+        .document-link {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .response-container {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        .response-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        .response-data {
+            font-family: monospace;
+            white-space: pre-wrap;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .verify-btn {
+            margin-right: 10px;
+        }
+    </style>
+
+    <div class="container-fluid px-4 page-container">
+        <div class="breadcrumb-container">
+            <div class="page-inner">
+                <div class="page-header">
+                    <!-- Breadcrumb removed for brevity -->
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 form-card">
+            <div class="card-body">
+                <div class="section-header">
+                    <h5 class="section-title">Verify Consent</h5>
+                </div>
+
+                <form method="post" action="{% url 'rvsfdetails' %}" enctype="multipart/form-data" id="rvsfForm">
+                    {% csrf_token %}
+
+                    <div class="row form-row">
+                        <div class="col-md-12 mb-4">
+                            <label for="state" class="form-label required">State/UT <span class="text-danger">*</span></label>
+                            <select class="form-select" id="state" name="state" required>
+                                <option value="" selected disabled>Select State</option>
+                                {% for state in states %}
+                                <option value="{{ state.state_id }}" 
+                                    {% if general.state == state.state_id|stringformat:"s" %}selected{% endif %}>
+                                    {{ state.state_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- <div class="col-md-4 mb-4">
+                            <label for="district" class="form-label required">District <span class="text-danger">*</span></label>
+                            <select id="district" name="district" class="form-select" required>
+                                <option value="" selected disabled>Select District</option>
+                                {% if general.district and districtname %}
+                                <option value="{{ general.district }}" selected>{{ districtname.city_name }}</option>
+                                {% endif %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select district.
+                            </div>
+                        </div> -->
+                        
+                        <!-- GPCB ID Container (only for Gujarat) -->
+                        <div class="col-md-12 mb-4 position-relative" id="gpcbid-container" style="display:none;">
+                            <label class="form-label">Gujarat Pollution Control Board ID <span class="text-danger">*</span></label>
+                            <input type="text" name="gpcbid" id="gpcbid-field" pattern="[0-9]+" inputmode="numeric" class="form-control" value="{{ general.gpcbid|default:'' }}">
+                            <small id="gpcbid-msg" class="validation-msg"></small>
+                        </div>
+                    </div>
+
+                    <div class="row form-row custborder">
+                        <div class="col-md-8 mb-4">
+                            <label for="id_cto_number" class="form-label">Consent Application Number (CTO) <span class="text-danger">*</span></label>
+                            <input id="id_cto_number" type="text" name="cto_number" value="{{ general.cto_number }}" 
+                                placeholder="Enter Consent Number" class="form-control" required>
+                            <small id="consent-msg" class="validation-msg"></small>
+                        </div>
+                        <div class="col-md-4 mb-4 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary verify-btn" id="verifyConsentBtn">
+                                <i class="fas fa-search me-2"></i>Verify Consent
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Response Display Area -->
+                    <div id="responseContainer" class="response-container" style="display: none;">
+                        <div class="response-header">Consent Verification Response</div>
+                        <div id="responseData" class="response-data"></div>
+                    </div>
+
+                    <!-- <div class="action-buttons mt-4">
+                        <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                            <i class="fas fa-save me-2"></i>Submit Details
+                        </button>
+                    </div> -->
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="district-url" data-url="{% url 'load_districts' %}"></div>
+
+    <script src="{% static 'js/rvsfappjs/user/generaldetails.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stateSelect = document.getElementById('state');
+            const consentInput = document.getElementById('id_cto_number');
+            const gpcbidInput = document.getElementById('gpcbid-field');
+            const gpcbidContainer = document.getElementById('gpcbid-container');
+            const verifyBtn = document.getElementById('verifyConsentBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const responseContainer = document.getElementById('responseContainer');
+            const responseData = document.getElementById('responseData');
+            const consentMsg = document.getElementById('consent-msg');
+            const gpcbidMsg = document.getElementById('gpcbid-msg');
+            
+            const stateMap = {
+                1:  { code: 'AP',  status: 1 },
+                2:  { code: 'ARP', status: 1 },
+                3:  { code: 'ASM', status: 1 },
+                4:  { code: 'BHR', status: 1 },
+                5:  { code: 'CHT', status: 1 },
+                6:  { code: 'GOA', status: 1 },
+                7:  { code: 'GUJ', status: 0 }, // Gujarat special
+                8:  { code: 'HAR', status: 1 },
+                9:  { code: 'HIM', status: 1 },
+                10: { code: 'JHK', status: 1 },
+                11: { code: 'KTK', status: 0 },
+                12: { code: 'KER', status: 1 },
+                13: { code: 'MP',  status: 0 },
+                14: { code: 'MAH', status: 0 },
+                15: { code: 'MNP', status: 1 },
+                16: { code: 'MEG', status: 1 },
+                17: { code: 'MIZ', status: 1 },
+                18: { code: 'NAG', status: 1 },
+                19: { code: 'ODS', status: 1 },
+                20: { code: 'PUN', status: 1 },
+                21: { code: 'RJ',  status: 0 },
+                22: { code: 'SKM', status: 1 },
+                23: { code: 'TND', status: 1 },
+                24: { code: 'TLN', status: 1 },
+                25: { code: 'TRP', status: 1 },
+                26: { code: 'UP',  status: 1 },
+                27: { code: 'UTT', status: 1 },
+                28: { code: 'WB',  status: 1 },
+                29: { code: 'AND', status: 1 },
+                30: { code: 'CGH', status: 1 },
+                31: { code: 'DMN', status: 1 },
+                32: { code: 'DEL', status: 1 },
+                33: { code: 'JAK', status: 1 },
+                34: { code: 'LDK', status: 1 },
+                35: { code: 'PUDU',status: 1 },
+                36: { code: 'LAD', status: 1 }
+            };
+
+            let verificationSuccess = false;
+            let verificationData = null;
+
+            function toggleGpcbid() {
+                const stateId = parseInt(stateSelect.value, 10);
+                const mapping = stateMap[stateId];
+                const show = mapping && mapping.code === 'GUJ';
+                
+                gpcbidContainer.style.display = show ? 'block' : 'none';
+                if (gpcbidInput) gpcbidInput.required = show;
+            }
+
+            function displayResponse(data) {
+                responseContainer.style.display = 'block';
+                responseData.textContent = JSON.stringify(data, null, 2);
+            }
+
+            function showMessage(element, message, isError = false) {
+                element.textContent = message;
+                element.className = 'validation-msg ' + (isError ? 'error' : 'success');
+            }
+
+            function clearMessages() {
+                showMessage(consentMsg, '');
+                showMessage(gpcbidMsg, '');
+            }
+
+            async function verifyConsent() {
+                clearMessages();
+                
+                // Get current values
+                const currentConsent = consentInput.value.trim();
+                const stateId = parseInt(stateSelect.value, 10);
+                
+                // Basic validation
+                if (!stateId) {
+                    showMessage(consentMsg, 'Please select a state first', true);
+                    return;
+                }
+                
+                if (!currentConsent) {
+                    showMessage(consentMsg, 'Please enter a consent number', true);
+                    return;
+                }
+                
+                const mapping = stateMap[stateId];
+                if (!mapping) {
+                    showMessage(consentMsg, 'Invalid state selected', true);
+                    return;
+                }
+                
+                // For Gujarat, check GPCB ID
+                if (mapping.code === 'GUJ') {
+                    const gpcbid = gpcbidInput.value.trim();
+                    if (!gpcbid) {
+                        showMessage(gpcbidMsg, 'GPCB ID is required for Gujarat', true);
+                        return;
+                    }
+                    if (!/^\d+$/.test(gpcbid)) {
+                        showMessage(gpcbidMsg, 'GPCB ID must contain only numbers', true);
+                        return;
+                    }
+                }
+                
+                // Disable verify button and show loading
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verifying...';
+                
+                // Prepare payload
+                const payload = {
+                    consent_id: currentConsent,
+                    statecode: mapping.code,
+                    status: mapping.status
+                };
+                
+                if (mapping.code === 'GUJ') {
+                    payload.gpcbid = gpcbidInput.value.trim();
+                }
+                
+                try {
+                    const response = await fetch('/rvsf/consent/details/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const data = await response.json();
+                   
+                    // Display complete response
+                    // displayResponse(data);
+                    
+                    if (response.status === 200 && data.status === 200 && 
+                        data.data && (data.data.applicationType || data.data.applicationNo)) {
+                            
+                    // alert('2')
+                    // alert(data.data.applicationType )
+                    //  alert('Complete data: ' + JSON.stringify(data.data, null, 2));
+                        // ✅ Valid consent
+                        showMessage(consentMsg, '✓ Valid Consent Number', false);
+                        if (mapping.code === 'GUJ') {
+                            showMessage(gpcbidMsg, '✓ Valid GPCB ID', false);
+                        }
+                        verificationSuccess = true;
+                        verificationData = data;
+                        submitBtn.disabled = false;
+                    } else {
+                       
+                        // ❌ Invalid
+                        showMessage(consentMsg, '✗ Invalid Consent Number', true);
+                        if (mapping.code === 'GUJ') {
+                            showMessage(gpcbidMsg, '✗ Invalid GPCB ID', true);
+                        }
+                        verificationSuccess = false;
+                        submitBtn.disabled = true;
+                    }
+                } catch (error) {
+                    console.error('Network error:', error);
+                    // showMessage(consentMsg, 'Network error. Please try again.', true);
+                    // displayResponse({ error: 'Network error', details: error.message });
+                    verificationSuccess = false;
+                    submitBtn.disabled = true;
+                } finally {
+                    // Re-enable verify button
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = '<i class="fas fa-search me-2"></i>Verify Consent';
+                }
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let cookie of cookies) {
+                        cookie = cookie.trim();
+                        if (cookie.startsWith(name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            
+
+            // Event Listeners
+            verifyBtn.addEventListener('click', verifyConsent);
+            stateSelect.addEventListener('change', toggleGpcbid);
+            
+            // Allow Enter key to trigger verification in consent field
+            consentInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    verifyConsent();
+                }
+            });
+            
+            if (gpcbidInput) {
+                gpcbidInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        verifyConsent();
+                    }
+                });
+            }
+
+            // Initialize
+            toggleGpcbid();
+            
+            // If consent number exists on page load, auto-verify
+            if (consentInput.value.trim() && stateSelect.value) {
+                verifyConsent();
+            }
+        });
+    </script>
+

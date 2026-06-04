@@ -1,0 +1,520 @@
+{% load static %}
+
+    {% include "layouts/header.html" %}
+
+    <style>
+  /* Password input container */
+  .password-wrapper {
+      position: relative;
+  }
+
+  /* Add space for eye icon */
+  .password-wrapper input {
+      padding-right: 2.5rem;
+  }
+
+  /* Eye icon position inside input */
+  .password-wrapper .toggle-password {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6c757d;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: color 0.3s;
+  }
+
+  /* Hover effect */
+  .password-wrapper .toggle-password:hover {
+      color: #0d6efd;
+  }
+
+  /* Responsive fix */
+  @media (max-width: 576px) {
+      .password-wrapper input {
+          padding-right: 2rem;
+      }
+      .password-wrapper .toggle-password {
+          right: 0.6rem;
+      }
+  }
+</style>
+    <div id="app" class="w-100">
+
+
+        <!-- Main Section -->
+        <div class="mainsection" style="background: linear-gradient(to right, #1d6799, #3e3070);">
+            <div id="carouselExampleControls" class="carousel slide h-100" data-ride="carousel">
+                <div class="carousel-inner h-100">
+                    <div class="carousel-item active">
+                        <img class="d-block w-100" src="/static/img/elv1.jpeg" alt="Slide">
+                    </div>
+                    <div class="carousel-item">
+                        <img class="d-block w-100" src="/static/img/elv2.png" alt="Slide">
+                    </div>
+                    <div class="carousel-item">
+                        <img class="d-block w-100" src="/static/img/elv3.jpeg" alt="Slide">
+                    </div>
+                    <div class="carousel-item">
+                        <img class="d-block w-100" src="/static/img/elv4.jpeg" alt="Slide">
+                    </div>
+                    <div class="carousel-item">
+                        <img class="d-block w-100" src="/static/img/elv5.png" alt="Slide">
+                    </div>
+                    <div class="carousel-item">
+                        <img class="d-block w-100" src="/static/img/elv6.png" alt="Slide">
+                    </div>
+                </div>
+
+                <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+                </a>
+                <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
+                <span class="carousel-control-next-icon"></span>
+                </a>
+            </div>
+            <div class="loginform pb-3" >
+                <div class="card border-0">
+                    <div class="card-header text-center bg-white border-0 mt-1 mb-3">
+                        <h4 class="fw-bold">Official Login</h4>
+                        <!-- <p class="text-muted">Select your role and enter your credentials</p> -->
+                    </div>
+                    <form id="adminLoginForm" method="POST" class="px-4">
+                        {% csrf_token %}
+                        {% if messages %}
+                            <div class="mb-3">
+                                {% for message in messages %}
+                                    <div class="alert alert-danger alert-dismissible fade show auto-dismiss-alert" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+
+                        <!-- Radio Buttons for Login Type -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold "><b class="mr-3">Login As:</b></label>
+
+                            <input type="radio" name="login_type" value="{% url 'custom_admin_login' %}" 
+                                onclick="window.location.href=this.value" required> <span class="mr-3">CPCB</span> 
+
+                            <input type="radio" name="login_type" value="{% url 'spcb_home' %}" 
+                                onclick="window.location.href=this.value"> <span class="mr-3">SPCB</span>
+     
+                            <!-- <input type="radio" name="login_type" value="" 
+                                onclick="window.location.href=this.value"> Bulk Consumer -->
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label required">Username</label>
+                            {{ form.username }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label required" autocorrect="off" autofocus="off">Password</label>
+                            <div class="password-wrapper">
+                                {{ form.password }}
+                                <i class="fa fa-eye toggle-password" id="togglePassword"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="my-4 d-flex align-items-center captcha-container">
+                            <div class="me-3" id="captcha-container">
+                                {{ form.captcha }}
+                            </div>
+                            <button type="button" id="refresh_captcha" class="mt-2">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button type="submit" class="btn btn-primary btn-md">Login</button>
+                            <a href="{% url 'forget_cpcb_password' %}" class="fw-bold text-primary">Forgot Password?</a>
+                        </div>
+                    
+
+                        <p class="fw-bold mb-0 mt-3">Go to User's Login Page - 
+                            <a href="{% url 'home' %}" onclick="localStorage.setItem('selectedLoginType', '/')" class="link-danger">Users Login</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Marquee -->
+        
+        <div class="col-md-12 " style="background: linear-gradient(to right, #1d6799, #3e3070); opacity: 87%;">
+            <div class="pt-2 pb-2 text-white">
+                <marquee style="font-size:18px;" onmouseover="this.stop();" onmouseout="this.start();">
+                    <img src="{% static 'img/unnamed.gif' %}" />
+                    Registration for Producers under End-of-Life Vehicles Rules, 2025 is now open. Certificate Generation and Transfer Module is now live. <!-- , Bulk Consumers and RVSFs -->
+                </marquee>
+            </div>
+        </div>
+        
+
+        <!-- Content Section -->
+        <!-- <section class="grey-back ng-star-inserted py-4 my-3">
+            <div class="container-fluid">
+                <div class="row">
+                
+                <div class="col-md-6 pt-3">
+                    <div class="boxShadow p-3 bg-white" style="max-height: 400px; overflow-y: auto;">
+                    <div class="card">
+                        <div class="card-header theme-color font-weight-bold text-center text-dark">
+                        Environment Protection (End-of-Life Vehicles) Rules, 2025:
+                        </div>
+                        <div class="card-body">
+                        <p class="text-justify small">
+                            Government of India has notified Environment Protection (End-of-Life Vehicles)
+                            Rules, 2025 under Environment (Protection) Act, 1986, dated January 6, 2025 for
+                            implementation of Extended Producer Responsibility (EPR) for End-of-Life Vehicles
+                            (ELVs). These rules came into force from April 1, 2025, to regulate the
+                            management, recycling, and disposal of ELVs in an environmentally sustainable
+                            manner.
+                        </p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mt-4 mt-md-0 d-flex justify-content-around align-items-start flex-wrap gap-3">
+                    
+                    <div class="text-center">
+                    
+                    <img src="{% static 'img/narendra-modi-bjp2.jpg' %}" class="img-fluid rounded shadow-sm"
+                        style="width: 140px; height: 160px; object-fit: cover;" alt="Narendra Modi">
+                    <p class="fw-bold mt-2">Sh. Narendra Modi <br> Hon'ble Prime Minister</p>
+                    </div>
+
+                    
+                    <div class="text-center pl-5">
+                    <img src="{% static 'img/bhupendr2.jpg' %}" class="img-fluid rounded shadow-sm"
+                        style="width: 140px; height: 160px; object-fit: cover;" alt="Bhupender Yadav">
+                    <p class="fw-bold mt-2">Sh. Bhupender Yadav <br> Hon'ble Minister of EF&CC</p>
+                    </div>
+
+                    
+
+                    
+                    <div class="text-center">
+                    <img src="{% static 'img/Kirtivardhansingh2.jpg' %}" class="img-fluid rounded shadow-sm"
+                        style="width: 140px; height: 160px; object-fit: cover;" alt="Kirtivardhan Singh">
+                    <p class="fw-bold mt-2">Sh. Kirtivardhan Singh <br> Hon'ble Minister of State of EF&CC</p>
+                    </div>
+                </div>
+                </div>
+                <div class="d-flex justify-content-center my-4">
+    </div>
+            </div>
+        </section> -->
+
+                <section class="grey-back ng-star-inserted py-4 my-3">
+            <div class="container-fluid">
+                <div class="row">
+                <!-- Left Section -->
+                <div class="col-md-6 pt-3">
+                    <div class="card shadow-lg bg-white border-0 rounded-4" style="max-height: 400px; overflow-y: auto;">
+                    
+                        <!-- <div class="card-header theme-color font-weight-bold text-center text-dark"> -->
+                        <div class="card-header text-center text-white fw-bold fs-5" style="background: linear-gradient(90deg, #0066cc, #00b894); font-size: 1.2rem;">
+                            Environment Protection (End-of-Life Vehicles) Rules, 2025
+                        </div>
+                        <div class="card-body">
+                        <p class="text-justify large">
+                            Government of India has notified the 
+                            Environment Protection (End-of-Life Vehicles) Rules, 2025
+                            under the Environment (Protection) Act, 1986, dated 
+                            January 6, 2025 for implementation of 
+                            Extended Producer Responsibility (EPR)
+                            for End-of-Life Vehicles (ELVs).
+                            These rules came into force from April 1, 2025, 
+                            to regulate the management, recycling, and disposal of ELVs 
+                            in an environmentally sustainable manner.
+                        </p>
+                        </div>
+                    
+                    </div>
+                </div>
+
+                <!-- Right Section: Ministers -->
+                <div class="col-md-6 mt-4 mt-md-0 d-flex justify-content-around align-items-start flex-wrap gap-3">
+                    <!-- Minister Card -->
+                    <div class="text-center">
+                    <!-- <img src="https://www.pmindia.gov.in/wp-content/uploads/2025/05/H20250507183076.jpg" class="img-fluid rounded shadow-sm" -->
+                    <img src="{% static 'img/narendra-modi-bjp2.jpg' %}" class="img-fluid rounded shadow-sm"
+                        style="width: 140px; height: 160px; object-fit: cover;" alt="Narendra Modi">
+                    <p class="fw-bold mt-2">Sh. Narendra Modi <br> Hon'ble Prime Minister</p>
+                    </div>
+
+                    <!-- Minister Card -->
+                    <div class="text-center pl-5">
+                    <img src="{% static 'img/bhupendr2.jpg' %}" class="img-fluid rounded shadow-sm"
+                        style="width: 140px; height: 160px; object-fit: cover;" alt="Bhupender Yadav">
+                    <p class="fw-bold mt-2">Sh. Bhupender Yadav <br> Hon'ble Minister of EF&CC</p>
+                    </div>
+
+                    
+
+                    <!-- Minister Card -->
+                    <div class="text-center">
+                    <img src="{% static 'img/Kirtivardhansingh2.jpg' %}" class="img-fluid rounded shadow-sm"
+                        style="width: 140px; height: 160px; object-fit: cover;" alt="Kirtivardhan Singh">
+                    <p class="fw-bold mt-2">Sh. Kirtivardhan Singh <br> Hon'ble Minister of State of EF&CC</p>
+                    </div>
+                </div>
+                </div>
+                <div class="d-flex justify-content-center my-4">
+        </div>
+            </div>
+        </section>
+
+        <section class="bg-dark text-white pt-3">
+            <div class="container-fluid">
+                <div class="row">
+                <div class="col-12 text-center large">
+                    <a href="{% url 'termsAndCondition' %}" class="text-white mx-2 text-decoration-none">Terms and Conditions</a> |
+                    <a href="{% url 'refundPolicy' %}" class="text-white mx-2 text-decoration-none">Refund Policy</a> |
+                    <a href="{% url 'privacyPolicy' %}" class="text-white mx-2 text-decoration-none">Privacy Policy</a> |
+                    <a href="#" class="text-white mx-2 text-decoration-none">Copyright Policy</a> |
+                    <a href="#" class="text-white mx-2 text-decoration-none">Hyperlinking Policy</a> |
+                    <a href="#" class="text-white mx-2 text-decoration-none">Accessibility Statement</a> |
+                    <a href="#" class="text-white mx-2 text-decoration-none">Help</a>
+                </div>
+                </div>
+            </div>
+        </section>
+
+
+        {% include "layouts/footer.html" %}
+    
+    </div>
+
+
+<script>
+    document.getElementById('refresh_captcha').addEventListener('click', function() {
+        
+        fetch("{% url 'refresh_captcha' %}")
+            .then(response => response.json())
+            .then(data => {
+                // alert(data.captcha_html);
+                document.getElementById('captcha-container').innerHTML = data.captcha_html;
+            })
+            .catch(error => console.error('Error refreshing captcha:', error));
+    });
+</script>
+
+<script>
+    function toggleReadMore() {
+        var dots = document.getElementById("dots");
+        var moreText = document.getElementById("more");
+        var btnText = document.getElementById("readMoreBtn");
+
+        if (dots.style.display === "none") {
+            dots.style.display = "inline";
+            moreText.style.display = "none";
+            btnText.innerHTML = "Read more";
+        } else {
+            dots.style.display = "none";
+            moreText.style.display = "inline";
+            btnText.innerHTML = "Read less";
+        }
+    }
+</script>
+
+
+<script>
+    // Auto-dismiss alerts after 4 seconds (4000ms)
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            document.querySelectorAll('.auto-dismiss-alert').forEach(function (el) {
+                // Bootstrap 5 fade-out and hide
+                el.classList.remove('show');
+                el.classList.add('fade');
+                setTimeout(() => {
+                    el.remove();
+                }, 1000); // Wait for fade transition
+            });
+        }, 4000);
+    });
+</script>
+
+    <script>
+    // Run after page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        let radios = document.querySelectorAll("input[name='login_type']");
+        let saved = localStorage.getItem("selectedLoginType");
+
+        // Restore previously selected radio
+        if (saved) {
+            radios.forEach(r => {
+                if (r.value === saved) {
+                    r.checked = true;
+                }
+            });
+        }
+
+        // Add click listener for redirect + save
+        radios.forEach(radio => {
+            radio.addEventListener("click", function() {
+                localStorage.setItem("selectedLoginType", this.value);
+                window.location.href = this.value;  // redirect
+            });
+        });
+    });
+    </script>
+
+<!-- input text validations -->
+    <script>
+        // Function to restrict input to alphabets, numbers, spaces, dot, and comma
+        function restrictInput(event) {
+            const regex = /^[a-zA-Z0-9 .,]*$/;
+            if (!regex.test(event.target.value)) {
+                // Replace anything not allowed
+                event.target.value = event.target.value.replace(/[^a-zA-Z0-9 .,]/g, '');
+            }
+        }
+
+        // Attach restriction to all input[type="text"] fields
+        document.addEventListener("DOMContentLoaded", function () {
+            // Select all text inputs and textareas
+            document.querySelectorAll('input[type="text"], textarea').forEach(function(input) {
+                input.addEventListener("input", restrictInput);
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("contact_form");
+            const submitBtn = form.querySelector("button[type=submit]");
+
+            form.addEventListener("submit", function () {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Submitting...";
+            });
+        });
+    </script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const key = CryptoJS.enc.Utf8.parse("16charSecretKey!");
+    const iv = CryptoJS.enc.Utf8.parse("16charSecretIV!!");
+
+    const form = document.getElementById("adminLoginForm");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
+    // Function to detect if a string is encrypted (base64 format)
+    function isEncrypted(str) {
+        if (!str) return false;
+        try {
+            // Check if it looks like base64 encoded AES
+            return /^[A-Za-z0-9+/]*={0,2}$/.test(str) && str.length % 4 === 0;
+        } catch {
+            return false;
+        }
+    }
+
+    // Restore original values on page load
+    // function restoreValues() {
+    //     // Get values from sessionStorage if available (from previous failed submission)
+    //     const storedUsername = sessionStorage.getItem('originalUsername');
+    //     const storedPassword = sessionStorage.getItem('originalPassword');
+        
+    //     if (storedUsername) {
+    //         usernameInput.value = storedUsername;
+    //         sessionStorage.removeItem('originalUsername');
+    //     }
+    //     if (storedPassword) {
+    //         passwordInput.value = storedPassword;
+    //         sessionStorage.removeItem('originalPassword');
+    //     }
+
+    //     // If values appear to be encrypted but we don't have stored originals,
+    //     // clear them to avoid showing encrypted text
+    //     if (isEncrypted(usernameInput.value) && !storedUsername) {
+    //         usernameInput.value = '';
+    //     }
+    //     if (isEncrypted(passwordInput.value) && !storedPassword) {
+    //         passwordInput.value = '';
+    //     }
+    // }
+
+    // Handle form submission
+    form.addEventListener("submit", function(e) {
+        // Store original values in sessionStorage before encryption
+        // sessionStorage.setItem('originalUsername', usernameInput.value);
+        // sessionStorage.setItem('originalPassword', passwordInput.value);
+
+        // Encrypt the values for submission
+        usernameInput.value = CryptoJS.AES.encrypt(usernameInput.value, key, { 
+            iv: iv, 
+            padding: CryptoJS.pad.Pkcs7 
+        }).toString();
+        
+        passwordInput.value = CryptoJS.AES.encrypt(passwordInput.value, key, { 
+            iv: iv, 
+            padding: CryptoJS.pad.Pkcs7 
+        }).toString();
+    });
+
+    // Clean up session storage on successful navigation away from page
+    // window.addEventListener('beforeunload', function() {
+    //     // Only clean up if we're not submitting the form
+    //     if (!sessionStorage.getItem('formSubmitting')) {
+    //         sessionStorage.removeItem('originalUsername');
+    //         sessionStorage.removeItem('originalPassword');
+    //     }
+    // });
+
+    // Mark form as submitting
+    // form.addEventListener('submit', function() {
+    //     sessionStorage.setItem('formSubmitting', 'true');
+    // });
+
+    // Restore values when page loads
+    // restoreValues();
+});
+</script>
+
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const key = CryptoJS.enc.Utf8.parse("16charSecretKey!");
+    const iv = CryptoJS.enc.Utf8.parse("16charSecretIV!!");
+
+    const form = document.getElementById("adminLoginForm");
+    form.addEventListener("submit", function(e) {
+        const usernameInput = document.getElementById("username");
+        const passwordInput = document.getElementById("password");
+
+        usernameInput.value = CryptoJS.AES.encrypt(usernameInput.value, key, { iv: iv, padding: CryptoJS.pad.Pkcs7 }).toString();
+        passwordInput.value = CryptoJS.AES.encrypt(passwordInput.value, key, { iv: iv, padding: CryptoJS.pad.Pkcs7 }).toString();
+    });
+});
+</script> -->
+
+<script>
+  // Toggle password visibility and icon
+  const togglePassword = document.querySelector('#togglePassword');
+  const passwordInput = document.querySelector('#password');
+
+  togglePassword.addEventListener('click', function () {
+      const isPassword = passwordInput.getAttribute('type') === 'password';
+      passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+
+      // Toggle icon
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
+  });
+</script>
+
+
+

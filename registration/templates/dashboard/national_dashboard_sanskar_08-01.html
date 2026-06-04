@@ -1,0 +1,496 @@
+{% load static %}
+{% include 'layouts/header.html' %}
+
+<style>
+/* ===============================
+   NATIONAL DASHBOARD – ENHANCED STRUCTURE
+================================= */
+
+:root {
+  --navy: #0a4d7a;
+  --teal: #0d9488;
+  --sand: #f5f7fa;
+  --card: #ffffff;
+  --success: #198754;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --shadow: 0 10px 24px rgba(0,0,0,.08);
+  --received-bg: #eef4fb;    /* light navy */
+  --process-bg:  #fff7ed;    /* light amber */
+  --incomplete-bg:#f0f9ff;   /* light blue */
+  --granted-bg:  #ecfdf5;    /* light green */
+  --rejected-bg: #fef2f2;    /* light red */
+  --received-border: rgba(10, 77, 122, 0.25);
+  --process-border:  rgba(245, 158, 11, 0.35);
+  --incomplete-border: rgba(56, 189, 248, 0.35);
+  --granted-border:  rgba(25, 135, 84, 0.30);
+  --rejected-border: rgba(220, 38, 38, 0.30);
+}
+
+body {
+  font-family: "Public Sans", "Segoe UI", sans-serif;
+  background: var(--sand);
+  color: #1f2937;
+}
+
+/* ================= HEADER (UNCHANGED) ================= */
+
+.nd-header {
+  background: linear-gradient(90deg, var(--navy), #2d1c68);
+  padding: 14px 32px;
+  border-radius: 14px;
+  color: #fff;
+  margin: 25px 15px 30px;
+}
+
+.nd-header h3 {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 600;
+}
+
+.nd-header span {
+  font-size: 14px;
+  opacity: .9;
+}
+
+/* ================= ROLE SWITCH ================= */
+
+.role-switch {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.role-pill {
+  padding: 9px 26px;
+  border-radius: 19px;
+  border: 1px solid var(--navy);
+  background: #fff;
+  font-weight: 500;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.role-pill.active,
+.role-pill:hover {
+  background: var(--navy);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(10,77,122,.35);
+}
+
+/* ================= MAIN LAYOUT ================= */
+
+.dashboard-flex {
+  display: flex;
+  gap: 26px;
+  padding: 0 18px;
+  align-items: stretch;
+}
+
+/* ================= KPI PANEL ================= */
+
+.kpi-panel {
+  flex: 1.4;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  margin: 2% 0 ;
+}
+
+.kpi-row1 {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 22px;
+}
+
+.kpi-card {
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: .3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+
+.kpi-received {
+  background: var(--received-bg);
+  border-color: var(--received-border);
+}
+
+.kpi-process {
+  background: var(--process-bg);
+  border-color: var(--process-border);
+}
+
+.kpi-incomplete {
+  background: var(--incomplete-bg);
+  border-color: var(--incomplete-border);
+}
+
+.kpi-granted {
+  background: var(--granted-bg);
+  border-color: var(--granted-border);
+}
+
+.kpi-rejected {
+  background: var(--rejected-bg);
+  border-color: var(--rejected-border);
+}
+
+
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  background: transparent;
+}
+
+.kpi-card:hover {
+  transform: translateY(-6px);
+}
+
+.kpi-received:hover  { border-color: rgba(10, 77, 122, 0.5); }
+.kpi-process:hover   { border-color: rgba(245, 158, 11, 0.55); }
+.kpi-incomplete:hover{ border-color: rgba(56, 189, 248, 0.55); }
+.kpi-granted:hover   { border-color: rgba(25, 135, 84, 0.5); }
+.kpi-rejected:hover  { border-color: rgba(220, 38, 38, 0.5); }
+
+
+/* Accent Bars */
+.kpi-received::before { background: var(--navy); }
+.kpi-process::before  { background: var(--warning); }
+.kpi-incomplete::before  { background: var(--info); }
+.kpi-granted::before  { background: var(--success); }
+.kpi-rejected::before { background: var(--danger); }
+
+/* KPI CONTENT */
+.kpi-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 2% 0;
+}
+
+/* Center text + count */
+.kpi-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+/* Icon stays on right */
+.kpi-icon {
+  margin-left: auto;
+  font-size: 2rem;
+}
+
+.kpi-label {
+  font-size: 13.5px;
+  color: #3a3c41;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.kpi-value {
+  font-size: 36px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.kpi-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 22px;
+}
+
+.kpi-received .kpi-icon { background: var(--navy); }
+.kpi-process  .kpi-icon { background: var(--warning); }
+.kpi-incomplete  .kpi-icon { background: var(--info); }
+.kpi-granted  .kpi-icon { background: var(--success); }
+.kpi-rejected .kpi-icon { background: var(--danger); }
+
+/* ================= ANALYTICS PANEL ================= */
+
+.analytics-panel {
+  flex: 1;
+  background: #f8fafc; /* light neutral, not pure white */
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(10, 77, 122, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* left accent similar to KPI cards */
+.analytics-panel::before {
+  content: "";
+  position: absolute;
+  right: 0;          /* moved to right */
+  top: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--navy), #6366f1);
+}
+
+
+
+.analytics-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--navy);
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+  border-bottom: 1px dashed rgba(10, 77, 122, 0.25);
+}
+
+/* Icon styling */
+.analytics-header i {
+  background: rgba(10, 77, 122, 0.12);
+  color: var(--navy);
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+
+.chart-wrap {
+  /* max-width: 90%; */
+  margin: auto;
+  /* background: #ffffff; */
+  padding: 18px;
+  border-radius: 16px;
+  /* border: 1px solid #e5e7eb; */
+}
+
+.analytics-panel:hover {
+  box-shadow: 0 18px 40px rgba(0,0,0,.12);
+}
+
+
+/* ================= MODAL ================= */
+
+.modal-title {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 992px) {
+  .dashboard-flex {
+    flex-direction: column;
+  }
+
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-wrap {
+    max-width: 230px;
+  }
+}
+</style>
+
+<div class="container-fluid mb-5">
+
+  <!-- HEADER -->
+  <div class="nd-header">
+    <h3>National EPR Monitoring Dashboard</h3>
+    <span>Government of India | Centralized Application Oversight</span>
+  </div>
+
+  <!-- ROLE SWITCH -->
+  <div class="role-switch">
+    <div class="role-pill active">Producer</div>
+    <div class="role-pill">RVSF</div>
+    <!-- <div class="role-pill">Bulk Consumer</div> -->
+  </div>
+
+  <!-- MAIN -->
+  <div class="dashboard-flex">
+
+    <!-- KPI -->
+    <div class="kpi-panel">
+      <div class="kpi-row1">
+
+        <div class="kpi-card kpi-received card-box"
+             data-bs-toggle="modal" data-bs-target="#applicationModal" data-type="received">
+          <div class="kpi-top">
+            <div class="kpi-center mb-3">
+              
+              <div class="kpi-value">{{ all_data.total_active }}</div>
+              <div class="kpi-label">Applications Received</div>
+            </div>
+            <div class="kpi-icon"><i class="bi bi-inbox-fill"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+
+        <div class="kpi-card kpi-process card-box"
+             data-bs-toggle="modal" data-bs-target="#applicationModal" data-type="inprocess">
+          <div class="kpi-top">
+            <div>
+              <div class="kpi-label">In Process Applications</div>
+              <div class="kpi-value">{{ all_data.under_review }}</div>
+            </div>
+            <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-incomplete card-box"
+             data-bs-toggle="modal" data-bs-target="#applicationModal" data-type="incomplete">
+          <div class="kpi-top">
+            <div>
+              <div class="kpi-label">InComplete Applications</div>
+              <div class="kpi-value">{{ all_data.incomplete_application }}</div>
+            </div>
+            <div class="kpi-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-granted card-box"
+             data-bs-toggle="modal" data-bs-target="#applicationModal" data-type="granted">
+          <div class="kpi-top">
+            <div>
+              <div class="kpi-label">Granted Applications</div>
+              <div class="kpi-value">{{ all_data.granted_application }}</div>
+            </div>
+            <div class="kpi-icon"><i class="bi bi-check-circle-fill"></i></div>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-rejected card-box"
+             data-bs-toggle="modal" data-bs-target="#applicationModal" data-type="rejected">
+          <div class="kpi-top">
+            <div>
+              <div class="kpi-label">Rejected Applications</div>
+              <div class="kpi-value">{{ all_data.rejected_application }}</div>
+            </div>
+            <div class="kpi-icon"><i class="bi bi-x-circle-fill"></i></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="analytics-panel">
+      <div class="analytics-header">
+        <i class="bi bi-pie-chart-fill"></i>
+        Application Status Distribution
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="applicationPie"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal fade" id="applicationModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="applicationModalLabel"></h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalContent">Loading...</div>
+    </div>
+  </div>
+</div>
+
+{% include 'layouts/footer.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const ctx = document.getElementById('applicationPie');
+
+  const rawData = [
+    { label: 'In Process', value: {{ all_data.under_review|default:0 }}, color: '#f59e0b' },
+    { label: 'Granted', value: {{ all_data.granted_application|default:0 }}, color: '#198754' },
+    { label: 'Rejected', value: {{ all_data.rejected_application|default:0 }}, color: '#dc2626' }
+  ].filter(i => i.value > 0);
+
+  if (rawData.length) {
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: rawData.map(i => i.label),
+        datasets: [{
+          data: rawData.map(i => i.value),
+          backgroundColor: rawData.map(i => i.color)
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                    return `${context.label}: ${context.raw}`;
+                    }
+                }
+            },
+            datalabels: {
+                color: '#111',
+                font: { weight: '600' },
+                formatter: (value, context) => {
+                    return `${context.chart.data.labels[context.dataIndex]}: ${value}`;
+                }
+            }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  document.querySelectorAll('.card-box').forEach(card => {
+    card.addEventListener('click', () => {
+      const type = card.dataset.type;
+      document.getElementById('applicationModalLabel').innerText =
+        type.charAt(0).toUpperCase() + type.slice(1) + " Applications";
+
+      fetch(`/national-dashboard/applications/?type=${type}`)
+        .then(res => res.text())
+        .then(html => document.getElementById('modalContent').innerHTML = html);
+    });
+  });
+
+});
+</script>

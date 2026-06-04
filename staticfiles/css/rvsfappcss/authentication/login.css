@@ -1,0 +1,50 @@
+
+/* Full screen overlay loader */
+#loadingOverlay { 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    opacity: 0;               /* Initially hidden */
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#loadingOverlay p {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #1d6799;
+    font-size: 18px;
+}
+
+.mainsection {
+    position: relative;
+    height: 595px;
+  }
+  .carousel-inner img {
+    object-fit: cover;
+    height: 595px;
+  }
+  .loginform {
+    position: absolute;
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%);
+    width: 430px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    z-index: 1040;
+  }

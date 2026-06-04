@@ -1,0 +1,1904 @@
+{% extends "layouts/main.html" %}
+{% load custom_tags %}
+
+{% block content %}
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js -->
+
+<style>
+    /* Card hover effects */
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px); /* Slight upward movement */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+    }
+
+    a {
+        text-decoration: none; /* Remove underline from links */
+    }
+
+    /* Optional: Change background color on hover */
+    .card:hover.bg-primary {
+        background-color: #b3d8ff; /* Light blue for primary */
+    }
+
+    .card:hover.bg-info {
+        background-color: #b3f0ff; /* Light blue for info */
+    }
+
+    .card:hover.bg-success {
+        background-color: #c6f6d5; /* Light green for success */
+    }
+
+    .card:hover.bg-danger {
+        background-color: #f8d7da; /* Light red for danger */
+    }
+
+    .card:hover.bg-warning {
+        background-color: #fff3cd; /* Light yellow for warning */
+    }
+
+    .custom-width {
+            max-width: 75% !important;
+        }
+</style>
+
+<style>
+  .timeline {
+    position: relative;
+    padding: 2rem 0;
+    margin-left: 1.5rem;
+    border-left: 2px solid #dee2e6;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 1.5rem;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    top: 0.6rem;
+    left: -1rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #0d6efd;
+  }
+
+  .timeline-icon i {
+    font-size: 1.2rem;
+  }
+
+  .timeline-content {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .timeline-content h6 {
+    font-weight: 600;
+    color: #0d6efd;
+  }
+
+  .timeline-content small {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  .timeline-content .meta-info {
+    font-size: 0.85rem;
+    color: #adb5bd;
+  }
+
+  .modal-title i {
+    font-size: 1.2rem;
+  }
+
+  .modal-header.bg-dark {
+    background: linear-gradient(to right, #343a40, #495057);
+  }
+</style>
+
+
+<style>
+.bg-teal {
+    background-color: #20c997 !important; /* Teal */
+    color: white;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important; /* Purple */
+    color: white;
+}
+
+.bg-orange {
+    background-color: #fd7e14 !important; /* Orange */
+    color: white;
+}
+
+.bg-pink {
+    background-color: #d63384 !important; /* Pink */
+    color: white;
+}
+
+.bg-indigo {
+    background-color: #6610f2 !important; /* Indigo */
+    color: white;
+}
+
+.bg-brown {
+    background-color: #795548 !important; /* Brown */
+    color: white;
+}
+
+.bg-cyan {
+    background-color: #17a2b8 !important; /* Cyan (brighter than info) */
+    color: white;
+}
+
+.bg-success {
+    background-color: #dc143c !important; /* success red */
+    color: white;
+}
+
+.bg-bluegray {
+    background-color: #607d8b !important; /* Blue Gray */
+    color: white;
+}
+
+</style>
+
+{% if messages %}
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            {% for message in messages %}
+            Swal.fire({
+                title: '{{ message.tags|title }}',
+                text: '{{ message }}',
+                icon: '{{ message.tags }}',
+                confirmButtonText: 'OK'
+            });
+            {% endfor %}
+        });
+        </script>
+    {% endif %}
+
+    
+    <div class="page-inner">
+        <h4 class="mb-4">Welcome, 
+        {% if user.division %}
+        {{user.first_name}} {{user.last_name}} 
+        ({{ role_dict|get_item:user.division }})
+        {% else %}
+        Admin{% endif %}
+        !</h4>
+    </div>
+
+    {% if user.division %}
+        <div class="d-flex flex-wrap gap-4 justify-content-start">
+            <!-- Total Applications -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-teal text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#totalApplicationModal">
+                        <div class="d-flex flex-column ">
+                            <p class="fw-bold mb-2 mt-3 fs-5">Total Applications</p>
+                            {% if producers_total_active_count > 0 %}
+                                <h1 class="mb-0">{{ producers_total_active_count }}</h1>
+                            {% else %}
+                                <h1 class="mb-0">0</h1>
+                            {% endif %}
+                            
+                        </div>
+                    </div>
+                </a>
+            </div>
+        
+        
+
+            <!-- New Application -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-purple text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#newApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">New Application</p>
+                            {% if producers_new_application_count > 0 %}
+                                <h3 class="mb-0">{{ producers_new_application_count }}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Application Under Review -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-orange text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#reviewApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Application Under Review</p>
+                            {% if producers_under_review_count > 0 %}
+                                <h3 class="mb-0">{{producers_under_review_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Incomplete Application -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-pink text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#incompleteApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Incomplete Application</p>
+                            {% if producers_incomplete_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_incomplete_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- For Approval -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-bluegray text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#approvalApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">For Approval</p>
+                            {% if producers_for_approval_count > 0 %}
+                                <h3 class="mb-0">{{producers_for_approval_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Approved Applications -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-cyan text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#approvedApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Approved Applications</p>
+                            {% if producers_approved_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_approved_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Registration Granted -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-brown text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#grantedApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 text-white fs-5">Registration Granted</p>
+                            {% if producers_granted_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_granted_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Rejected Applications -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-indigo text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#rejectedApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Rejected Applications</p>
+                            {% if producers_rejected_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_rejected_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Total Registration Fees Collected -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#feesModal">
+                    <div class="card bg-success text-center " style="cursor: pointer; height: 97px;">
+                        <div class="mt-2 d-flex flex-column ">
+                            <p class="fw-bold fs-5">Total Registration Fees Collected</p>
+                            <h1 class="mb-0">{{ total_fees|default:'0' }}</h1>
+                            
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            
+        </div>
+
+    {% else %}
+        <div class="d-flex flex-wrap gap-4 justify-content-start mb-4">
+            <div style="width: 23%;">
+                <a href="{% url 'all_users' %}" class="text-decoration-none">
+                <div class="card text-bg-white text-center  " style="cursor: pointer; height: 97px;">
+                    <div class="card-body d-flex flex-column ">
+                        <h1 class="mb-0">{{applicant.count}}</h1>
+                        <p class="fw-bold mt-2">Total Users</p>
+                    </div>
+                </div>
+                </a>
+            </div>
+            
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#feesModal">
+                    <div class="card bg-success text-center " style="cursor: pointer; height: 97px;">
+                        <div class="mt-3 d-flex flex-column ">
+                            <h1 class="mb-0">{{ total_fees|default:'0' }}</h1>
+                            <p class="fw-bold mt-2 fs-5">Total Registration Fees Collected</p>
+                            
+                            
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-4 justify-content-start">
+
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-teal text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#totalApplicationModal">
+                        <div class="d-flex flex-column ">
+                            <p class="fw-bold mb-2 mt-3 fs-5">Total Applications</p>
+                            {% if producers_total_active_count > 0 %}
+                                <h1 class="mb-0">{{ producers_total_active_count }}</h1>
+                            {% else %}
+                                <h1 class="mb-0">0</h1>
+                            {% endif %}
+                            
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- New Application -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-purple text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#newApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">New Application</p>
+                            {% if producers_new_application_count > 0 %}
+                                <h3 class="mb-0">{{ producers_new_application_count }}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Application Under Review -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-orange text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#reviewApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Application Under Review</p>
+                            {% if producers_under_review_count > 0 %}
+                                <h3 class="mb-0">{{producers_under_review_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Incomplete Application -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-pink text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#incompleteApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Incomplete Application</p>
+                            {% if producers_incomplete_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_incomplete_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- For Approval -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-bluegray text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#approvalApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">For Approval</p>
+                            {% if producers_for_approval_count > 0 %}
+                                <h3 class="mb-0">{{producers_for_approval_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Approved Applications -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-cyan text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#approvedApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Approved Applications</p>
+                            {% if producers_approved_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_approved_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Registration Granted -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-brown text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#grantedApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 text-white fs-5">Registration Granted</p>
+                            {% if producers_granted_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_granted_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Rejected Applications -->
+            <div style="width: 23%;">
+                <a href="#" class="text-decoration-none">
+                    <div class="card bg-indigo text-center " style="cursor: pointer; height: 97px;" data-bs-toggle="modal" data-bs-target="#rejectedApplicationModal">
+                        <div class="card-body d-flex flex-column ">
+                            <p class="fw-bold mb-2 fs-5">Rejected Applications</p>
+                            {% if producers_rejected_application_count > 0 %}
+                                <h3 class="mb-0">{{producers_rejected_application_count}}</h3>
+                            {% else %}
+                                <h3 class="mb-0">0</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            
+        </div>
+
+    {% endif %}
+
+    <div class="container my-5">
+        <h4 class="text-center mb-4">Application Status</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th scope="col">Department User</th>
+                        <th scope="col">No. of Applications in Inbox</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                {% if user.is_admin != 1 and user.is_active %}
+                    <tr>
+                        <td>{{ user.first_name }} {{ user.last_name }} 
+                            ({{ role_dict|get_item:user.division }})</td>
+                        <!-- <td>{{ forwarded_count_dict|get_item:user.id|default:"0" }}</td> -->
+                        <td class="text-center ">
+                            
+                            <a href="#" class="app-count-link text-info" data-bs-toggle="modal" data-bs-target="#applicationModal" data-user-id="{{ user.id }}">
+                            {{ forwarded_count_dict|get_item:user.id|default:"0" }}
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+<div class="modal fade" id="applicationModal" tabindex="-1" aria-labelledby="applicationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg custom-width">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="applicationModalLabel">Applications List</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body w-100">
+        <div id="modal-content-loader" class="text-center mb-3">Loading applications...</div>
+
+        <div class="table-responsive d-none" id="application-table-wrapper" style="max-height: 70vh; overflow: auto;">
+            <div class="d-flex justify-content-end mb-2">
+                <input type="text" id="searchApplications" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+            </div>
+          <table id="applicationTable" class="table table-bordered table-striped">
+            <thead class="thead-dark text-nowrap text-center">
+              <tr>
+                <th>S.no</th>
+                <th>Company Name</th>
+                <th>State</th>
+                <th>Date of Application Submission</th>
+                <th>Currently with</th>
+                <th>Last Comunicated date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="application-table-body" class="text-nowrap text-center">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="no-applications" class="text-muted text-center d-none">No applications found.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+    
+    <div class="modal fade" id="totalApplicationModal" tabindex="-1" aria-labelledby="totalApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="totalApplicationModalLabel">Total Registered Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchTotal" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+
+                        <table id="totalTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th onclick="sortTable('totalTable', 0)">S.no</th>
+                                    <th>Company Name</th>
+                                    <th>State</th>
+                                    <th onclick="sortTable('totalTable', 1)">Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th onclick="sortTable('totalTable', 2)">Last Communicated Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status > 0 %}
+                                            {% get_counter count as count %}
+                                            <tr>
+                                                <td class="serial-number">{{ count }}</td>
+                                                <td>{{ producer.company_name }}</td>
+                                                <td>{{ producer.state }}</td>
+                                                
+                                                <td>
+                                                    {% for tx in fees_data %}
+                                                        {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                            {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </td>
+
+                                                <td>
+                                                    {% with noting_dict|dictkey:producer.id as notings %}
+                                                        {% if notings %}
+                                                            {% with notings.0 as latest_note %}
+                                                                {% if latest_note.forwarded_to %}
+                                                                    {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                    <br>
+                                                                    <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                                {% else %}
+                                                                    User
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                </td>
+
+                                                <td>
+                                                    {% with noting_dict|dictkey:producer.id as notings %}
+                                                        {% if notings %}
+                                                            {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                </td>
+
+                                                <td class="text-nowrap">
+                                                    <!-- 🔹 Hidden POST form -->
+                                                    <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+
+                                                    <!-- 🔹 Existing button to view trail -->
+                                                    <button type="button"
+                                                        class="btn btn-outline-info btn-sm"
+                                                        onclick="switchModal('{{ producer.id }}')">
+                                                        <i class="bi bi-toggles"></i> View Trail
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="10" class="text-center">No producers found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="newApplicationModal" tabindex="-1" aria-labelledby="newApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newApplicationModalLabel">New Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchNew" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="newTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.no</th>
+                                    <!-- <th>GST No</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Legal Name</th> -->
+                                    <!-- <th>Company Email</th> -->
+                                    <!-- <th>Authorized Person Name</th>
+                                    <th>Authorized Person Designation</th> -->
+                                    <!-- <th>Address</th> -->
+                                    <th>State</th>
+                                    <th>Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th>Last Comunicated date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status == 1 %}
+                                            {% get_counter count as count %}
+                                    <tr>
+                                        
+                                            <td class="serial-number">{{ count }}</td>
+                                            
+                                            <!-- <td>{{ producer.gst_no }}</td> -->
+                                            <td>{{ producer.company_name }}</td>
+                                            <!-- <td>{{ producer.legal_name }}</td> -->
+                                            <!-- <td>{{ producer.company_email }}</td> -->
+                                            <!-- <td>{{ producer.authorized_person_name }}</td>
+                                            <td>{{ producer.authorized_person_designation }}</td> -->
+                                            <!-- <td>{{ producer.registered_address }}</td> -->
+                                            <td>{{ producer.state }}</td>
+                                            <td>
+                                                {% for tx in fees_data %}
+                                                    {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                        {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {% with notings.0 as latest_note %}
+                                                            {% if latest_note.forwarded_to %}
+                                                                {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                <br>
+                                                                <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                            {% else %}
+                                                                User
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                            <!-- <td></td> -->
+                                            <td>
+                                                <form method="POST" action="{% url 'producer_details' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+                                                <!-- <a href="{% url 'producer_details' %}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-file-earmark-text"></i> View Application
+                                                </a> -->
+                                            </td>
+                                        
+                                    </tr>
+                                    {% endif %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No producers found.</td>
+                                </tr>
+                                
+                                {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reviewApplicationModal" tabindex="-1" aria-labelledby="reviewApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewApplicationModalLabel">Under Review Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchReview" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="reviewTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.no</th>
+                                    <!-- <th>GST No</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Legal Name</th> -->
+                                    <!-- <th>Company Email</th> -->
+                                    <!-- <th>Authorized Person Name</th>
+                                    <th>Authorized Person Designation</th> -->
+                                    <!-- <th>Address</th> -->
+                                    <th>State</th>
+                                    <th>Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th>Last Comunicated date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status == 2 %}
+                                            {% get_counter count as count %}
+                                            <tr>
+                                                
+                                                    <td class="serial-number">{{ count }}</td>
+                                                    
+                                                    <!-- <td>{{ producer.gst_no }}</td> -->
+                                                    <td>{{ producer.company_name }}</td>
+                                                    <!-- <td>{{ producer.legal_name }}</td> -->
+                                                    <!-- <td>{{ producer.company_email }}</td> -->
+                                                    <!-- <td>{{ producer.authorized_person_name }}</td>
+                                                    <td>{{ producer.authorized_person_designation }}</td> -->
+                                                    <!-- <td>{{ producer.registered_address }}</td> -->
+                                                    <td>{{ producer.state }}</td>
+                                                    <td>
+                                                        {% for tx in fees_data %}
+                                                            {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                                {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>
+                                                        {% with noting_dict|dictkey:producer.id as notings %}
+                                                            {% if notings %}
+                                                                {% with notings.0 as latest_note %}
+                                                                    {% if latest_note.forwarded_to %}
+                                                                        {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                        <br>
+                                                                        <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                                    {% else %}
+                                                                        User
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            {% else %}
+                                                                <span class="text-muted">-</span>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+
+                                                    <td>
+                                                        {% with noting_dict|dictkey:producer.id as notings %}
+                                                            {% if notings %}
+                                                                {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                            {% else %}
+                                                                <span class="text-muted">-</span>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+                                                    <!-- <td></td> -->
+                                                    <td>
+                                                        <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                                <i class="bi bi-file-earmark-text"></i> View Application
+                                                            </button>
+                                                        </form>
+                                                        <!-- <a href="{% url 'producer_detail' %}" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </a> -->
+                                                    </td>
+                                                
+                                            </tr>
+                                        {% endif %}
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="10" class="text-center">No producers found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="incompleteApplicationModal" tabindex="-1" aria-labelledby="incompleteApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="incompleteApplicationModalLabel">Incomplete Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchIncomplete" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="incompleteTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.no</th>
+                                    <!-- <th>GST No</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Legal Name</th> -->
+                                    <!-- <th>Company Email</th> -->
+                                    <!-- <th>Authorized Person Name</th>
+                                    <th>Authorized Person Designation</th> -->
+                                    <!-- <th>Address</th> -->
+                                    <th>State</th>
+                                    <th>Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th>Last Comunicated date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status == 3 %}
+                                            {% get_counter count as count %}
+                                            <tr>
+                                                
+                                                    <td class="serial-number">{{ count }}</td>
+                                                    
+                                                    <!-- <td>{{ producer.gst_no }}</td> -->
+                                                    <td>{{ producer.company_name }}</td>
+                                                    <!-- <td>{{ producer.legal_name }}</td> -->
+                                                    <!-- <td>{{ producer.company_email }}</td> -->
+                                                    <!-- <td>{{ producer.authorized_person_name }}</td>
+                                                    <td>{{ producer.authorized_person_designation }}</td> -->
+                                                    <!-- <td>{{ producer.registered_address }}</td> -->
+                                                    <td>{{ producer.state }}</td>
+                                                    <td>
+                                                        {% for tx in fees_data %}
+                                                            {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                                {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>
+                                                        {% with noting_dict|dictkey:producer.id as notings %}
+                                                            {% if notings %}
+                                                                {% with notings.0 as latest_note %}
+                                                                    {% if latest_note.forwarded_to %}
+                                                                        {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                        <br>
+                                                                        <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                                    {% else %}
+                                                                        User
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            {% else %}
+                                                                <span class="text-muted">-</span>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+
+                                                    <td>
+                                                        {% with noting_dict|dictkey:producer.id as notings %}
+                                                            {% if notings %}
+                                                                {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                            {% else %}
+                                                                <span class="text-muted">-</span>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+                                                    <!-- <td></td> -->
+                                                    <td>
+                                                        <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+                                                    </td>
+                                                
+                                            </tr>
+                                            {% endif %}
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="10" class="text-center">No producers found.</td>
+                                        </tr>
+                                
+                                {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="approvalApplicationModal" tabindex="-1" aria-labelledby="approvalApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approvalApplicationModalLabel">For Approval Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchApproval" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="approvalTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.no</th>
+                                    <!-- <th>GST No</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Legal Name</th> -->
+                                    <!-- <th>Company Email</th> -->
+                                    <!-- <th>Authorized Person Name</th>
+                                    <th>Authorized Person Designation</th> -->
+                                    <!-- <th>Address</th> -->
+                                    <th>State</th>
+                                    <th>Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th>Last Comunicated date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status == 4 %}
+                                            {% get_counter count as count %}
+                                    <tr>
+                                        
+                                            <td class="serial-number">{{ count }}</td>
+                                            
+                                            <!-- <td>{{ producer.gst_no }}</td> -->
+                                            <td>{{ producer.company_name }}</td>
+                                            <!-- <td>{{ producer.legal_name }}</td> -->
+                                            <!-- <td>{{ producer.company_email }}</td> -->
+                                            <!-- <td>{{ producer.authorized_person_name }}</td>
+                                            <td>{{ producer.authorized_person_designation }}</td> -->
+                                            <!-- <td>{{ producer.registered_address }}</td> -->
+                                            <td>{{ producer.state }}</td>
+                                            <td>
+                                                {% for tx in fees_data %}
+                                                    {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                        {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {% with notings.0 as latest_note %}
+                                                            {% if latest_note.forwarded_to %}
+                                                                {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                <br>
+                                                                <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                            {% else %}
+                                                                User
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                            <!-- <td></td> -->
+                                            <td>
+                                                <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+                                            </td>
+                                        
+                                    </tr>
+                                    {% endif %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No producers found.</td>
+                                </tr>
+                                
+                                {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="approvedApplicationModal" tabindex="-1" aria-labelledby="approvedApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approvedApplicationModalLabel">Approved Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchApproved" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="approvedTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.no</th>
+                                    <!-- <th>GST No</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Legal Name</th> -->
+                                    <!-- <th>Company Email</th> -->
+                                    <!-- <th>Authorized Person Name</th>
+                                    <th>Authorized Person Designation</th> -->
+                                    <!-- <th>Address</th> -->
+                                    <th>State</th>
+                                    <th>Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th>Last Comunicated date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status == 5 %}
+                                            {% get_counter count as count %}
+                                    <tr>
+                                        
+                                            <td class="serial-number">{{ count }}</td>
+                                            
+                                            <!-- <td>{{ producer.gst_no }}</td> -->
+                                            <td>{{ producer.company_name }}</td>
+                                            <!-- <td>{{ producer.legal_name }}</td> -->
+                                            <!-- <td>{{ producer.company_email }}</td> -->
+                                            <!-- <td>{{ producer.authorized_person_name }}</td>
+                                            <td>{{ producer.authorized_person_designation }}</td> -->
+                                            <!-- <td>{{ producer.registered_address }}</td> -->
+                                            <td>{{ producer.state }}</td>
+                                            <td>
+                                                {% for tx in fees_data %}
+                                                    {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                        {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {% with notings.0 as latest_note %}
+                                                            {% if latest_note.forwarded_to %}
+                                                                {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                <br>
+                                                                <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                            {% else %}
+                                                                User
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                            <!-- <td></td> -->
+                                            <td>
+                                                <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+                                            </td>
+                                        
+                                    </tr>
+                                    {% endif %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No producers found.</td>
+                                </tr>
+                                
+                                {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="grantedApplicationModal" tabindex="-1" aria-labelledby="grantedApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="grantedApplicationModalLabel">Granted Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchGranted" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="grantedTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.no</th>
+                                    <!-- <th>GST No</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Legal Name</th> -->
+                                    <!-- <th>Company Email</th> -->
+                                    <!-- <th>Authorized Person Name</th>
+                                    <th>Authorized Person Designation</th> -->
+                                    <!-- <th>Address</th> -->
+                                    <th>State</th>
+                                    <th>Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th>Last Comunicated date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status == 6 %}
+                                            {% get_counter count as count %}
+                                    <tr>
+                                        
+                                            <td class="serial-number">{{ count }}</td>
+                                            
+                                            <!-- <td>{{ producer.gst_no }}</td> -->
+                                            <td>{{ producer.company_name }}</td>
+                                            <!-- <td>{{ producer.legal_name }}</td> -->
+                                            <!-- <td>{{ producer.company_email }}</td> -->
+                                            <!-- <td>{{ producer.authorized_person_name }}</td>
+                                            <td>{{ producer.authorized_person_designation }}</td> -->
+                                            <!-- <td>{{ producer.registered_address }}</td> -->
+                                            <td>{{ producer.state }}</td>
+                                            <td>
+                                                {% for tx in fees_data %}
+                                                    {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                        {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {% with notings.0 as latest_note %}
+                                                            {% if latest_note.forwarded_to %}
+                                                                {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                <br>
+                                                                <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                            {% else %}
+                                                                User
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                            <!-- <td></td> -->
+                                            <td>
+                                                <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" action="{% url 'view_certificate' %}" style="display:inline;" target="_blank">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                    <button type="submit" class="btn btn-success btn-sm" >
+                                                        <i class="bi bi-file-earmark-text"></i> View Certificate
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        
+                                    </tr>
+                                    {% endif %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No producers found.</td>
+                                </tr>
+                                
+                                {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rejectedApplicationModal" tabindex="-1" aria-labelledby="rejectedApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectedApplicationModalLabel">Rejected Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchRejected" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="rejectedTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.no</th>
+                                    <!-- <th>GST No</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Legal Name</th> -->
+                                    <!-- <th>Company Email</th> -->
+                                    <!-- <th>Authorized Person Name</th>
+                                    <th>Authorized Person Designation</th> -->
+                                    <!-- <th>Address</th> -->
+                                    <th>State</th>
+                                    <th>Date of Application Submission</th>
+                                    <th>Currently with</th>
+                                    <th>Last Comunicated date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% with 0 as count %}
+                                    {% for producer in producers %}
+                                        {% if producer.status == 7 %}
+                                            {% get_counter count as count %}
+                                    <tr>
+                                        
+                                            <td class="serial-number">{{ count }}</td>
+                                            
+                                            <!-- <td>{{ producer.gst_no }}</td> -->
+                                            <td>{{ producer.company_name }}</td>
+                                            <!-- <td>{{ producer.legal_name }}</td> -->
+                                            <!-- <td>{{ producer.company_email }}</td> -->
+                                            <!-- <td>{{ producer.authorized_person_name }}</td>
+                                            <td>{{ producer.authorized_person_designation }}</td> -->
+                                            <!-- <td>{{ producer.registered_address }}</td> -->
+                                            <td>{{ producer.state }}</td>
+                                            <td>
+                                                {% for tx in fees_data %}
+                                                    {% if tx.owner_id|stringformat:"s" == producer.id|stringformat:"s" %}
+                                                        {{ tx.txn_date|date:"d M Y, H:i" }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {% with notings.0 as latest_note %}
+                                                            {% if latest_note.forwarded_to %}
+                                                                {{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"name" }}
+                                                                <br>
+                                                                <small class="text-muted">({{ user_dict|dictkey:latest_note.forwarded_to|dictkey:"role_name" }})</small>
+                                                            {% else %}
+                                                                User
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+
+                                            <td>
+                                                {% with noting_dict|dictkey:producer.id as notings %}
+                                                    {% if notings %}
+                                                        {{ notings.0.forwarded_at|date:"d M Y, H:i" }}
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                            <!-- <td></td> -->
+                                            <td>
+                                                <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ producer.id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+                                            </td>
+                                        
+                                    </tr>
+                                    {% endif %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No producers found.</td>
+                                </tr>
+                                
+                                {% endfor %}
+                                {% endwith %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="feesModal" tabindex="-1" aria-labelledby="feesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg custom-width">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="feesModalLabel">Producers and Registration Fees</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body w-100">
+                    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" id="searchFees" placeholder="Search..." class="form-control border-1 border-primary mb-2" style="max-width: 250px;">
+                        </div>
+                        <table id="feesTable" class="table table-bordered table-striped">
+                            <thead class="thead-dark text-nowrap text-center">
+                                <tr>
+                                    <th>S.No.</th>
+                                    <!-- <th>GST No.</th> -->
+                                    <th>Company Name</th>
+                                    <!-- <th>Email</th> -->
+                                    <th>Amount Paid</th>
+                                    <th>Date of Payment</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-nowrap text-center">
+                                {% for tx in fees_data %}
+                                <tr>
+                                    <td class="serial-number">{{ forloop.counter }}</td>
+                                    <!-- <td>{{ tx.gstno }}</td> -->
+                                    <td>{{ tx.owner.company_name }}</td>
+                                    <!-- <td>{{ tx.email }}</td> -->
+                                    <td>₹{{ tx.amount_initiated }}</td>
+                                    <td>{{ tx.txn_date|date:"d M Y, H:i" }}</td>
+                                    <td>
+
+                                        <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="producer_id" value="{{ tx.owner_id|encrypt_id }}">
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                                        </button>
+                                                    </form>
+                                        <!-- <a href="{% url 'producer_detail'  %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-file-earmark-text"></i> View Application
+                                        </a> -->
+                                        <form method="POST" action="{% url 'payment_receipt_admin' %}" style="display:inline;" target="_blank">
+                                            {% csrf_token %}
+                                            
+                                            <input type="hidden" name="producer_id" value="{{ tx.owner_id|encrypt_id }}">
+                                            <input type="hidden" name="order_id" value="{{ tx.order_id }}">
+                                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                                <i class="bi bi-file-earmark-text"></i> Payment Receipt
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No records available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% for producer in producers %}
+  {% if producer.status > 0 %}
+  <div class="modal fade" id="trailModal{{ producer.id }}" tabindex="-1" aria-labelledby="trailModalLabel{{ producer.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg">
+
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="trailModalLabel{{ producer.id }}">
+            <i class="bi bi-clock-history me-2"></i> Trail - <span class="text-warning">{{ producer.company_name }}</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+        {% with noting_dict|dictkey:producer.id as notings %}
+            {% if notings %}
+            <div class="timeline">
+                {% for note in notings %}
+                <div class="timeline-item mb-4 p-3 border rounded shadow-sm position-relative">
+                <!-- Top Row -->
+                <div class="d-flex justify-content-between mb-2">
+                    <div>
+                    <strong>From:</strong>
+                    {% if note.forwarded_from %}
+                    <span class="text-primary">{{ user_dict|dictkey:note.forwarded_from|dictkey:"name" }}</span>
+                    ({{ user_dict|dictkey:note.forwarded_from|dictkey:"role_name" }})
+                    {% else %}
+                    <span class="text-primary">User</span>
+                    {% endif %}
+                    </div>
+                    <div>
+                    <strong>To:</strong>
+                    {% if note.forwarded_to %}
+                    <span class="text-success">{{ user_dict|dictkey:note.forwarded_to|dictkey:"name" }}</span>
+                    ({{ user_dict|dictkey:note.forwarded_to|dictkey:"role_name" }})
+                    {% else %}
+                    <span class="text-success">User</span>
+                    {% endif %}
+                    </div>
+                </div>
+
+                <!-- Centered Comment -->
+                <div class="my-3">
+                    <i class="bi bi-chat-text me-1"></i>
+                    <strong>{{ note.comment }}</strong>
+                </div>
+
+                <!-- Bottom Right Date -->
+                <div class="d-flex justify-content-end mt-2">
+                    <small class="text-muted">
+                    <i class="bi bi-calendar-event"></i>
+                    {{ note.forwarded_at|date:"d M Y, H:i" }}
+                    </small>
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-center text-muted fst-italic my-4">No trail/comments available for this producer.</p>
+            {% endif %}
+        {% endwith %}
+        </div>
+
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Close
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endfor %}
+
+
+
+<script>
+function switchModal(producerId) {
+$('#totalApplicationModal').modal('hide');
+setTimeout(() => {
+    $('#trailModal' + producerId).modal({
+        backdrop: 'static',
+        keyboard: true
+    }).modal('show');
+}, 500); // Enough delay to allow previous modal to close fully
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const links = document.querySelectorAll('.app-count-link');
+
+  links.forEach(link => {
+    link.addEventListener('click', function () {
+      const userId = this.getAttribute('data-user-id');
+      
+      // Reset modal content
+      document.getElementById('modal-content-loader').classList.remove('d-none');
+      document.getElementById('application-table-wrapper').classList.add('d-none');
+      document.getElementById('application-table-body').innerHTML = '';
+      document.getElementById('no-applications').classList.add('d-none');
+
+      // Fetch applications
+      fetch(`/cpcb/get-applications/${userId}/`)
+        .then(response => response.json())
+        .then(data => {
+          const tableBody = document.getElementById('application-table-body');
+
+          if (data.applications.length > 0) {
+            data.applications.forEach((app, index) => {
+              const row = `
+                <tr>
+                  <td class="serial-number">${index + 1}</td>
+                  <td>${app.company_name}</td>
+                  <td>${app.state}</td>
+                  <td>${app.txn_date}</td>
+                  <td>
+                    ${app.forwarded_to_name}
+                    ${app.forwarded_to_role ? `<br><small class="text-muted">(${app.forwarded_to_role})</small>` : ''}
+                  </td>
+                  <td>${app.forwarded_at}</td>
+                  <td>
+                    <form method="POST" action="{% url 'producer_detail' %}" style="display:inline;">
+                      {% csrf_token %}
+                      
+                      <input type="hidden" name="producer_id" value="${app.encrypted_id}">
+                      <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-text"></i> View Application
+                      </button>
+                    </form>
+                  </td>
+                </tr>`;
+              tableBody.insertAdjacentHTML('beforeend', row);
+            });
+
+            document.getElementById('application-table-wrapper').classList.remove('d-none');
+          } else {
+            document.getElementById('no-applications').classList.remove('d-none');
+          }
+
+          document.getElementById('modal-content-loader').classList.add('d-none');
+        })
+        .catch(() => {
+          document.getElementById('modal-content-loader').textContent = 'Failed to load applications.';
+        });
+    });
+  });
+});
+</script>
+
+
+
+<script>
+// Simple live search
+document.getElementById('searchTotal').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#totalTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('totalTable'); // ← Add this
+});
+
+document.getElementById('searchNew').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#newTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('newTable'); // ← Add this
+});
+
+document.getElementById('searchReview').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#reviewTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('reviewTable'); // ← Add this
+});
+
+document.getElementById('searchIncomplete').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#incompleteTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('incompleteTable'); // ← Add this
+});
+
+document.getElementById('searchApproval').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#approvalTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('approvalTable'); // ← Add this
+});
+
+document.getElementById('searchApproved').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#approvedTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('approvedTable'); // ← Add this
+});
+
+document.getElementById('searchGranted').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#grantedTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('grantedTable'); // ← Add this
+});
+
+document.getElementById('searchRejected').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#rejectedTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('rejectedTable'); // ← Add this
+});
+
+document.getElementById('searchFees').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#feesTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('feesTable'); // ← Add this
+});
+
+document.getElementById('searchApplications').addEventListener('keyup', function () {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#applicationTable tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(filter) ? '' : 'none';
+  });
+
+  updateSerialNumbers('applicationTable'); // ← Add this
+});
+
+// Sort table by column
+// function sortTable(tableId, colIndex) {
+//   const table = document.getElementById(tableId);
+//   const tbody = table.tBodies[0];
+//   const rows = Array.from(tbody.rows);
+
+//   let asc = table.getAttribute('data-sort-dir') !== 'asc';
+//   rows.sort((a, b) => {
+//     let aText = a.cells[colIndex].textContent.trim();
+//     let bText = b.cells[colIndex].textContent.trim();
+//     let aNum = parseFloat(aText), bNum = parseFloat(bText);
+
+//     if (!isNaN(aNum) && !isNaN(bNum)) {
+//       return asc ? aNum - bNum : bNum - aNum;
+//     } else {
+//       return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+//     }
+//   });
+
+//   rows.forEach(row => tbody.appendChild(row));
+//   table.setAttribute('data-sort-dir', asc ? 'asc' : 'desc');
+
+//   updateSerialNumbers(tableId); // ← Add this
+// }
+function sortTable(tableId, colIndex) {
+  const table = document.getElementById(tableId);
+  const tbody = table.tBodies[0];
+  const rows = Array.from(tbody.rows);
+
+  let asc = table.getAttribute('data-sort-dir') !== 'asc'; // toggle sort
+
+  rows.sort((a, b) => {
+    let aText = a.cells[colIndex].textContent.trim();
+    let bText = b.cells[colIndex].textContent.trim();
+
+    // Try to convert to numbers if possible
+    let aNum = parseFloat(aText);
+    let bNum = parseFloat(bText);
+
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      return asc ? aNum - bNum : bNum - aNum;
+    } else {
+      return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    }
+  });
+
+  // Append sorted rows
+  rows.forEach(row => tbody.appendChild(row));
+  table.setAttribute('data-sort-dir', asc ? 'asc' : 'desc');
+}
+
+</script>
+
+<script>
+function updateSerialNumbers(tableId) {
+  const table = document.getElementById(tableId);
+  const rows = table.querySelectorAll('tbody tr');
+  let count = 1;
+  rows.forEach(row => {
+    if (row.style.display !== 'none') {
+      const serialCell = row.querySelector('.serial-number');
+      if (serialCell) serialCell.textContent = count++;
+    }
+  });
+}
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,34 @@
+.navbar {
+        background: linear-gradient(to right, #0a4d7a, #2d1c68);
+        /* background: linear-gradient(to right, #11998e, #38ef7d); */
+        /* background: linear-gradient(to right, #b92b27, #1565c0); */
+        /* background: linear-gradient(to right, #434343, #000000); */
+        color: white;
+    }
+    .required::after {
+            content: " *";
+            color: #D9534F;
+            font-weight: bold;
+        }
+    .batterynavigation {
+        width: 100%;
+        background-color: #343a40; /* Bootstrap dark */
+    }
+
+    .navbar-nav .nav-item.active > .nav-link, .navbar .nav-link
+    .navbar-nav .dropdown-menu .dropdown-item.active {
+        background-color: #ffffff33;
+        color: #ffcc00 !important;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+
+    .navbar .nav-link {
+        color: white !important;          
+        transition: color 0.3s ease;      
+    }
+
+    .navbar .nav-link:hover,
+    .navbar .nav-link:focus {
+        color: #ffcc00 !important;    
+    }

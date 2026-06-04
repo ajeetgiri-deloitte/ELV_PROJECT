@@ -1,0 +1,13 @@
+    .maincard {
+    --bs-card-border-width: 6px;
+    border-color: #9bd8e3;
+    padding:30px !important
+}
+.card1.mb-4.form-card.maincard {
+    /* background: red; */
+    border-radius: 8px;
+    border: 5px solid #9bd8e3;
+}
+#password {
+  background-color: white !important;
+}

@@ -1,0 +1,39 @@
+<div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+  <table class="table table-hover align-middle shadow-sm border rounded">
+    <thead class="table-dark sticky-top">
+      <tr>
+        <th scope="col">S.No.</th>
+        <th scope="col">Company Name</th>
+        <th scope="col">Address</th>
+        <th scope="col">State</th>
+        <th scope="col">Date of Submission</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in application_data %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ item.company_name }}</td>
+        <td>{{ item.address }}</td>
+        <td>{{ item.state }}</td>
+        <td>
+          {% if item.submission_date %}
+            <span class="badge bg-success">
+              {{ item.submission_date|date:"d M, Y" }}
+            </span>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="text-center text-muted py-4">
+          No applications found.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    
+  </table>
+</div>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Launching BillDesk...</title>
+
+  <!-- BillDesk SDK (module + fallback) -->
+  <script type="module" crossorigin src="https://pay.billdesk.com/jssdk/v1/dist/billdesksdk/billdesksdk.esm.js"></script>
+
+  <script nomodule crossorigin src="https://pay.billdesk.com/jssdk/v1/dist/billdesksdk.js"></script>
+
+  <!-- Optional (for debugging only) -->
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
+  <!-- BillDesk CSS -->
+  <link rel="stylesheet" href="https://pay.billdesk.com/jssdk/v1/dist/billdesksdk/billdesksdk.css">
+</head>
+
+<body>
+  <div id="spinner">Launching BillDesk SDK… please wait</div>
+
+  <script>
+    // Response callback
+    function responseHandler(response) {
+
+      console.log("BillDesk Response:", response);
+
+      if (response && response.status === 200) {
+
+        const encoded = btoa(JSON.stringify(response));
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "{{ return_url }}";
+
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "transaction_response";
+        input.value = encoded;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      }
+      else if (response && response.status === 111) {
+        window.location.href = "/producer/";
+      }
+      else {
+        alert("Payment Failed or Cancelled. Please try again.");
+      }
+    }
+
+    // BillDesk config
+    const config = {
+      responseHandler: responseHandler,
+      flowConfig: {
+        merchantId: "{{ merchant_id }}",
+        bdOrderId: "{{ bd_order_id }}",
+        authToken: "{{ auth_token }}",
+        returnUrl: "{{ return_url }}",
+        childWindow: false
+      },
+      flowType: "payments"
+    };
+
+    // Load SDK safely
+    window.addEventListener("load", function () {
+
+      document.getElementById("spinner").style.display = "none";
+
+      try {
+
+        if (window.BillDeskSDK && typeof BillDeskSDK.load === "function") {
+          BillDeskSDK.load(config);
+        } else if (window.loadBillDeskSdk) {
+          window.loadBillDeskSdk(config);
+        } else {
+          alert("BillDesk SDK failed to load. Please contact admin.");
+          console.error("BillDesk SDK object not found");
+        }
+
+      } catch (e) {
+        console.error("BillDesk init error", e);
+        alert("BillDesk initialization error");
+      }
+    });
+  </script>
+
+</body>
+</html>

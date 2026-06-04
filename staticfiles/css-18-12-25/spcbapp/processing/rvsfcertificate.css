@@ -1,0 +1,95 @@
+body {
+      font-family: "Times New Roman", Times, serif;
+      border: 6px double #000;
+      padding: 50px 70px;
+      width: 800px;
+      margin: auto;
+      background-color: #fff;
+      line-height: 1.6;
+    }
+
+    .certificate-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .certificate-header img {
+      height: 100px;
+      margin-bottom: 10px;
+    }
+
+    .certificate-header h2 {
+      margin: 5px 0;
+      font-size: 22px;
+      text-transform: uppercase;
+    }
+
+    .certificate-header h3 {
+      margin: 5px 0;
+      font-size: 18px;
+      text-decoration: underline;
+    }
+
+    .details {
+      margin-top: 20px;
+      font-size: 15px;
+    }
+
+    .details p {
+      margin: 6px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 15px;
+    }
+
+    table, th, td {
+      border: 1px solid #000;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+
+    .signature {
+      margin-top: 50px;
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .annexure {
+      page-break-before: always;
+      margin-top: 40px;
+    }
+
+    .annexure h4 {
+      text-align: center;
+      text-decoration: underline;
+    }
+
+    .annexure ol {
+      font-size: 14px;
+      margin-top: 15px;
+      padding-left: 18px;
+    }
+
+    .annexure li {
+      margin-bottom: 10px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 13px;
+      border-top: 1px solid #000;
+      padding-top: 10px;
+    }
+
+    @page {
+      size: A4;
+      margin: 30mm;
+    }

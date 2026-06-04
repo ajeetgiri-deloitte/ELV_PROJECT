@@ -1,0 +1,54 @@
+{% load static %}
+<style>
+    .row1.bg-dark {
+    margin: 0px;
+}
+</style>
+<!-- Fonts and icons -->
+<script src="{% static 'js/plugin/webfont/webfont.min.js' %}"></script>
+<script>
+    WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+        families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+        ],
+        urls: ["{% static 'css/fonts.min.css' %}", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"],
+        },
+        active: function () {
+        sessionStorage.fonts = true;
+        },
+    });
+</script>
+
+<div>
+    <div class="row1 bg-dark">
+        <p class="w-100 pl-3 mb-0 large" style="color: #FFFFFF; padding: 13px 10px; text-align: center;">
+            Website designed, developed & hosted by : IT Division, Central Pollution Control Board.
+        </p>
+    </div>
+</div>
+
+
+<!-- Add these in your <head> or before the closing </body> -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- ✅ jQuery first -->
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+ <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+
+<!-- ✅ Correct Popper.js version for Bootstrap 4 -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script> -->
+
+<!-- ✅ Then Bootstrap -->
+<!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+
+
+    {% block extra_scripts %}
+        <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        </script>
+    {% endblock %}

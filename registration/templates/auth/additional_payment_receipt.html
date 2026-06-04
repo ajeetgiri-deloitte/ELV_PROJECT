@@ -1,0 +1,243 @@
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Receipt</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f4f6f9;
+      padding: 40px;
+      margin: 0;
+      color: #333;
+    }
+
+    .receipt-container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007bff;
+      border-bottom: 2px solid #007bff;
+      display: inline-block;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+
+    .section {
+      margin: 25px 0;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .details p {
+      margin: 3px 0;
+      line-height: 1.6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .summary-row {
+      background: #f9f9f9;
+      font-weight: bold;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 40px;
+    }
+
+    .footer p {
+      margin: 6px 0;
+    }
+
+    .actions {
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 22px;
+      margin: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .btn-print {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-print:hover {
+      background: #218838;
+    }
+
+    .btn-back {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-back:hover {
+      background: #0056b3;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+{% if payment_success %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Swal.fire({
+      title: '🎉 Payment Successful!',
+      text: 'Your application has been submitted successfully.',
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+  });
+</script>
+{% endif %}
+
+<body>
+
+<div class="receipt-container" id="receipt">
+<div class="col-sm-1">
+    <img src="{% static 'img/golden_jubilee_logo.png' %}" class="circle responsive-img" style="width:100px">
+</div>
+  <div class="header">
+    <div class="title">PAYMENT RECEIPT</div>
+    <p><strong>Transaction No:</strong> {{ transaction_id }}</p>
+  </div>
+
+  <div class="section details">
+    <p class="label">Sender (Name and Address)</p>
+    <p>{{ producer.company_name }}<br>{{ producer.registered_address }}<br>PAN: {{ producer.pan_no }}</p>
+  </div>
+
+  <div class="section details">
+    <p class="label">Receiver (Name and Address)</p>
+    <p>Central Pollution Control Board <br> Parivesh Bhawan, East Arjun Nagar, Shahdara, Delhi-110032</p>
+  </div>
+
+  <div class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>S. No.</th>
+          <th>Financial Year</th>
+          <th>Annual Turnover (in Crores, INR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1.</td>
+          <td>2023-2024</td>
+          <td>{{ turnover_23_24 }}</td>
+        </tr>
+        <tr>
+          <td>2.</td>
+          <td>2024-2025</td>
+          <td>{{ turnover_24_25 }}</td>
+        </tr>
+        <tr class="summary-row">
+          <td colspan="2">Total Annual Turnover</td>
+          <td>{{ total_turnover }}</td>
+        </tr>
+        <tr class="summary-row">
+          <td colspan="2">Average Annual Turnover</td>
+          <td>{{ average_turnover|floatformat:2 }}</td>
+        </tr>
+        <tr class="summary-row">
+          <td colspan="2">Registration Fees Amount (INR)</td>
+          <td>₹{{ amount|intcomma }}</td>
+        </tr>
+        <!-- <tr class="summary-row">
+          <td colspan="2">Paid Amount (INR)</td>
+          <td>₹{{ total_paid_amount|intcomma }}</td>
+        </tr> -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section details">
+    <p><strong>Registration Fees Amount:</strong> ₹{{ amount|intcomma }}</p>
+    <p><strong>Payment Date:</strong> {{ transaction_date }}</p>
+    <!-- <p><strong>Payment Date:</strong> {{ transaction_date|date:"j F Y, g:i A" }}</p> -->
+    <p><strong>Payment Mode:</strong> Online</p>
+    <p><strong>Payment Status:</strong> <span class="success">{{ status|title }}</span></p>
+  </div>
+
+  <p><b>Note : The above transaction services are provided by BillDesk Payment Gateway.</b></p>
+
+  <!-- <div class="footer">
+    <p><strong>Name of the authorised person:</strong> CPCB</p>
+    <p><strong>Stamp of authorised person:</strong> ____________________</p>
+  </div> -->
+</div>
+
+<div class="actions">
+  <button class="btn btn-print" onclick="printReceipt()">Print Receipt</button>
+  {% if not request.path|slice:":6" == "/cpcb/" %}
+  <a href="{% url 'producer_dashboard' %}" class="btn btn-back">Back to Dashboard</a>
+  {% else %}
+  <a href="{% url 'admin_dashboard' %}" class="btn btn-back">Back to Dashboard</a>
+  {% endif %}
+</div>
+
+<script>
+  function printReceipt() {
+    const originalContent = document.body.innerHTML;
+    const receiptContent = document.getElementById("receipt").innerHTML;
+    document.body.innerHTML = receiptContent;
+    window.print();
+    document.body.innerHTML = originalContent;
+  }
+</script>
+
+</body>
+
+
+</html>

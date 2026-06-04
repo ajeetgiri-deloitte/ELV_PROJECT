@@ -1,0 +1,241 @@
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #495057;
+        }
+
+        .container-fluid {
+            padding: 20px;
+        }
+
+        h2 {
+            color: #0a96a8;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0f7fc;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(to right, #e0f7fc, #cef1f7);
+            color: #0a96a8;
+            font-weight: 600;
+            border: none;
+            padding: 15px 20px;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .progress-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+            margin: 30px 0;
+        }
+
+        .progressbar {
+            counter-reset: step;
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            list-style: none;
+            padding: 0;
+            position: relative;
+        }
+
+        .progressbar li {
+            position: relative;
+            flex: 1;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .progressbar li::before {
+            counter-increment: step;
+            content: counter(step);
+            width: 40px;
+            height: 40px;
+            border: 3px solid #ddd;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            line-height: 34px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .progressbar li::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: #ddd;
+            top: 20px;
+            left: -50%;
+            z-index: -1;
+            transition: all 0.3s ease;
+        }
+
+        .progressbar li:first-child::after {
+            content: none;
+        }
+
+        .progressbar li.completed::before {
+            border-color: #198754;
+            background-color: #198754;
+            color: white;
+            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+        }
+
+        .progressbar li.completed::after {
+            background-color: #198754;
+        }
+
+        .progressbar li.current::before {
+            border-color: #0dcaf0;
+            background-color: #0dcaf0;
+            color: white;
+            box-shadow: 0 4px 8px rgba(13, 202, 240, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+
+        .progressbar li.current {
+            font-weight: bold;
+            color: #0a96a8;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .table th {
+            background-color: #e0f7fc;
+            color: #0a96a8;
+            font-weight: 600;
+            padding: 15px;
+        }
+
+        .table td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .btn-warning {
+            background: linear-gradient(to bottom, #ffc107, #e0a800);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(to bottom, #e0a800, #d39e00);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 193, 7, 0.4);
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            padding: 15px 20px;
+        }
+
+        .alert-warning {
+            background: linear-gradient(to right, #fff3cd, #ffecb5);
+            color: #664d03;
+        }
+
+        .alert-warning a {
+            color: #664d03;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+            padding: 20px;
+            height: 100%;
+        }
+
+        .status-card h6 {
+            color: #0a96a8;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0f7fc;
+        }
+
+        .update-text {
+            font-style: italic;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .progressbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .progressbar li {
+                width: 100%;
+                text-align: left;
+                padding-left: 60px;
+                margin-bottom: 25px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .progressbar li::before {
+                position: absolute;
+                left: 0;
+                top: 0;
+                margin: 0;
+            }
+
+            .progressbar li::after {
+                width: 4px;
+                height: 100%;
+                top: 0;
+                left: 18px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+            }
+        }

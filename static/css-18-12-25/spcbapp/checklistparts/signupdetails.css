@@ -1,0 +1,10 @@
+.checklist-table select, .checklist-table input[type="text"] {
+        width: 100%;
+        padding: 5px;
+    }
+    .checklist-table th, .checklist-table td {
+        vertical-align: middle;
+    }
+    .checklist-table input[type="text"] {
+        min-height: 38px;
+    }

@@ -1,0 +1,82 @@
+/* Navbar */
+.navbar {
+    background-color: #0d3b66 !important;
+}
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .dropdown-toggle {
+    color: white !important;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #152238 !important;
+}
+.sidebar .sb-sidenav-menu-heading {
+    color: #ff9933; /* saffron heading */
+    font-weight: 600;
+}
+.sidebar .nav-link {
+    color: #fff !important;
+}
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: #224f86;
+    color: #fff !important;
+}
+.sb-sidenav-collapse-arrow i {
+    color: #fff !important;
+}
+
+/* Buttons */
+.btn-search {
+    border: 1px solid #ced4da;
+}
+.btn-edit {
+    background-color: #224f86;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 4px;
+}
+.btn-edit:hover {
+    background-color: #0a2a43;
+}
+.btn-view {
+    background-color: #138808;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 4px;
+}
+.btn-view:hover {
+    background-color: #0d6b3f;
+}
+
+/* Alerts / Messages */
+.message.error { background-color: #f8d7da; color: #842029; border-left: 4px solid #842029; }
+.message.success { background-color: #d1e7dd; color: #0f5132; border-left: 4px solid #0f5132; }
+.message.info { background-color: #cff4fc; color: #055160; border-left: 4px solid #055160; }
+.message.warning { background-color: #fff3cd; color: #664d03; border-left: 4px solid #664d03; }
+
+/* Typography */
+body {
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    color: #212529;
+    background-color: #f8f9fa;
+}
+h1, h2, h3, h4, h5, h6 {
+    color: #0d3b66;
+}
+
+/* Footer */
+footer {
+    background-color: #f8f9fa;
+    color: #212529;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Misc */
+.dropdown-menu {
+    background-color: #fff;
+}

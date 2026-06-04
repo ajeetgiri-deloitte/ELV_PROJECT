@@ -1,0 +1,237 @@
+{% extends "layouts/main.html" %}
+
+{% block content %}
+<!-- {{producer}} -->
+{% if user_type == 'Producer' %}
+    <div class="page-inner">
+        <h3 class="mb-4">Producer Application</h3>
+    </div>
+
+
+    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark text-nowrap text-center">
+                <tr>
+                    <th>Id</th>
+                    <th>GST No</th>
+                    <th>Company Name</th>
+                    <th>User Type</th>
+                    
+                    <th>Status</th>
+                    <th>Submitted On</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody class="text-nowrap text-center">
+                {% for item in producers %}
+                <tr>
+                    <form method="post" action="#">
+                        {% csrf_token %}
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.producer.gst_no }}</td>
+                        <td>{{ item.producer.company_name }}</td>
+                        <td>{{ item.entity_type }}</td>
+                        <!-- <td>{{ item.producer.user_type }}</td> -->
+                        
+                        <td>{{ item.status_name }}</td>
+                        <td>
+                            {% if item.submission_date %}
+                                {{ item.submission_date.txn_date|default:"-" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.producer.status == 0 %}
+                            <a href="/producer/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> Fill Form
+                            </a>
+                            {% endif %}
+                            {% if item.producer.status == 3 %}
+                            <a href="/producer/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> Edit Form
+                            </a>
+                            {% endif %}
+                            {% if item.producer.status >= 1 and item.producer.status != 3 %}
+                            <a href="/producer/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> View Form
+                            </a>
+                            {% endif %}
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center">No producers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{% if user_type == 'Consumer' %}
+    <div class="page-inner">
+        <h3 class="mb-4">Consumer Application</h3>
+    </div>
+
+    {% comment %} <div class="d-flex mb-5 w-100">
+        <div class="card shadow me-3 p-4 rounded-4 flex-grow-1" style="flex: 0 0 60%;">
+            <h5 class="mb-1 text-center text-info fw-bold">User</h5>
+            <h4 class="mb-2 text-center">{{ user.authorized_person_name }}</h4>
+            <p class="mb-4 text-center">{{ user.authorized_person_designation }}</p>
+
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <h5 class="mb-1 text-center text-info fw-bold">Phone No.</h5>
+                    <p class="mb-2 text-center">{{ user.authorized_person_mobile }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-1 text-center text-info fw-bold">Email Id</h5>
+                    <p class="mb-2 text-center">{{ user.authorized_person_email }}</p>
+                </div>
+            </div>
+        </div>
+
+    </div> {% endcomment %}
+
+    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark text-nowrap text-center">
+                <tr>
+                    <th>Id</th>
+                    <th>GST No</th>
+                    <th>Company Name</th>
+                    <th>User Type</th>
+                    <th>Submitted On</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody class="text-nowrap text-center">
+                {% for item in producers %}
+                <tr>
+                    <form method="post" action="#">
+                        {% csrf_token %}
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.producer.gst_no }}</td>
+                        <td>{{ item.producer.company_name }}</td>
+                        <td>{{ item.entity_type }}</td>
+                        <!-- <td>{{ item.producer.user_type }}</td> -->
+                        <td>{{ item.producer.created_at }}</td>
+                        <!-- <td>-</td>
+                        <td>#</td> -->
+                        
+                        <td>{{ item.status_name }}</td> 
+                        <td>
+                            {% if item.producer.status == 0 %}
+                            <a href="/consumer/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> Fill Form
+                            </a>
+                            {% endif %}
+                            {% if item.producer.status == 3 %}
+                            <a href="/consumer/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> Edit Form
+                            </a>
+                            {% endif %}
+                            {% if item.producer.status >= 1 and item.producer.status != 3 %}
+                            <a href="/consumer/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> View Form
+                            </a>
+                            {% endif %}
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center">No Consumers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+{% if user_type == 'Rvsf' %}
+    <div class="page-inner">
+        <h3 class="mb-4">Rvsf Application</h3>
+    </div>
+
+    {% comment %} <div class="d-flex mb-5 w-100">
+        <div class="card shadow me-3 p-4 rounded-4 flex-grow-1" style="flex: 0 0 60%;">
+            <h5 class="mb-1 text-center text-info fw-bold">User</h5>
+            <h4 class="mb-2 text-center">{{ user.authorized_person_name }}</h4>
+            <p class="mb-4 text-center">{{ user.authorized_person_designation }}</p>
+
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <h5 class="mb-1 text-center text-info fw-bold">Phone No.</h5>
+                    <p class="mb-2 text-center">{{ user.authorized_person_mobile }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-1 text-center text-info fw-bold">Email Id</h5>
+                    <p class="mb-2 text-center">{{ user.authorized_person_email }}</p>
+                </div>
+            </div>
+        </div>
+
+    </div> {% endcomment %}
+
+    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark text-nowrap text-center">
+                <tr>
+                    <th>Id</th>
+                    <th>GST No</th>
+                    <th>Company Name</th>
+                    <th>User Type</th>
+                    <th>Submitted On</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody class="text-nowrap text-center">
+                {% for item in producers %}
+                <tr>
+                    <form method="post" action="#">
+                        {% csrf_token %}
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.producer.gst_no }}</td>
+                        <td>{{ item.producer.company_name }}</td>
+                        <td>{{ item.entity_type }}</td>
+                        <!-- <td>{{ item.producer.user_type }}</td> -->
+                        <td>{{ item.producer.created_at }}</td>
+                        <!-- <td>-</td>
+                        <td>#</td> -->
+
+                        
+                        <td>{{ item.status_name }}</td>
+                        <td>
+                            {% if item.producer.status == 0 %}
+                            <a href="/rvsf/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> Fill Form
+                            </a>
+                            {% endif %}
+                            {% if item.producer.status == 3 %}
+                            <a href="/rvsf/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> Edit Form
+                            </a>
+                            {% endif %}
+                            {% if item.producer.status >= 1 and item.producer.status != 3 %}
+                            <a href="/rvsf/" class="btn btn-info btn-sm">
+                                <i class="bi bi-file-earmark-text"></i> View Form
+                            </a>
+                            {% endif %}
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center">No RVSFs found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

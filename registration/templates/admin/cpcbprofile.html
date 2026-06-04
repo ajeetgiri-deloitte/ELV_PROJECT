@@ -1,0 +1,156 @@
+{% extends 'layouts/main.html' %}
+
+{% block content %}
+    <div class="page-inner mb-5">
+        <a href="{% url 'admin_dashboard' %}" class="text-info text-decoration-none">
+            <i class="icon-home fs-4"></i>
+        </a>
+        <i class="breadcrumbs icon-arrow-right fs-6 mx-4"></i>
+    
+        <span class="fs-5">Edit Officers Account</span>
+    </div>
+    <div class="card mx-5">
+        <!-- Success Message Popup -->
+        {% if success_message %}
+            <div id="success-popup" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <strong>Success!</strong> {{ success_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+        
+        {% if error %}
+            <div id="error" class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                <strong>Error!</strong> {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        <div class="page-inner p-4 border border-2 border-info rounded-3">
+            <div style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Edit Officers Account</h5>
+            </div>
+            <hr>
+            
+            <form method="post" action="{% url 'updatecpcbprofile' %}">
+                {% csrf_token %}
+                <input type="hidden" name="hid_id" value="{{ officer_user.id }}">
+                <div class="row mt-4">
+                    <!-- First Name Field -->
+                    <div class="col-md-4 mb-3">
+                        <label for="id_first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" name="first_name" class="form-control" id="id_first_name" value="{{ officer_user.first_name }}" required>
+                    </div>
+                
+                    <!-- Last Name Field -->
+                    <div class="col-md-4 mb-3">
+                        <label for="id_last_name" class="form-label">Last Name </label>
+                        <input type="text" name="last_name" class="form-control" id="id_last_name" value="{{ officer_user.last_name }}">
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="col-md-4 mb-3">
+                        <label for="id_email" class="form-label">Email Id<span class="text-danger">*</span></label>
+                        <input type="email" name="email" class="form-control" id="id_email" value="{{ officer_user.email }}" required>
+                        {% if errors.email %}
+                            <div class="invalid-feedback">
+                                {{ errors.email.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="id_division" class="form-label">Designation <span class="text-danger">*</span></label>
+                        <select name="division" class="form-control" id="id_division" required>
+                            <option value="">Select Designation</option>
+                            {% for role in roles %}
+                                <option value="{{ role.id }}"
+                                    {% if role.id|stringformat:"s" == officer_user.division %}selected{% endif %}>
+                                    {{ role.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="id_mobile_no" class="form-label">Mobile No. <span class="text-danger">*</span></label>
+                        <input type="text" name="mobile_no" pattern="\d{10}" maxlength="10" class="form-control" id="id_mobile_no" value="{{ officer_user.mobile_no }}" required>
+                        {% if errors.mobile_no %}
+                            <div class="invalid-feedback">
+                                {{ errors.mobile_no.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <input type="hidden" name="is_staff" value="True">
+
+                <div class="row mt-3">
+                    <div class="captcha-container col-md-4">
+                        <div class="me-3" id="captcha-container">
+                            {{ form.captcha }}
+                        </div>
+                        {% for error in form.captcha.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            <button type="button" id="refresh_captcha" class="mt-2">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-info mt-3">Update Profile</button>
+            </form>
+        </div>
+    </div>
+
+
+<script>
+    // Show or hide the "Other" text input field based on selection
+    document.getElementById('id_division').addEventListener('change', function() {
+        var divisionSelect = document.getElementById('id_division');
+        var otherDivisionContainer = document.getElementById('other-division-container');
+        if (divisionSelect.value === 'other') {
+            otherDivisionContainer.style.display = 'block'; // Show input for "Other"
+        } else {
+            otherDivisionContainer.style.display = 'none'; // Hide input for "Other"
+        }
+    });
+</script>
+
+<script>
+    // Function to fade out alerts smoothly
+    function fadeOutAlert(id, timeout = 3000) {
+        setTimeout(function() {
+            let alertBox = document.getElementById(id);
+            if (alertBox) {
+                alertBox.classList.add('fade');
+                setTimeout(() => alertBox.style.display = 'none', 500); // Ensures smooth fade-out
+            }
+        }, timeout);
+    }
+
+    // Apply auto-hide on alerts
+    if (document.getElementById('success-popup')) fadeOutAlert('success-popup', 3000);
+    if (document.getElementById('error')) fadeOutAlert('error', 5000);
+    if (document.getElementById('error-popup')) fadeOutAlert('error-popup', 6000);
+</script>
+
+
+<script>
+    document.getElementById('refresh_captcha').addEventListener('click', function() {
+        
+        fetch("{% url 'refresh_captcha' %}")
+            .then(response => response.json())
+            .then(data => {
+                // alert(data.captcha_html);
+                document.getElementById('captcha-container').innerHTML = data.captcha_html;
+            })
+            .catch(error => console.error('Error refreshing captcha:', error));
+    });
+</script>
+
+
+{% endblock %}

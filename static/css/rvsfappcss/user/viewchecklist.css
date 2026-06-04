@@ -1,0 +1,20 @@
+
+  .checklist-table {
+    counter-reset: rowNumber;
+  }
+  .checklist-table tbody tr {
+    counter-increment: rowNumber;
+  }
+  .checklist-table tbody tr td:first-child::before {
+    content: counter(rowNumber) ".";
+    font-weight: bold;
+    margin-right: 0.4em;
+  }
+  .checklist-table td span,
+  .checklist-table td div {
+    display: block;
+    padding: 0.5rem;
+  }
+  .checklist-table td div {
+    background-color: #f8f9fa;
+  }

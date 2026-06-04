@@ -1,0 +1,214 @@
+{% extends 'layouts/main.html' %}
+
+{% block content %}
+<div class="page-inner mb-5">
+    <a href="{% url 'admin_dashboard' %}" class="text-info text-decoration-none">
+        <i class="icon-home fs-4"></i>
+    </a>
+    <i class="breadcrumbs icon-arrow-right fs-6 mx-4"></i>
+    <span class="fs-5">Create User</span>
+</div>
+
+<div class="card mx-5">
+    <!-- Success Message Popup -->
+        {% if success_message %}
+            <div id="success-popup" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <strong>Success!</strong> {{ success_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+        
+        {% if error %}
+            <div id="error" class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                <strong>Error!</strong> {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+    <div class="page-inner p-4 border border-2 border-info rounded-3">
+        <div style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Create New User</h5>
+        </div>
+        <hr>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mt-4">
+                <!-- First Name -->
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                        First Name <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" name="first_name"
+                           class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                           id="{{ form.first_name.id_for_label }}"
+                           value="{{ form.first_name.value|default_if_none:'' }}"
+                           placeholder="Enter First Name" required>
+                    {% for error in form.first_name.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Last Name -->
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                    <input type="text" name="last_name"
+                           class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                           id="{{ form.last_name.id_for_label }}"
+                           value="{{ form.last_name.value|default_if_none:'' }}"
+                           placeholder="Enter Last Name">
+                    {% for error in form.last_name.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                        Email Id <span class="text-danger">*</span>
+                    </label>
+                    <input type="email" name="email"
+                           class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                           id="{{ form.email.id_for_label }}"
+                           value="{{ form.email.value|default_if_none:'' }}"
+                           placeholder="Enter Email" required>
+                    {% for error in form.email.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Division -->
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.division.id_for_label }}" class="form-label">
+                        Designation <span class="text-danger">*</span>
+                    </label>
+                    <select name="division"
+                            class="form-control {% if form.division.errors %}is-invalid{% endif %}"
+                            id="{{ form.division.id_for_label }}" required>
+                        <option value="">Select Designation</option>
+                        {% for role in roles %}
+                            <option value="{{ role.id }}"
+                                {% if form.division.value|stringformat:"s" == role.id|stringformat:"s" %}selected{% endif %}>
+                                {{ role.name }}
+                            </option>
+                        {% endfor %}
+                        <!-- <option value="other">Other</option>  -->
+                    </select>
+                    {% for error in form.division.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Other Division Field (Textbox) -->
+                <!-- <div class="col-md-4 mb-3" id="other-division-container" style="display: none;">
+                    <label for="id_other_division" class="form-label">If Other, Please specify</label>
+                    <input type="text" name="other_division" class="form-control" id="id_other_division" placeholder="Enter Other Designation">
+                </div> -->
+                
+
+                <!-- Mobile -->
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.mobile_no.id_for_label }}" class="form-label">
+                        Mobile No. <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" name="mobile_no" maxlength="10"
+                           class="form-control {% if form.mobile_no.errors %}is-invalid{% endif %}"
+                           id="{{ form.mobile_no.id_for_label }}"
+                           value="{{ form.mobile_no.value|default_if_none:'' }}"
+                           placeholder="Enter Mobile No." required>
+                    {% for error in form.mobile_no.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Hidden Field for Is Staff -->
+            <input type="hidden" name="is_staff" value="True">
+
+            <!-- Captcha -->
+            <div class="row mt-3">
+                <div class="captcha-container col-md-4">
+                    <div class="me-3" id="captcha-container">
+                        {{ form.captcha }}
+                    </div>
+                    {% for error in form.captcha.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                    <button type="button" id="refresh_captcha" class="mt-2 btn btn-light btn-sm">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-info mt-3">Create User</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Show or hide the "Other" text input field based on selection
+    document.getElementById('id_division').addEventListener('change', function() {
+        var divisionSelect = document.getElementById('id_division');
+        var otherDivisionContainer = document.getElementById('other-division-container');
+        if (divisionSelect.value === 'other') {
+            otherDivisionContainer.style.display = 'block'; // Show input for "Other"
+        } else {
+            otherDivisionContainer.style.display = 'none'; // Hide input for "Other"
+        }
+    });
+</script>
+
+
+<script>
+    // Function to fade out alerts smoothly
+    function fadeOutAlert(id, timeout = 3000) {
+        setTimeout(function() {
+            let alertBox = document.getElementById(id);
+            if (alertBox) {
+                alertBox.classList.add('fade');
+                setTimeout(() => alertBox.style.display = 'none', 500); // Ensures smooth fade-out
+            }
+        }, timeout);
+    }
+
+    // Apply auto-hide on alerts
+    if (document.getElementById('success-popup')) fadeOutAlert('success-popup', 3000);
+    if (document.getElementById('error')) fadeOutAlert('error', 5000);
+    if (document.getElementById('error-popup')) fadeOutAlert('error-popup', 6000);
+</script>
+
+
+<script>
+    document.getElementById('refresh_captcha').addEventListener('click', function() {
+        fetch("{% url 'refresh_captcha' %}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('captcha-container').innerHTML = data.captcha_html;
+            })
+            .catch(error => console.error('Error refreshing captcha:', error));
+    });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Define a safe pattern: A-Z, a-z, 0-9, space, -, _, ., /
+    const safePattern = /[^A-Za-z0-9\s\-_,.\/@]/g;
+
+    // Apply to all input and textarea fields
+    document.querySelectorAll("input, textarea").forEach(field => {
+        field.addEventListener("input", function () {
+            // Remove unwanted characters
+            // For email field, allow '@' too
+            if (field.type === "email") {
+                this.value = this.value.replace(/[^A-Za-z0-9@._\-]/g, '');
+            } else {
+                this.value = this.value.replace(safePattern, '');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'layouts/main.html' %}
+{% block content %}
+
+<div class="page-inner mb-5">
+  <a href="{% url 'admin_dashboard' %}" class="text-info text-decoration-none">
+    <i class="icon-home fs-4"></i>
+  </a>
+  <i class="breadcrumbs icon-arrow-right fs-6 mx-4"></i>
+  <span class="fs-5">SPCB Users</span>
+</div>
+
+{% if messages %}
+<div class="mt-3 mx-5">
+    {% for message in messages %}
+        <div class="alert 
+            {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} 
+            alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="mb-3 d-flex justify-content-end">
+  <input type="text" id="spcbSearch" class="form-control" placeholder="Search users..." style="max-width: 300px;">
+</div>
+
+<div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+  <table class="table table-bordered table-striped" id="spcbUsersTable">
+    <thead class="table-head-bg-info text-nowrap text-center">
+      <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Mobile No.</th>
+        <th>Officer Name</th>
+        <th>Designation</th>
+        <th>Role</th>
+        <th>State</th>
+        <th>District</th>
+        <th>Action</th>
+        <th>Active/Inactive</th>
+      </tr>
+    </thead>
+
+    <tbody class="text-nowrap text-center">
+      {% for entry in users %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ entry.user.username }}</td>
+        <td>{{ entry.user.auth_email }}</td>
+        <td>{{ entry.user.auth_mobile }}</td>
+        <td>{{ entry.user.OfficerName }}</td>
+        <td>{{ entry.user.officerDesignation }}</td>
+        <td>{{ entry.role_name }}</td>
+        <td>{{ entry.state_name }}</td>
+        <td>{{ entry.district_name }}</td>
+
+        <td>
+          <form action="{% url 'ViewSpcbProfile' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="hidden_id" value="{{ entry.user.id }}">
+            <button type="submit" class="btn btn-success btn-sm">Edit Profile</button>
+          </form>
+        </td>
+
+        <td>
+          <form action="{% url 'toggle_spcb_user_status' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ entry.user.id }}">
+
+            <button type="submit" class="btn btn-link p-0 m-0" 
+                style="text-decoration:none; font-size: 1.5rem;">
+              {% if entry.user.DisableStatus %}
+                <i class="fas fa-user-slash text-danger" title="Disabled User"></i>
+              {% else %}
+                <i class="fas fa-user-check text-success" title="Enabled User"></i>
+              {% endif %}
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10" class="text-center">No users found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  // Auto fade-out alert messages
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      alert.classList.add('fade');
+      alert.classList.remove('show');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 3000);
+
+  // Live search filter + dynamic serial number numbering
+  document.getElementById('spcbSearch').addEventListener('keyup', function () {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#spcbUsersTable tbody tr');
+    let counter = 1;
+
+    rows.forEach(row => {
+      let text = row.textContent.toLowerCase();
+      if (text.includes(filter)) {
+        row.style.display = '';
+        row.querySelector('td:first-child').textContent = counter++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+{% endblock %}

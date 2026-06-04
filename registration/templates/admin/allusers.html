@@ -1,0 +1,49 @@
+{% extends 'layouts/main.html' %}
+
+{% block content %}
+
+<h3>Registered Users</h3>
+
+<div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark text-nowrap text-center">
+            <tr>
+                <th>#</th>
+                <th>GST No</th>
+                <th>Company Name</th>
+                <th>Legal Name</th>
+                <th>Company Email</th>
+                <th>Authorized Person Name</th>
+                <th>Authorized Person Designation</th>
+                <!-- <th>Action</th> -->
+            </tr>
+        </thead>
+        <tbody class="text-nowrap text-center">
+            {% for user in users %}
+            <tr>
+                <form method="post" action="#">
+                    {% csrf_token %}
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.gst_no }}</td>
+                    <td>{{ user.company_name }}</td>
+                    <td>{{ user.legal_name }}</td>
+                    <td>{{ user.company_email }}</td>
+                    <td>{{ user.authorized_person_name }}</td>
+                    <td>{{ user.authorized_person_designation }}</td>
+                    <!-- <td>
+                        <a href="/cpcb/producers/total/{{ user.id }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-file-earmark-text"></i> View Application
+                        </a>
+                    </td> -->
+                </form>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="text-center">No users found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
