@@ -1,0 +1,168 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-4">
+  <h3>Unit Capacity Details</h3>
+
+    <hr>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#equipmentModal">
+      Add Type of Vehicles
+  </button>
+  
+  <!-- Existing Table for Display -->
+  <table class="table table-bordered mt-3">
+    <thead class="table-light">
+      <tr>
+        <th>S.No</th>
+        <th>Type of Vehicles</th>
+        <th>Remove</th>
+      </tr>
+      {% for vehicle in Vehicledata %}
+<tr>
+  <td>{{ forloop.counter }}</td>
+  <td>{{ vehicle.vehicle_type }}{% if vehicle.vehicle_type == "Others" %} ({{ vehicle.Remarks }}){% endif %}</td>
+  <td>
+    <form method="post" action="{% url 'delete_vehicle_type' %}">
+      {% csrf_token %}
+      <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
+      <button class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Remove</button>
+    </form>
+  </td>
+</tr>
+{% endfor %}
+
+    </thead>
+    <tbody>
+      <!-- Optional: Render saved equipment rows here -->
+     
+    </tbody>
+  </table>
+  <div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+  
+        <!-- Modal Form Starts -->
+        <form action="{% url "AddVehicleType" %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="equipmentModalLabel">Add Type of Vehicles Scrapping at the Facility</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+  
+          <div class="modal-body">
+            <!-- Equipment Name -->
+            <div class="mb-3">
+              <label for="equipment_name" class="form-label">Type of Vehicles</label>
+              <select class="form-select" name="vehicle_type" id="vehicle_type_select" required onchange="toggleRemarksField()">
+                <option value="" disabled selected>-- Select Vehicle Type --</option>
+                <option value="2W">2W (Two-Wheeler)</option>
+                <option value="3W">3W (Three-Wheeler)</option>
+                <option value="LMV">LMV (Light Motor Vehicle)</option>
+                <option value="MMV">MMV (Medium Motor Vehicle)</option>
+                <option value="HMV">HMV (Heavy Motor Vehicle)</option>
+                <option value="Others">Others (Manual Entry)</option>
+              </select>
+            </div>
+            
+            <div class="mb-3" id="remarks_field" style="display: none;">
+              <label for="remarks" class="form-label">Others</label>
+              <input type="text" class="form-control" name="other_name" placeholder="Enter Vehicle Type">
+            </div>
+            
+  
+           
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success">Submit</button>
+          </div>
+        </form>
+        <!-- Modal Form Ends -->
+  
+      </div>
+    </div>
+  </div>
+</div>
+
+  <hr>
+  <h5 class="mt-4">Plant Capacity Details</h5>
+
+  <form action="{% url 'submit_plant_capacity' %}" method="post">
+    {% csrf_token %}
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Capacity Type</th>
+          <th>No. of Vehicles Scrapped / Annum</th>
+          <th>Quantity of Steel Scrapped / Annum (in MT)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Installed Capacity<br><small>(as per consents/licenses)</small></td>
+          <td>
+            <input type="number" class="form-control" name="installed_vehicles"
+                   value="{{ capacitydata.installed_vehicles|default:'' }}" required>
+          </td>
+          <td>
+            <input type="number" class="form-control" name="installed_steel"
+                   value="{{ capacitydata.installed_steel|default:'' }}" required>
+          </td>
+        </tr>
+     
+      <tr>
+        <td>
+          Operating Capacity<br><small>FY {{ year1 }}</small>
+          <input type="hidden" name="year1" value="{{ year1 }}">
+        </td>
+        <td>
+          <input type="number" class="form-control" name="operating_vehicles1" value="{{ capacitydata.operating_vehicles1 }}">
+        </td>
+        <td>
+          <input type="number" class="form-control"  name="operating_steel1"  value="{{ capacitydata.operating_steel1 }}" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Operating Capacity<br><small>FY {{ year2 }}</small>
+          <input type="hidden" name="year2" value="{{ year2 }}">
+        </td>
+        <td>
+          <input type="number" class="form-control" name="operating_vehicles2"  value="{{ capacitydata.operating_vehicles2 }}" required>
+        </td>
+        <td>
+          <input type="number" class="form-control" name="operating_steel2" value="{{ capacitydata.operating_steel2 }}" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Operating Capacity<br><small>FY {{ year3 }}</small>
+          <input type="hidden" name="year3" value="{{ year3 }}">
+        </td>
+        <td>
+          <input type="number" class="form-control"  name="operating_vehicles3" value="{{ capacitydata.operating_vehicles3 }}" required>
+        </td>
+        <td>
+          <input type="number" class="form-control" name="operating_steel3" value="{{ capacitydata.operating_steel3 }}" required>
+        
+        </td>
+      </tr>
+
+
+      
+      </tbody>
+    </table>
+    
+
+    <button type="submit" class="btn btn-primary">Save</button> 
+  </form>
+  
+   
+
+</div>
+
+
+{% endblock %}
+<!-- Load external JS -->
+<script src="{% static 'js/rvsfappjs/edit/editCapacityDetails.js' %}"></script>

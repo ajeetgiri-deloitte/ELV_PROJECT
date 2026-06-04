@@ -1,0 +1,136 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
+
+{% if messages %} <div class="container mt-3"> {% for message in messages %} <div class="alert alert-danger alert-dismissible fade show" role="alert"> {{ message }} </div> {% endfor %} </div> {% endif %}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+            <h4 class="mb-0">List of SPCB Users</h4>
+            <div class="input-group" style="width: 300px;">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search users...">
+                <span class="input-group-text"><i class="fa fa-search"></i></span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped  align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>Officer Name</th>
+                            <th>Designation</th>
+                            <th>Mobile No</th>
+                            <th>Email Id</th>
+                            <th>District</th>
+                            <th>User Name</th>
+                            <th>Role</th>
+                            <th>Assign Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ data.OfficerName }}</td>
+                            <td>{{ data.officerDesignation }}</td>
+                            <td>{{ data.auth_mobile }}</td>
+                            <td>{{ data.auth_email }}</td>
+                            <td>{{ data.district_name }}</td>
+                            <td>{{ data.username }}</td>
+                            <td>
+                                {% if data.RoleAccess == '0' %}
+                                    <span>No Data</span>
+                                {% elif data.RoleAccess == '2' %}
+                                    <span>Recommending Authority</span>
+                                {% elif data.RoleAccess == '3' %}
+                                    <span>Verification Authority</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- 🔐 ONLY THIS FORM IS ENCRYPTED -->
+                                <form action="{% url 'updateRole' %}"
+                                      method="post"
+                                      class="assign-role-form d-flex align-items-center gap-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="hidden_id" value="{{ data.id }}">
+                                    <select name="roleassign"
+                                            class="form-select form-select-sm"
+                                            required>
+                                        <option value="">Select Role</option>
+                                        <option value="3">Verification Authority</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        Assign
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔐 RSA ENCRYPTION SCRIPT -->
+<script>
+    // Full PEM key (base64-encoded on server)
+    const PUBLIC_KEY_PEM = atob("{{ public_key_b64 }}");
+
+    function rsaEncrypt(text) {
+        const encryptor = new JSEncrypt();
+        encryptor.setPublicKey(PUBLIC_KEY_PEM);
+
+        const encrypted = encryptor.encrypt(text);
+        if (!encrypted) {
+            alert("Encryption failed. Please refresh.");
+            return null;
+        }
+        return encrypted;
+    }
+
+    document
+        .querySelectorAll('.assign-role-form')
+        .forEach(form => {
+            form.addEventListener('submit', function (e) {
+
+                const idField   = form.querySelector('input[name="hidden_id"]');
+                const roleField = form.querySelector('select[name="roleassign"]');
+
+                if (!idField || !roleField) {
+                    e.preventDefault();
+                    return;
+                }
+
+                const payload = JSON.stringify({
+                    userid: idField.value,
+                    role: roleField.value
+                });
+
+                const encrypted = rsaEncrypt(payload);
+                if (!encrypted) {
+                    e.preventDefault();
+                    return;
+                }
+
+                idField.value = encrypted;
+                roleField.disabled = true; // prevent plaintext submit
+            });
+        });
+</script>
+
+<!-- jQuery Search -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/spcbapp/usermanagement/addnewrole.js' %}"></script>
+
+{% endblock %}

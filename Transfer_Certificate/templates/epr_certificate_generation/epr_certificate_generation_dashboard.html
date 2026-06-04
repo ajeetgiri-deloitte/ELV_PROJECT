@@ -1,0 +1,182 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .dashboard-header {
+        background: #2c3e50;
+        color: #fff;
+        padding: 13px 0;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.3rem;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .table td {
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .auto-calculated {
+        background-color: #f8f9fa;
+        /* font-style: italic; */
+        color: #6c757d;
+        text-align: center;
+    }
+    
+    .column-number {
+        font-weight: 600;
+        color: #495057;
+    }
+    .table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    text-align: center;
+    font-size: 0.85rem;
+
+    max-width: 25ch;      /* Wrap after approx 25 characters */
+    white-space: normal;  
+    word-break: break-word;
+}
+
+    
+</style>
+
+    <div class="mb-3 d-flex justify-content-end">
+        <a href="{% url 'certificate_generation_form' %}" class="btn btn-success">
+            Enter Sales Data
+        </a>
+    </div>
+
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <h1 class="h3 mb-0">Dashboard Summary</h1>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Summary Dashboard Table -->
+        <div class="dashboard-card">
+            <div class="card-body">
+                <div class="table-responsive w-100">
+                    <table id="generateCertificate" class="table table-bordered table-sm w-100">
+                        <thead>
+                            <tr>
+                                <th>S. No</th>
+                                <th>Total Qualified Quantity of Steel scrap recovered (Metric Ton)</th>
+                                <th>Total Certificate Generating Potential (Metric Ton)</th>
+                                <th>Total steel scrap Sold (Metric Ton)</th>
+                                <th>Remaining steel Scrap Quantity at RVSF (Metric Ton)</th>
+                                <th>EPR Certificate Generated (Metric Ton)</th>
+                                <th>Remaining Certificate Potential (Metric Ton)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="auto-calculated">1</td>
+                                <td class="auto-calculated">{{ qtySteelRecovered }}</td>
+                                <td class="auto-calculated">{{ certGeneratedPotential }}</td>
+                                <td class="auto-calculated">{{ steelScrapSold }}</td>
+                                <td class="auto-calculated">{{ remainSteelScrap }}</td>
+                                <td class="auto-calculated">{{ eprCertGenerated }}</td>
+                                <td class="auto-calculated">{{ remainCertPotential }}</td>
+                            </tr>
+                            <!-- <tr>
+                                <td class="auto-calculated">2</td>
+                                <td class="auto-calculated">From Production Table (Sum of S. No 7)</td>
+                                <td class="auto-calculated">From Production Table (Sum of S. No 10)</td>
+                                <td class="auto-calculated">From below Invoice Entries</td>
+                                <td class="auto-calculated">Auto-calculated (Col 2 – Col 4)</td>
+                                <td class="auto-calculated">Same as Col 4</td>
+                                <td class="auto-calculated">Col 3 – Col 6</td>
+                            </tr> -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<script>
+    $(document).ready(function () {
+
+        function initTable(tableId) {
+            $('#' + tableId).DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+
+                pageLength: 10,
+                lengthMenu: [5, 10, 25, 50, 100],
+
+                /* ✅ THIS IS THE KEY */
+                scrollY: "300px",
+                scrollCollapse: true,
+                scrollX: true,
+
+                order: [],
+                columnDefs: [
+                    { orderable: false, targets: 0 }
+                ],
+
+                language: {
+                    search: "Search:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    paginate: {
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+        }
+
+        initTable('generateCertificate');
+
+    });
+</script>
+
+{% endblock %}

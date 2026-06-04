@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification - RVSF</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/authentication/otpverify.css' %}">
+</head>
+<body>
+  <div class="otp-card text-center">
+    <h4 class="mb-3">OTP Verification</h4>
+    <p class="text-muted">Enter the 6-digit code sent to your registered email/mobile</p>
+
+    <!-- Using messages1 -->
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Dynamic Alert Container for AJAX responses -->
+    <div id="ajaxAlertContainer"></div>
+
+    <form method="POST" action="{% url 'verify_otp' %}">
+      {% csrf_token %}
+      <input type="hidden" name="username" value="{{ username }}">
+      <input type="hidden" name="password" value="{{ password }}">
+      
+      <div class="mb-3">
+        <label for="otp" class="form-label">Enter OTP</label>
+        <input type="text" id="otp" name="otp" class="form-control text-center" maxlength="6" autofocus>
+      </div>
+      
+      <!-- Captcha -->
+      <div class="mb-3">
+        <div class="me-3" id="captchaContainer"> 
+            {{ form.captcha }} 
+        </div> 
+        <button type="button" id="refreshCaptcha" class="btn btn-outline-secondary mt-2"> ↻ Refresh Captcha</button> 
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 mt-3">Verify</button>
+    </form>
+
+    <div class="mt-3">
+      <small class="text-muted">Didn’t receive the code?</small><br>
+      <button type="button" id="resendOtpBtn" class="btn btn-warning mt-2">Resend OTP</button>
+      <a href="{% url 'rvsf_home' %}" class="btn btn-secondary mt-2">Go Back</a>
+    </div>
+  </div>
+
+  <script>
+    // Simple function to show alerts
+    function showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-2`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.getElementById('ajaxAlertContainer');
+        container.appendChild(alertDiv);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alertDiv);
+                bsAlert.close();
+            }
+        }, 5000);
+    }
+
+    // Auto-dismiss existing alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+
+    // Captcha refresh
+    document.getElementById('refreshCaptcha').addEventListener('click', function() {
+        fetch("{% url 'refresh_captcha' %}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('captchaContainer').innerHTML = data.captcha_html;
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    // Resend OTP
+    document.getElementById("resendOtpBtn").addEventListener("click", function () {
+        const btn = this;
+        const originalText = btn.textContent;
+        
+        // Disable button immediately
+        btn.disabled = true;
+        btn.textContent = "Sending...";
+        
+        let formData = new FormData();
+        formData.append("username", "{{ username }}");
+        formData.append("password", "{{ password }}");
+        formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+        fetch("{% url 'resend_otp_rvsf' %}", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                // Show success alert
+                showAlert(data.message, 'success');
+                
+                // Disable button for 30 seconds
+                btn.textContent = "Wait 30s";
+                let seconds = 30;
+                const timer = setInterval(() => {
+                    seconds--;
+                    btn.textContent = `Wait ${seconds}s`;
+                    if (seconds <= 0) {
+                        clearInterval(timer);
+                        btn.textContent = originalText;
+                        btn.disabled = false;
+                    }
+                }, 1000);
+                
+            } else {
+                // Show error alert
+                showAlert(data.message, 'danger');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            showAlert('❌ Error sending OTP. Please try again.', 'danger');
+            btn.textContent = originalText;
+            btn.disabled = false;
+        });
+    });
+
+    // AES Encryption for OTP
+    document.addEventListener("DOMContentLoaded", function() {
+        const key = CryptoJS.enc.Utf8.parse("16charSecretKey!");
+        const iv = CryptoJS.enc.Utf8.parse("16charSecretIV!!");
+
+        const form = document.querySelector("form[action$='verify_otp']");
+        if (!form) return;
+
+        const hiddenOtp = document.createElement("input");
+        hiddenOtp.type = "hidden";
+        hiddenOtp.name = "enc_otp";
+        form.appendChild(hiddenOtp);
+
+        form.addEventListener("submit", function(e) {
+            const otpField = document.getElementById("otp");
+            const otpValue = otpField.value.trim();
+
+            if (otpValue.length !== 6) {
+                showAlert("Please enter a valid 6-digit OTP.", 'warning');
+                e.preventDefault();
+                return;
+            }
+
+            // Encrypt OTP
+            const encrypted = CryptoJS.AES.encrypt(otpValue, key, {
+                iv: iv,
+                padding: CryptoJS.pad.Pkcs7
+            }).toString();
+
+            hiddenOtp.value = encrypted;
+            otpField.value = "";
+        });
+    });
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- CryptoJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    h4 {
+    color: #ffffff !important;
+}
+/* ================= DASHBOARD HEADER ================= */
+.dashboard-header {
+    /* background: linear-gradient(135deg, #0b3c5d, #1f5f8b); */
+    background: #2c3e50;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 25px;
+    border-radius: 14px;
+}
+
+.dashboard-header h4 {
+    margin-bottom: 4px;
+}
+
+/* ================= KPI CARDS ================= */
+.kpi-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border-left: 6px solid #6c757d;
+    transition: all 0.25s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+
+.kpi-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.kpi-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #212529;
+    margin-top: 6px;
+}
+
+.kpi-green { border-left-color: #28a745; }
+.kpi-blue  { border-left-color: #0d6efd; }
+
+/* ================= SECTION TITLE ================= */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0b3c5d;
+    margin: 30px 0 12px;
+    border-left: 5px solid #0b3c5d;
+    padding-left: 10px;
+}
+
+/* ================= CARDS ================= */
+.dashboard-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+/* ================= TABLE ================= */
+.table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #0b3c5d;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+    vertical-align: middle;
+
+    /* dark but thin header border */
+    /* border-bottom: 3px solid rgba(44, 62, 80, 0.8) !important; */
+}
+
+/* body cells */
+.table tbody td {
+    font-size: 0.9rem;
+    text-align: center;
+    vertical-align: middle;
+
+    /* thin dark border */
+    border: 1px solid #2c3e50 !important;
+}
+
+/* reduce visual noise */
+.table tbody tr td {
+    border-top: none !important;
+}
+
+/* hover */
+.table tbody tr:hover {
+    background-color: rgba(44, 62, 80, 0.05);
+}
+
+/* footer / total row */
+.total-row td {
+    background: #f1f6fb !important;
+    font-weight: 700;
+    text-align: center;
+    /* border-top: 3px solid rgba(44, 62, 80, 0.8) !important; */
+}
+
+/* left align TOTAL label */
+.total-row td:first-child {
+    text-align: left;
+    padding-left: 15px;
+}
+
+/* table outer border only */
+.table-bordered {
+    border: 1px solid #2c3e50 !important;
+}
+
+/* ================= BUTTON ================= */
+.btn-success {
+    box-shadow: 0 4px 10px rgba(40,167,69,0.25);
+}
+</style>
+
+
+
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="dashboard-header text-center">
+        <h4 class="fw-bold">Procurement Dashboard</h4>
+        <small>Financial Year: {{ selected_fy }}</small>
+    </div>
+
+    {% if messages %}
+<div class="container-fluid mt-2">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+    <!-- FILTER & ADD BUTTON -->
+    <form method="get" class="row align-items-center mb-4">
+        <div class="col-md-3">
+            <select name="fy" class="form-select" onchange="this.form.submit()">
+                <option value="" disabled>Select Financial Year</option>
+                {% for year in fy_list %}
+                <option value="{{ year }}" {% if year == selected_fy %}selected{% endif %}>
+                    {{ year }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-9 text-end mt-3 mt-md-0">
+            <a href="{% url 'add_procurement_details' %}" class="btn btn-success px-4">
+                <i class="fa fa-plus me-1"></i> Add Procurement Details
+            </a>
+        </div>
+    </form>
+
+    <!-- KPI CARDS -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div class="kpi-title">Opening Balance</div>
+                <div class="kpi-value">{{ total_opening }}</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card kpi-green">
+                <div class="kpi-title">Total ELV Procured</div>
+                <div class="kpi-value">{{ total_procured }}</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="kpi-card kpi-blue">
+                <div class="kpi-title">ELV Available</div>
+                <div class="kpi-value">{{ total_available }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ELV TABLE -->
+    <div class="section-title">
+        <i class="fa fa-truck me-2"></i> Procurred ELV
+    </div>
+
+    <div class="dashboard-card">
+        <div class="table-responsive">
+            <table id="elvTable" class="table table-bordered w-100">
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Type of ELV</th>
+                        <th>Opening Balance</th>
+                        <th>Procured</th>
+                        <th>Available at RVSF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ row.elv_name }}</td>
+                        <td>{{ row.opening_qty }}</td>
+                        <td>{{ row.procured_qty }}</td>
+                        <td>{{ row.available_qty }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2">Total</td>
+                        <td>{{ total_opening }}</td>
+                        <td>{{ total_procured }}</td>
+                        <td>{{ total_available }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- STEEL SCRAP TABLE -->
+    <div class="section-title">
+        <i class="fa fa-industry me-2"></i> Procurred Automobile Steel Scrap
+    </div>
+
+    <div class="dashboard-card">
+        <div class="table-responsive">
+            <table id="autoSteelTable" class="table table-bordered w-100">
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Material</th>
+                        <th>Quantity (Metric Ton)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="fw-bold">
+                        <td>1</td>
+                        <td>Automobile Steel Scrap</td>
+                        <td>{{ automobile_qty }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#elvTable, #autoSteelTable').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        scrollY: "300px",
+        scrollCollapse: true,
+        scrollX: true,
+        order: []
+    });
+});
+</script>
+
+<script>
+setTimeout(function () {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+}, 4000);
+</script>
+
+{% endblock %}

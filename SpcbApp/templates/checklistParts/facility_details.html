@@ -1,0 +1,166 @@
+<form action="{% url 'PostFacilityCheckList' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+
+    <table class="checklist-table">
+        <thead>
+            <tr>
+                <th>Checklist Item</th>
+                <th>Yes / No</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>Provided Geo-tagged video of RVSF *</td>
+                <td>
+                    <select name="geo_tagged_video" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if facility.geo_tagged_video %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if facility and not facility.geo_tagged_video %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_geo_tagged_video" value="{{ facility.remarks_geo_tagged_video }}"
+                    class="form-control remarks-field" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided Total area of the RVSF (in sq meter) *</td>
+                <td>
+                    <select name="total_rvsf_area" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if facility.total_rvsf_area %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if facility and not facility.total_rvsf_area %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_total_rvsf_area" value="{{ facility.remarks_total_rvsf_area }}"
+                    class="form-control remarks-field" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided No. of shifts operated per day *</td>
+                <td>
+                    <select name="shift_number" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if facility.shift_number %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if facility and not facility.shift_number %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_shift_number" value="{{ facility.remarks_shift_number }}"
+                    class="form-control remarks-field" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Sanctioned Power Load (kWh) *</td>
+                <td>
+                    <select name="sanctioned_power" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if facility.sanctioned_power %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if facility and not facility.sanctioned_power %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_sanctioned_power" value="{{ facility.remarks_sanctioned_power }}"
+                    class="form-control remarks-field" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided No. of employees working *</td>
+                <td>
+                    <select name="employees_number" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if facility.employees_number %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if facility and not facility.employees_number %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_employees_number" value="{{ facility.remarks_employees_number }}"
+                    class="form-control remarks-field" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</form>
+
+
+<form action="{% url "ViewFacilityDetails" %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+    <tr>
+        <td colspan="3"> 
+            <button type="submit" class="btn btn-warning">View Submitted Data</button>
+        </td>
+    </tr>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    
+        const selects = document.querySelectorAll('.check-select');
+        const form = document.querySelector("form[action*='PostFacilityCheckList']");
+    
+        function updateRemarksState(select, remarks) {
+            const hasValue = remarks.value.trim() !== '';
+    
+            if (select.value === 'Yes') {
+                remarks.disabled = false;
+                remarks.removeAttribute('required');
+                remarks.style.backgroundColor = '#e9ecef';
+                remarks.style.borderColor = '#ccc';
+            }
+            else if (select.value === 'No') {
+                remarks.disabled = false;
+                remarks.setAttribute('required', 'required');
+                remarks.style.backgroundColor = '#ffffff';
+                remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+            }
+            else {
+                remarks.disabled = false;
+                remarks.setAttribute('required', 'required');
+                remarks.style.backgroundColor = '#ffffff';
+                remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+            }
+        }
+    
+        // Initialize rows on load
+        selects.forEach(select => {
+            const row = select.closest('tr');
+            const remarks = row.querySelector('.remarks-field');
+    
+            updateRemarksState(select, remarks);
+    
+            select.addEventListener('change', () => updateRemarksState(select, remarks));
+            remarks.addEventListener('input', () => updateRemarksState(select, remarks));
+        });
+    
+        // Prevent submit when NO + empty remarks
+        form.addEventListener('submit', function (e) {
+            let valid = true;
+    
+            selects.forEach(select => {
+                const row = select.closest('tr');
+                const remarks = row.querySelector('.remarks-field');
+    
+                if (select.value === 'No' && remarks.value.trim() === '') {
+                    remarks.style.borderColor = 'red';
+                    valid = false;
+                }
+            });
+    
+            if (!valid) {
+                e.preventDefault();
+                alert("❗ Please fill remarks for all fields where 'No' is selected.");
+            }
+        });
+    
+    });
+    </script>
+    

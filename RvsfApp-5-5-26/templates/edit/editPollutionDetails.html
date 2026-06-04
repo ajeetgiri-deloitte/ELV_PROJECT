@@ -1,0 +1,184 @@
+{% extends "layouts/sidebar.html" %}
+{% block content %}
+
+
+<h3 class="text-primary">1. Pollution Control Devices</h3>
+<button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#deviceModal">Add Device</button>
+<table class="table table-bordered">
+  <thead><tr><th>#</th><th>Type</th><th>Name</th><th>Qty</th><th>Image</th><th>Remove</th></tr></thead>
+  <tbody>
+    {% for eq in devices %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ eq.device_type }}</td>
+        <td>{{ eq.name }}</td>
+        <td>{{ eq.quantity }}</td>
+        <td>{% if eq.device_doc %}<a href="{{ eq.device_doc.url }}" target="_blank">View</a>{% else %}-{% endif %}</td>
+        <td>
+          <form method="post" action="{% url 'deletedevice' %}">
+            {% csrf_token %}
+            <input type="hidden" name="device_id" value="{{ eq.id }}">
+            <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this device?');">Remove</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="text-center">No devices yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h4 class="text-primary mt-4">(2).Details of the categories of waste recycled/refurbished in the unit/sent to registered entities or reuse, recycling and refurbishing in last FY</h4>
+<button class="btn btn-secondary mb-2" data-bs-toggle="modal" data-bs-target="#wasteModal">Add Waste Entry</button>
+<div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+    <table class="table table-bordered mb-0">
+      <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+        <tr>
+          <th>#</th>
+          <th>Category of waste</th>
+          <th>Waste Quantity Recovered</th>
+          <th>Quantity of waste recycled/refurbished by authorized recyclers</th>
+          <th>Name(s) of registered recycler(s)/refurbished(s) to whom sent</th>
+          <th>Agreement details between RVSFs and registered recycler(s)/refurbished(s)</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for w in wastes %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ w.category }}</td>
+          <td>{{ w.qty_recovered }}</td>
+          <td>{{ w.qty_recycled }}</td>
+          <td>{{ w.recycler_name }}</td>
+          <td>
+            {% if w.agreement %}
+              <a href="{{ w.agreement.url }}" target="_blank">View</a>
+            {% else %}
+              &mdash;
+            {% endif %}
+          </td>
+          <td>
+            <form method="post" action="{% url 'delete_waste' %}">
+              {% csrf_token %}
+              <input type="hidden" name="waste_id" value="{{ w.id }}">
+              <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this entry?');">
+                Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center">No entries yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+
+<!-- Device Modal -->
+<div class="modal fade" id="deviceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="post" enctype="multipart/form-data" action="{% url "add_device" %}" class="modal-content">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Pollution Control Device</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label><strong>Type of Pollution Control Device</strong></label>
+            <select name="pollutionType" class="form-control" required>
+              <option value="">Select Type</option>
+              <option value="Air">Air</option>
+              <option value="Water">Water</option>
+              <option value="Noise">Noise</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label><strong>Name of Pollution Control Device</strong></label>
+            <input type="text" name="pollution_control_name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label><strong>No. of Devices</strong></label>
+            <input type="number" name="number_of_devices" class="form-control" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label><strong>Upload Image of Device</strong></label>
+            <input type="file" name="device_doc" class="form-control" accept="image/*" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="device-submit" class="btn btn-primary">Save Device</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- Waste Modal -->
+<!-- Waste Modal -->
+<div class="modal fade" id="wasteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <form method="post" enctype="multipart/form-data" action="{% url 'add_waste' %}" class="modal-content">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Add Waste Recycling Entry</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label><strong>Category of Waste</strong></label>
+              <select name="category" class="form-select" required>
+                <option value="">Select category</option>
+                <option value="Used oil">Used oil</option>
+                <option value="Plastic Waste">Plastic Waste</option>
+                <option value="Battery Waste">Battery Waste</option>
+                <option value="Tyre Waste">Tyre Waste</option>
+                <option value="E Waste">E Waste</option>
+                <option value="Steel scrap">Steel scrap</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label><strong>If Other, specify</strong></label>
+              <input type="text" name="category_other" class="form-control" placeholder="Specify if other">
+            </div>
+            <div class="col-md-6">
+              <label><strong>Quantity Waste Recovered</strong></label>
+              <input type="number" name="qty_recovered" class="form-control" min="0" step="any" required>
+            </div>
+            <div class="col-md-6">
+              <label><strong>Quantity Recycled / Refurbished</strong></label>
+              <input type="number" name="qty_recycled" class="form-control" min="0" step="any" required>
+            </div>
+            <div class="col-md-12">
+              <label><strong>Name(s) of registered recycler(s)/refurbisher(s)</strong></label>
+              <input type="text" name="recycler_name" class="form-control" placeholder="Enter names (comma separated)" required>
+            </div>
+            <div class="col-md-12">
+              <label><strong>Agreement Details</strong></label>
+              <textarea name="agreement_details" class="form-control" rows="3" placeholder="Describe agreement terms" required></textarea>
+            </div>
+            <div class="col-md-12">
+              <label><strong>Upload Agreement (PDF)</strong></label>
+              <input type="file" name="agreement" class="form-control" accept="application/pdf" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="waste-submit" class="btn btn-success">Save Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+
+{% endblock %}
+
+
+

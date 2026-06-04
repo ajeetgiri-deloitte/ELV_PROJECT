@@ -1,0 +1,797 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/viewchecklist.css' %}">
+
+<div class="container my-4">
+  <div class="table-responsive">
+    <table class="checklist-table table table-bordered table-striped table-hover">
+      <thead class="thead-light">
+        <tr>
+            <th colspan="3"><h4>(A).Signup Checklist</h4></th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Checklist Item</th>
+          <th>Yes / No</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>Recyclers Name and address *</td>
+          <td><span>{{ signup.name_address }}</span></td>
+          <td><div>{{ signup.remarks_name_address }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Company Email *</td>
+          <td><span>{{ signup.company_email }}</span></td>
+          <td><div>{{ signup.remarks_company_email }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Upload GST Certificate *</td>
+          <td><span>{{ signup.gst_certificate }}</span></td>
+          <td><div>{{ signup.remarks_gst_certificate }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided and Uploaded PAN Card of company *</td>
+          <td><span>{{ signup.company_pan_card }}</span></td>
+          <td><div>{{ signup.remarks_company_pan_card }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided and Uploaded TIN of company *</td>
+          <td><span>{{ signup.company_tin }}</span></td>
+          <td><div>{{ signup.remarks_company_tin }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided and Uploaded CIN of company *</td>
+          <td><span>{{ signup.company_cin }}</span></td>
+          <td><div>{{ signup.remarks_company_cin }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided and Uploaded IEC of company *</td>
+          <td><span>{{ signup.company_iec }}</span></td>
+          <td><div>{{ signup.remarks_company_iec }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Authorized Person Details (Name, Email ID, Mobile No, PAN card) *</td>
+          <td><span>{{ signup.auth_person_details }}</span></td>
+          <td><div>{{ signup.remarks_auth_person_details }}</div></td>
+        </tr>
+      </tbody>
+    </table>
+
+
+    <table class="checklist-table table table-bordered table-striped table-hover">
+        <thead class="thead-light">
+            <tr>
+                <th colspan="3"><h4>(B).General Details Checklist</h4></th>
+            </tr>
+          <tr>
+            <th>#</th>
+            <th>Checklist Item</th>
+            <th>Yes / No</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td>Provided Address *</td>
+            <td><span>{{ general.rvsf_address }}</span></td>
+            <td><div>{{ general.remarks_rvsf_address }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Provided GPS location (Latitude, Longitude) *</td>
+            <td><span>{{ general.gps_location }}</span></td>
+            <td><div>{{ general.remarks_gps_location }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Provided State *</td>
+            <td><span>{{ general.rvsf_state }}</span></td>
+            <td><div>{{ general.remarks_rvsf_state }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Provided and Uploaded CTO Certificate *</td>
+            <td><span>{{ general.cto_certificate }}</span></td>
+            <td><div>{{ general.remarks_cto_certificate }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Validity of CTO *</td>
+            <td><span>{{ general.cto_validity }}</span></td>
+            <td><div>{{ general.remarks_cto_validity }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Provided and Uploaded HOWM Authorization Certificate *</td>
+            <td><span>{{ general.howm_certificate }}</span></td>
+            <td><div>{{ general.remarks_howm_certificate }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Provided and Uploaded DIC registration certificate *</td>
+            <td><span>{{ general.dic_certificate }}</span></td>
+            <td><div>{{ general.remarks_dic_certificate }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Provided and Uploaded RVSF Certificate (Form 1A Under Motor Vehicles Rules, 2021) *</td>
+            <td><span>{{ general.rvsf_certificate }}</span></td>
+            <td><div>{{ general.remarks_rvsf_certificate }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Validity of RVSF Certificate *</td>
+            <td><span>{{ general.rvsf_certificate_validity }}</span></td>
+            <td><div>{{ general.remarks_rvsf_certificate_validity }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Upload Process Flow Diagram with brief write‑up *</td>
+            <td><span>{{ general.process_flow }}</span></td>
+            <td><div>{{ general.remarks_process_flow }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Upload Material Balance Sheet *</td>
+            <td><span>{{ general.material_balance_sheet }}</span></td>
+            <td><div>{{ general.remarks_material_balance_sheet }}</div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Uploaded Annual Return (Form 4 of HOWM Rules, 2016) last 2 FY *</td>
+            <td><span>{{ general.annual_return }}</span></td>
+            <td><div>{{ general.remarks_annual_return }}</div></td>
+          </tr>
+            <table class="table table-bordered">
+              <tr>
+                <th>SPCB Comments</th>
+                <td colspan="2">{{ edit1.SPCBComments }} <br> {{ edit1.SPCBCommentDate }}</td>
+                <td>
+                  <form action="{% url "editGeneralDetails" %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="industryid" value='{{ general.Industryid }}'>
+                    <button type="submit" class="btn btn-primary">Edit Application</button>
+                  </form>
+                </td>
+              </tr>
+            </form>
+              <form action="{% url "AddResponse" %}" method="post">
+                {% csrf_token %}  
+                <input type="hidden" name="editmode" value="{{ edit1.EditMode}}">
+                <input type="hidden" name="industryid" value="{{ edit1.industryid}}">  
+              <tr>
+                <th>Industry Response</th>
+                <td colspan="3">
+                  <textarea name="industry_response" id="industry_response" cols="70" rows="5" class="form-control" required>{{ edit1.UnitComments }}</textarea>
+                </td>
+              </tr>
+          
+              <tr>
+                <td colspan="4" class="text-end">
+                  <input type="hidden" name="industryid" value="{{ edit1.industryid }}">
+                  <button type="submit" class="btn btn-success">Add Response</button>
+                </td>
+              </tr>
+            </form>
+            </table>
+          
+          
+          
+          
+         <tr>
+            <th colspan="4">
+              
+            </th>
+          </tr>
+        </tbody>
+    </table>
+
+
+    <table class="checklist-table table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th colspan="4"><h4>(C) Equipment Details Checklist</h4></th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Checklist Item</th>
+          <th>Yes / No</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>Provided Dismantling Equipment details and corresponding Geo‑tagged photos *</td>
+          <td><span>
+            {% if equipment.dismantling_equipment %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ equipment.remarks_dismantling_equipment }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided De‑pollution Equipment details and corresponding Geo‑tagged photo *</td>
+          <td><span>
+            {% if equipment.depollution_equipment %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ equipment.remarks_depollution_equipment }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Bailing Equipment details and corresponding Geo‑tagged photo *</td>
+          <td><span>
+            {% if equipment.bailing_equipment %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ equipment.remarks_bailing_equipment }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Shredding Equipment details and corresponding Geo‑tagged photo *</td>
+          <td><span>
+            {% if equipment.shredding_equipment %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ equipment.remarks_shredding_equipment }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Storage Equipment details and corresponding Geo‑tagged photo *</td>
+          <td><span>
+            {% if equipment.storage_equipment %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ equipment.remarks_storage_equipment }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Classifiers/Separators Equipment details and corresponding Geo‑tagged photo *</td>
+          <td><span>
+            {% if equipment.classifier_equipment %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ equipment.remarks_classifier_equipment }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided all other Equipment available at facility *</td>
+          <td><span>
+            {% if equipment.other_equipment %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ equipment.remarks_other_equipment }}</div></td>
+        </tr>
+        
+      </tbody>
+    </table>
+    <table class="table table-bordered">
+      <tr>
+        <th>SPCB Comments</th>
+        <td colspan="2">{{ edit2.SPCBComments }} <br> {{ edit2.SPCBCommentDate }}</td>
+        <td>
+          <a href="{% url "editEquipmentDetails" %}" class="btn btn-primary">Edit Application</a>
+        </td>
+      </tr>
+    </form>
+      <form action="{% url "AddResponse" %}" method="post">
+        {% csrf_token %}  
+        <input type="hidden" name="editmode" value="{{ edit2.EditMode}}">
+        <input type="hidden" name="industryid" value="{{ edit2.industryid}}">  
+      <tr>
+        <th>Industry Response</th>
+        <td colspan="3">
+          <textarea name="industry_response" id="industry_response" cols="70" rows="5" class="form-control" required>{{ edit2.UnitComments }}</textarea>
+        </td>
+      </tr>
+  
+      <tr>
+        <td colspan="4" class="text-end">
+          <input type="hidden" name="industryid" value="{{ edit2.industryid }}">
+          <button type="submit" class="btn btn-success">Add Response</button>
+        </td>
+      </tr>
+    </form>
+    </table>
+
+    <table class="checklist-table table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th colspan="4"><h4>(D) Facility Details Checklist</h4></th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Checklist Item</th>
+          <th>Yes / No</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>Provided Geo-tagged video of RVSF *</td>
+          <td><span>
+            {% if facility.geo_tagged_video %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ facility.remarks_geo_tagged_video }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Total area of the RVSF (in sq meter) *</td>
+          <td><span>
+            {% if facility.total_rvsf_area %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ facility.remarks_total_rvsf_area }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided No. of shifts operated per day *</td>
+          <td><span>
+            {% if facility.shift_number %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ facility.remarks_shift_number }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided No. of employees working *</td>
+          <td><span>
+            {% if facility.employees_number %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ facility.remarks_employees_number }}</div></td>
+        </tr>
+        
+      </tbody>
+    </table>
+    <table class="table table-bordered">
+      <tr>
+        <th>SPCB Comments</th>
+        <td colspan="2">{{ edit3.SPCBComments }} <br> {{ edit3.SPCBCommentDate }}</td>
+        <td>
+          <a href="{% url "editEquipmentDetails" %}" class="btn btn-primary">Edit Application</a>
+        </td>
+      </tr>
+    </form>
+      <form action="{% url "AddResponse" %}" method="post">
+        {% csrf_token %}  
+        <input type="hidden" name="editmode" value="{{ edit3.EditMode}}">
+        <input type="hidden" name="industryid" value="{{ edit3.industryid}}">  
+      <tr>
+        <th>Industry Response</th>
+        <td colspan="3">
+          <textarea name="industry_response" id="industry_response" cols="70" rows="5" class="form-control" required>{{ edit3.UnitComments }}</textarea>
+        </td>
+      </tr>
+  
+      <tr>
+        <td colspan="4" class="text-end">
+          <input type="hidden" name="industryid" value="{{ edit2.industryid }}">
+          <button type="submit" class="btn btn-success">Add Response</button>
+        </td>
+      </tr>
+    </form>
+    </table>
+  
+      
+    <table class="checklist-table table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th colspan="4"><h4>(E) RVSF Capacity Details Checklist</h4></th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Checklist Item</th>
+          <th>Yes / No</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>Provided Category of vehicle *</td>
+          <td><span>
+            {% if capacity.vehicle_category %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ capacity.remarks_vehicle_category }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Installed capacity (vehicle per annum) *</td>
+          <td><span>
+            {% if capacity.vehicle_installed_capacity %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ capacity.remarks_vehicle_installed_capacity }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Installed capacity (total steel scrap recovered MT per annum) *</td>
+          <td><span>
+            {% if capacity.steel_installed_capacity %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ capacity.remarks_steel_installed_capacity }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Operating capacity for FY 2022-2023, FY 2023-2024, FY 2024-2025 (vehicle per annum) *</td>
+          <td><span>
+            {% if capacity.vehicle_operating_capacity %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ capacity.remarks_vehicle_operating_capacity }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Operating capacity for FY 2022-2023, FY 2023-2024, FY 2024-2025 (total steel scrap recovered MT per annum) *</td>
+          <td><span>
+            {% if capacity.steel_operating_capacity %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ capacity.remarks_steel_operating_capacity }}</div></td>
+        </tr>
+        
+        
+      </tbody>
+    </table>
+    <table class="table table-bordered">
+      <tr>
+        <th>SPCB Comments</th>
+        <td colspan="2">{{ edit4.SPCBComments }} <br> {{ edit4.SPCBCommentDate }}</td>
+        <td>
+          <a href="{% url "viewRvsfCapacity" %}" class="btn btn-primary">Edit Application</a>
+        </td>
+      </tr>
+    </form>
+      <form action="{% url "AddResponse" %}" method="post">
+        {% csrf_token %}  
+        <input type="hidden" name="editmode" value="{{ edit4.EditMode}}">
+        <input type="hidden" name="industryid" value="{{ edit4.industryid}}">  
+      <tr>
+        <th>Industry Response</th>
+        <td colspan="3">
+          <textarea name="industry_response" id="industry_response" cols="70" rows="5" class="form-control" required>{{ edit4.UnitComments }}</textarea>
+        </td>
+      </tr>
+  
+      <tr>
+        <td colspan="4" class="text-end">
+          <input type="hidden" name="industryid" value="{{ edit4.industryid }}">
+          <button type="submit" class="btn btn-success">Add Response</button>
+        </td>
+      </tr>
+    </form>
+    </table>
+
+    <table class="checklist-table table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th colspan="4"><h4>(F) Pollution Details Checklist</h4></th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Checklist Item</th>
+          <th>Yes / No</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>Provided Air pollution control devices – Name, Number, Image *</td>
+          <td><span>
+            {% if pollution.air_pollution %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ pollution.remarks_air_pollution }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Water pollution control devices – Name, Number, Image *</td>
+          <td><span>
+            {% if pollution.water_pollution %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ pollution.remarks_water_pollution }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Provided Noise pollution control devices – Name, Number, Image *</td>
+          <td><span>
+            {% if pollution.noise_pollution %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ pollution.remarks_noise_pollution }}</div></td>
+        </tr>
+        
+      </tbody>
+    </table>
+    <table class="table table-bordered">
+      <tr>
+        <th>SPCB Comments</th>
+        <td colspan="2">{{ edit5.SPCBComments }} <br> {{ edit5.SPCBCommentDate }}</td>
+        <td>
+          <a href="{% url "editPollutionDetail" %}" class="btn btn-primary">Edit Application</a>
+        </td>
+      </tr>
+    </form>
+      <form action="{% url "AddResponse" %}" method="post">
+        {% csrf_token %}  
+        <input type="hidden" name="editmode" value="{{ edit5.EditMode}}">
+        <input type="hidden" name="industryid" value="{{ edit5.industryid}}">  
+      <tr>
+        <th>Industry Response</th>
+        <td colspan="3">
+          <textarea name="industry_response" id="industry_response" cols="70" rows="5" class="form-control" required>{{ edit5.UnitComments }}</textarea>
+        </td>
+      </tr>
+  
+      <tr>
+        <td colspan="4" class="text-end">
+          <input type="hidden" name="industryid" value="{{ edit5.industryid }}">
+          <button type="submit" class="btn btn-success">Add Response</button>
+        </td>
+      </tr>
+    </form>
+    </table>
+
+    <table class="checklist-table table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th colspan="4"><h4>(G) Waste Recycled Details Checklist</h4></th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Checklist Item</th>
+          <th>Yes / No</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>Used Oil - Quantity recovered (MT), recycler details</td>
+          <td><span>
+            {% if wasterec.used_oil %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ wasterec.remarks_used_oil }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Plastic Waste - Quantity recovered (MT), recycler details</td>
+          <td><span>
+            {% if wasterec.plastic_waste %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ wasterec.remarks_plastic_waste }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Battery Waste - Quantity recovered (MT), recycler details</td>
+          <td><span>
+            {% if wasterec.battery_waste %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ wasterec.remarks_battery_waste }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Tyre Waste - Quantity recovered (MT), recycler details</td>
+          <td><span>
+            {% if wasterec.tyre_waste %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ wasterec.remarks_tyre_waste }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>E-Waste - Quantity recovered (MT), recycler details</td>
+          <td><span>
+            {% if wasterec.e_waste %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ wasterec.remarks_e_waste }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Steel Scrap - Quantity recovered (MT), recycler details</td>
+          <td><span>
+            {% if wasterec.steel_scrap %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ wasterec.remarks_steel_scrap }}</div></td>
+        </tr>
+       
+      </tbody>
+    </table>
+    <table class="table table-bordered">
+      <tr>
+        <th>SPCB Comments</th>
+        <td colspan="2">{{ edit6.SPCBComments }} <br> {{ edit6.SPCBCommentDate }}</td>
+        <td>
+          <a href="{% url "editPollutionDetail" %}" class="btn btn-primary">Edit Application</a>
+        </td>
+      </tr>
+    </form>
+      <form action="{% url "AddResponse" %}" method="post">
+        {% csrf_token %}  
+        <input type="hidden" name="editmode" value="{{ edit6.EditMode}}">
+        <input type="hidden" name="industryid" value="{{ edit6.industryid}}">  
+      <tr>
+        <th>Industry Response</th>
+        <td colspan="3">
+          <textarea name="industry_response" id="industry_response" cols="70" rows="5" class="form-control" required>{{ edit6.UnitComments }}</textarea>
+        </td>
+      </tr>
+  
+      <tr>
+        <td colspan="4" class="text-end">
+          <input type="hidden" name="industryid" value="{{ edit5.industryid }}">
+          <button type="submit" class="btn btn-success">Add Response</button>
+        </td>
+      </tr>
+    </form>
+    </table>
+
+
+    <table class="checklist-table table table-bordered table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th colspan="4"><h4>(H) Registration Fee Details Checklist</h4></th>
+        </tr>
+        <tr>
+          <th>#</th>
+          <th>Checklist Item</th>
+          <th>Yes / No</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>Declaration</td>
+          <td><span>
+            {% if fetchpayment.declaration %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ fetchpayment.remarks_declaration }}</div></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Registration fee payment done</td>
+          <td><span>
+            {% if fetchpayment.registration_fee_details %}
+              Yes
+            {% else %}
+              No
+            {% endif %}
+          </span></td>
+          <td><div>{{ fetchpayment.remarks_registration_fee_details }}</div></td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            {% if confirmapp > 0 %}
+            <h3>NA</h3>
+            {% else %}
+            <form action="{% url "AddFinalResponse" %}" method="post" onsubmit="return confirm('Are you sure you want to re-submit the application?');">
+              {% csrf_token %}
+              
+              <div class="mb-3">
+                <label for="spcb_comment" class="form-label"><strong>Industry Comment</strong></label>
+                <textarea class="form-control" id="spcb_comment" name="industry_comment" rows="4" placeholder="Enter Your comment here..." required>{{ existing_spcb_comment }}</textarea>
+              </div>
+              <input type="hidden" name="industryid" value="{{ fetchpayment.industryid }}">
+              <button type="submit" class="btn btn-success">Re Submit Application</button>
+            </form>
+            {% endif %}
+            
+          </td>
+        </tr>
+        
+        
+      </tbody>
+
+    </table>
+
+
+<!-- hklejhgkghh -->
+  </div>
+</div>
+{% endblock %}

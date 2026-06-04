@@ -1,0 +1,435 @@
+
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/equipmentdetails.css' %}">
+{% if messages %}
+<div class="container-fluid px-4">
+    {% for message in messages %}
+    <div class="alert alert-dismissible fade show mt-3 message-alert" 
+         role="alert"
+         data-message-type="{{ message.tags }}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+<div class="container-fluid px-4 page-container">
+    <!-- <div class="breadcrumb-container">
+            <div class="page-inner">
+                <div class="page-header">
+                    <nav class="breadcrumb-nav">
+                        <a href="{% url 'rvsf_dashboard' %}" class="breadcrumb-icon text-decoration-none text-reset">
+                            <i class="fas fa-home"></i>
+                        </a>
+                        <i class="fas fa-greater-than breadcrumb-divider"></i>
+                        <h5 class="breadcrumb-item">Dashboard</h5>
+                        <i class="fas fa-greater-than breadcrumb-divider"></i>
+                        <h5 class="breadcrumb-item active">Equipment Details</h5>
+                    </nav>
+                </div>
+            </div>
+        </div>
+         -->
+<div class="maincard">
+    <h3 class="mb-3  fw-bold">Equipment Details</h3>
+        <!-- Equipment Details Section -->
+         <div class="card mb-4 form-card">
+        
+        
+         
+        <div class="section-header">
+            <h5 class="section-title">(A). Details of installed equipment at RVSFs</h5>
+        </div>
+
+        <!-- Trigger Button -->
+        <button type="button" class="btn btn-success btnwdth" data-bs-toggle="modal" data-bs-target="#equipmentModal">
+            <i class="fas fa-plus-circle me-2"></i>Add Equipment Details
+        </button>
+
+        <!-- Existing Table for Display -->
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Name of Equipment</th>
+                        <th>No. of Equipment</th>
+                        <th>Power Rating (kWh)</th>
+                        <th>Operating Hours</th>
+                        <th>Capacity of the Equipment (Tones/Day)</th>
+                        <th>Geo-tagged Photo</th>
+                        <th>Equipment Description</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Optional: Render saved equipment rows here -->
+                    {% for eq in data %}
+                    <tr>
+                        <td>{{ forloop.counter}}</td>
+                        <td>{{ eq.equipment_type }}</td>
+                        <td>{{ eq.quantity }}</td>
+                        <td>{{ eq.power_rating }}</td>
+                        <td>{{ eq.operating_hours }}</td>
+                        <td>{{ eq.capacity_equipment_perton }}</td>
+                        <td>
+                            {% if eq.geo_tagged_pdf %}
+                            <a href="{% url 'protected_file_rvsf' eq.geo_tagged_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View PDF
+                            </a>
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ eq.equipment_description }}</td>
+                        <td>
+                            <form method="post" action="{% url 'delequipment' %}" onsubmit="return confirm('Are you sure you want to Remove this entry?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="equip_id" value="{{eq.id}}">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash-alt me-1"></i>Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Modal Form Starts -->
+                    <form action="{% url 'equipmentDetails' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="equipmentModalLabel">Add Equipment Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <!-- Equipment Name -->
+                            <div class="mb-3">
+                                <label for="equipment_name" class="form-label">Name of Equipment<span class="text-danger">*</span></label>
+                                <select class="form-select" name="equipment_name" id="equipment_name" onchange="toggleOtherInput(this)" required>
+                                    <option value="" disabled selected>-- Select Equipment --</option>
+                                    {% for equiment in equipment   %}
+                                    <option value="{{equiment.id}}">{{equiment.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="other_equipment_div" style="display: none;">
+                                <label for="other_equipment" class="form-label">Specify Other Equipment</label>
+                                <input type="text" class="form-control" name="other_equipment" id="other_equipment" placeholder="Enter other equipment name">
+                            </div>
+
+                            <!-- No. of Equipment -->
+                            <div class="mb-3">
+                                <label for="equipment_count" class="form-label">No. of Equipment<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="equipment_count" id="equipment_count" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="power_rating" class="form-label">Power Rating (kWh)<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="power_rating" id="power_rating" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="operating_hours" class="form-label">Operating Hours<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="operating_hours" id="operating_hours" min="1" max="24" required oninput="validateHours(this)">
+
+<script>
+function validateHours(input) {
+    if (input.value > 24) {
+        input.value = 24;
+        // Or show an error message
+        // alert('Maximum operating hours is 24');
+    }
+}
+</script>
+                            </div>
+                            <div class="mb-3">
+                                <label for="capacity_equipment_perton" class="form-label">Capcity of the Equipment (Tones/Day)<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="capacity_equipment_perton" id="capacity_equipment_perton" min="1" required>
+                            </div>
+
+                            <!-- Geo-tagged Photo -->
+                            <div class="mb-3">
+                                <label for="geo_pdf" class="form-label">Geo-tagged Photo (PDF only, max 2MB)<span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" name="geo_pdf" id="geo_pdf" accept="application/pdf,.pdf" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="equipment_description" class="form-label">Description of Equipment (Max 1000 Characters)<span class="text-danger">*</span></label>
+                                <textarea id="id_equipment_description" name="equipment_description" class="form-control"  placeholder="Equipment Description" required rows="4" maxlength="1000"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">Submit</button>
+                        </div>
+                    </form>
+                    <!-- Modal Form Ends -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Facility Details Section -->
+        <div class="section-header">
+            <h5 class="section-title">(B). Additional Facility Details</h5>
+        </div>
+        
+        <form id="rvsfForm" action="{% url 'facilityDetails' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- 1. Geo-tagged Video Upload -->
+            <div class="row form-row mb-4">
+                <div class="col-md-12">
+                    <label for="geo_video" class="form-label"> Geo-tagged Video of RVSF (MP4 only, Max 20 MB) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="geo_video" name="geo_video" accept="video/mp4" {% if not facility.geo_video %}required{% endif %}>
+                    {% if facility.geo_video %}
+                    <video id="videoPreview" width="100%" height="300" class="mt-3" controls>
+                        <source src="{% url 'protected_file_rvsf' facility.geo_video.name %}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    {% else %}
+                    <video id="videoPreview" width="100%" height="300" class="mt-3 d-none" controls></video>
+                    {% endif %}
+                    <small id="videoError" class="text-danger d-none">Only MP4 videos up to 20 MB are allowed.</small>
+                </div>
+            </div>
+            
+            
+            
+            <!-- 3. Number of Shifts and Sanctioned Power -->
+            <div class="row form-row mb-4">
+                <div class="col-md-6">
+                    <label for="shifts_per_day" class="form-label"> Number of Shifts Operated Per Day <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="shifts_per_day" name="shifts_per_day" min="1" max="3" value="{{ facility.shifts_per_day }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="sectioned_power" class="form-label"> Sanctioned Power Load (kWh) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="sectioned_power" name="sectioned_power" value="{{ facility.sectioned_power }}" required>
+                </div>
+            </div>
+            
+            <!-- 5. Employee -->
+            <div class="row form-row mb-4">
+                <div class="col-md-12">
+                    <label for="no_of_employees" class="form-label"> Total Number of Employees Working <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="no_of_employees" name="no_of_employees" min="1" value="{{ facility.no_of_employees }}" required>
+                </div>
+            </div>
+            <!-- 2. Total Area -->
+            <div class="row form-row mb-4">
+                <div class="col-md-12">
+                    <label for="total_area" class="form-label"> Total Area of the RVSF (in sq. meters) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control total-area-input" id="total_area" name="total_area" min="0" step="0.01" value="{{ facility.total_area }}" required oninput="validateStorageSum()">
+                </div>
+            </div>
+            
+            <!-- Storage Areas Table-like Layout -->
+            <div class="row form-row mb-4">
+                <div class="col-md-12">
+                    <h6 class="mb-3 fw-bold">Storage Areas (in sq. meters)</h6>
+                    
+                    <!-- Storage Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered storage-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Storage Type</th>
+                                    <th>Area (sqm)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Row 1 -->
+                                <tr>
+                                    <td>
+                                        <label for="storage_parking_area" class="form-label mb-0">Storage area for safe parking of waste vehicles <span class="text-danger">*</span></label>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control storage-area-input" id="storage_parking_area" name="storage_parking_area" min="0" step="0.01" value="{{ facility.storage_parking_area }}" required oninput="validateStorageSum()">
+                                    </td>
+                                </tr>
+                                
+                                <!-- Row 2 -->
+                                <tr>
+                                    <td>
+                                        <label for="storage_depolluted_fluids" class="form-label mb-0">Storage Area for Depolluted Fluids <span class="text-danger">*</span></label>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control storage-area-input" id="storage_depolluted_fluids" name="storage_depolluted_fluids" min="0" step="0.01" value="{{ facility.storage_depolluted_fluids }}" required oninput="validateStorageSum()">
+                                    </td>
+                                </tr>
+                                
+                                <!-- Row 3 -->
+                                <tr>
+                                    <td>
+                                        <label for="storage_hazardous_waste" class="form-label mb-0">Storage Area for Other automotive hazardous waste <span class="text-danger">*</span></label>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control storage-area-input" id="storage_hazardous_waste" name="storage_hazardous_waste" min="0" step="0.01" value="{{ facility.storage_hazardous_waste }}" required oninput="validateStorageSum()">
+                                    </td>
+                                </tr>
+                                
+                                <!-- Row 4 -->
+                                <tr>
+                                    <td>
+                                        <label for="storage_processed_scrap" class="form-label mb-0">Storage area for processed scrap and usable parts <span class="text-danger">*</span></label>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control storage-area-input" id="storage_processed_scrap" name="storage_processed_scrap" min="0" step="0.01" value="{{ facility.storage_processed_scrap }}" required oninput="validateStorageSum()">
+                                    </td>
+                                </tr>
+                                
+                                <!-- Row 5 -->
+                                <tr>
+                                    <td>
+                                        <label for="storage_segregated_spares" class="form-label mb-0">Storage Area for segregated spares <span class="text-danger">*</span></label>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control storage-area-input" id="storage_segregated_spares" name="storage_segregated_spares" min="0" step="0.01" value="{{ facility.storage_segregated_spares }}" required oninput="validateStorageSum()">
+                                    </td>
+                                </tr>
+                                
+                                <!-- Row 6 - Others -->
+                                <tr>
+                                    <td>
+                                        <label for="storage_others" class="form-label mb-0">Others (Specify) (Max 100 Characters) <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control mt-1" id="storage_others_description" name="storage_others_description" value="{{ facility.storage_others_description }}" placeholder="Specify other storage areas" maxlength="100">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control storage-area-input" id="storage_others" name="storage_others" min="0" step="0.01" value="{{ facility.storage_others }}" required oninput="validateStorageSum()">
+                                    </td>
+                                </tr>
+                                
+                                <!-- Total Row -->
+                                <tr class="table-info">
+                                    <td class="fw-bold">Total</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span id="storageTotal" class="form-control-plaintext me-2 fw-bold">0</span>
+
+                                            <span>sqm</span>
+                                        </div>
+                                        <small id="storageError" class="text-danger d-none">⚠ Total storage area cannot exceed total RVSF area!</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Validation Summary -->
+                    <div class="alert alert-info mt-3" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> The sum of all storage areas should not exceed the Total Area of the RVSF (<span id="totalAreaDisplay">0</span> sqm).
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success" id="submitBtn">
+                    <i class="fas fa-save me-2"></i>Save & Next
+                </button>
+                <a href="{% url 'rvsf_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-home me-2"></i>Home
+                </a>
+            </div>
+        </form>
+        
+        <!-- Validation Script -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize validation on page load
+            validateStorageSum();
+        });
+        
+        function validateStorageSum() {
+            const totalArea = parseFloat(document.getElementById('total_area').value) || 0;
+            const storageInputs = document.querySelectorAll('.storage-area-input');
+            
+            // Calculate sum of all storage areas
+            let storageSum = 0;
+            storageInputs.forEach(input => {
+                storageSum += parseFloat(input.value) || 0;
+            });
+            
+            // Update display elements
+            document.getElementById('storageTotal').textContent = storageSum.toFixed(2);
+            document.getElementById('totalAreaDisplay').textContent = totalArea.toFixed(2);
+            
+            // Check if sum exceeds total area
+            const storageError = document.getElementById('storageError');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (storageSum > totalArea) {
+                storageError.classList.remove('d-none');
+                submitBtn.disabled = true;
+                submitBtn.classList.remove('btn-success');
+                submitBtn.classList.add('btn-secondary');
+                return false;
+            } else {
+                storageError.classList.add('d-none');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('btn-secondary');
+                submitBtn.classList.add('btn-success');
+                return true;
+            }
+        }
+        
+        // Add form submission validation
+        document.getElementById('rvsfForm').addEventListener('submit', function(e) {
+            if (!validateStorageSum()) {
+                e.preventDefault();
+                alert('Please adjust storage areas so the total does not exceed the total RVSF area.');
+                return false;
+            }
+            return true;
+        });
+        </script>
+             <!-- Warning message -->
+            <small id="formError" class="text-danger mt-2 d-none">⚠ Please fill all required fields before proceeding.</small>
+        
+    </div>
+    </div>
+</div>
+    <script src="{% static 'js/rvsfappjs/user/equipmentdetails.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Select all message alerts
+    const messageAlerts = document.querySelectorAll('.message-alert');
+    
+    messageAlerts.forEach(alert => {
+        const messageType = alert.getAttribute('data-message-type');
+        
+        // Map message types to Bootstrap classes
+        const typeMap = {
+            'success': 'alert-success',
+            'error': 'alert-danger',  // Red color for error
+            'warning': 'alert-warning',
+            'info': 'alert-info',
+            'debug': 'alert-secondary'
+        };
+        
+        // Default to 'info' if type not found
+        const alertClass = typeMap[messageType] || 'alert-info';
+        
+        // Add the appropriate class
+        alert.classList.add(alertClass);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+    </script>
+
+{% endblock %}

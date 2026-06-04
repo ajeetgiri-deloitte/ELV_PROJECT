@@ -1,0 +1,319 @@
+<table class="checklist-table">
+    <thead>
+        <tr>
+            <th>Checklist Item</th>
+            <th>Yes / No</th>
+            <th>Remarks</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <!-- Main Save Form -->
+        <form action="{% url 'save_general_checklist' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="industryid" value="{{ IndustryId }}">
+            <input type="hidden" name="appno" value="{{ AppNo }}">
+
+            <tr>
+                <td>Provided Address *</td>
+                <td>
+                    <select name="rvsf_address" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.rvsf_address == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.rvsf_address == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_rvsf_address"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_rvsf_address }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided GPS location (Latitude, Longitude) *</td>
+                <td>
+                    <select name="gps_location" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.gps_location == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.gps_location == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_gps_location"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_gps_location }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided State *</td>
+                <td>
+                    <select name="rvsf_state" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.rvsf_state == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.rvsf_state == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_rvsf_state"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_rvsf_state }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided and Uploaded CTO Certificate *</td>
+                <td>
+                    <select name="cto_certificate" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.cto_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.cto_certificate == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_cto_certificate"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_cto_certificate }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Validity of CTO *</td>
+                <td>
+                    <select name="cto_validity" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.cto_validity == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.cto_validity == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_cto_validity"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_cto_validity }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided and Uploaded HOWM Authorization Certificate *</td>
+                <td>
+                    <select name="howm_certificate" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.howm_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.howm_certificate == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_howm_certificate"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_howm_certificate }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided and Uploaded DIC registration certificate *</td>
+                <td>
+                    <select name="dic_certificate" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.dic_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.dic_certificate == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_dic_certificate"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_dic_certificate }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided and Uploaded RVSF Certificate *</td>
+                <td>
+                    <select name="rvsf_certificate" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.rvsf_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.rvsf_certificate == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_rvsf_certificate"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_rvsf_certificate }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Validity of RVSF certificate *</td>
+                <td>
+                    <select name="rvsf_certificate_validity" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.rvsf_certificate_validity == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.rvsf_certificate_validity == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_rvsf_certificate_validity"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_rvsf_certificate_validity }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Upload Process Flow Diagram *</td>
+                <td>
+                    <select name="process_flow" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.process_flow == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.process_flow == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_process_flow"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_process_flow }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Upload Material Balance Sheet *</td>
+                <td>
+                    <select name="material_balance_sheet" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.material_balance_sheet == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.material_balance_sheet == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_material_balance_sheet"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_material_balance_sheet }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Uploaded Annual Return (last 2 FY) *</td>
+                <td>
+                    <select name="annual_return" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if general.annual_return == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if general.annual_return == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                        name="remarks_annual_return"
+                        class="form-control remarks-field"
+                        value="{{ general.remarks_annual_return }}"
+                        placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </td>
+            </tr>
+        </form>
+
+        <!-- View Submitted Data -->
+        <form action="{% url 'ViewGeneralDetails' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="industryid" value="{{ IndustryId }}">
+            <input type="hidden" name="appno" value="{{ AppNo }}">
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-warning">
+                        View Submitted Data
+                    </button>
+                </td>
+            </tr>
+        </form>
+
+    </tbody>
+</table>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const selects = document.querySelectorAll('.check-select');
+    const form = document.querySelector('form[action*="save_general_checklist"]');
+
+    function updateRemarksState(select, remarks) {
+        const hasValue = remarks.value.trim() !== '';
+
+        if (select.value === 'Yes') {
+            remarks.disabled = false;
+            remarks.removeAttribute('required');
+            remarks.style.backgroundColor = '#f0f0f0';
+            remarks.style.borderColor = '#ccc';
+        }
+        else if (select.value === 'No') {
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        }
+        else {
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        }
+    }
+
+    // Initialize all rows on load
+    selects.forEach(select => {
+        const row = select.closest('tr');
+        const remarks = row.querySelector('.remarks-field');
+
+        updateRemarksState(select, remarks);
+
+        select.addEventListener('change', () => updateRemarksState(select, remarks));
+        remarks.addEventListener('input', () => updateRemarksState(select, remarks));
+    });
+
+    // Prevent form submit if "No" but remarks empty
+    form.addEventListener('submit', function (e) {
+        let valid = true;
+
+        selects.forEach(select => {
+            const row = select.closest('tr');
+            const remarks = row.querySelector('.remarks-field');
+
+            if (select.value === 'No' && remarks.value.trim() === '') {
+                remarks.style.borderColor = 'red';
+                valid = false;
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            alert("❗ Please fill remarks for all fields where 'No' is selected.");
+        }
+    });
+
+});
+</script>

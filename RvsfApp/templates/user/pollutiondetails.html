@@ -1,0 +1,330 @@
+
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .form-control  {
+        background: #ffffff !important;
+   
+}
+.form-select {
+        background: #ffffff !important;
+   
+}
+</style>
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/pollutiondetails.css' %}">
+{% if messages %}
+<div class="container-fluid px-4">
+    {% for message in messages %}
+    <div class="alert alert-dismissible fade show mt-3 message-alert" 
+         role="alert"
+         data-message-type="{{ message.tags }}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+</head>
+<body>
+<div class="maincard">
+    <div class="card mb-4 form-card maincard">
+        <!-- Pollution Control Devices Section -->
+        <h3>1. Pollution Control Devices</h3>
+        <button class="btn btn-success mb-2 btnwdth" data-bs-toggle="modal" data-bs-target="#deviceModal">
+            <i class="fas fa-plus-circle me-2"></i>Add Device
+        </button>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Name</th>
+                        <th>Qty</th>
+                        <th>Image</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eq in devices %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ eq.device_type }}</td>
+                        <td>{{ eq.name }}</td>
+                        <td>{{ eq.quantity }}</td>
+                        <td>
+                            {% if eq.device_doc %}
+                            <a href="{% url 'protected_file_rvsf' eq.device_doc.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-image me-1"></i>View
+                            </a>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'deletedevice' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="device_id" value="{{ eq.id }}">
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this device?');">
+                                    <i class="fas fa-trash-alt me-1"></i>Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No devices yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Waste Details Section -->
+        <h4>(2). Details of the categories of waste recycled/refurbished in the unit/sent to registered entities or reuse, recycling and refurbishing in last FY</h4>
+        <button class="btn btn-success mb-2 btnwdth" data-bs-toggle="modal" data-bs-target="#wasteModal">
+            <i class="fas fa-plus-circle me-2"></i>Add Waste Entry
+        </button>
+        
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-bordered mb-0">
+                <thead class="table-light fixed-header">
+                    <tr>
+                        <th>#</th>
+                        <th>Category of waste</th>
+                        <th>Waste Quantity Recovered</th>
+                        <th>Quantity of waste recycled/refurbished by authorized recyclers</th>
+                        <th>Name(s) of registered recycler(s)/refurbished(s) to whom sent</th>
+                        <th>Agreement details between RVSFs and registered recycler(s)/refurbished(s)</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for w in wastes %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ w.category }}</td>
+                        <td>{{ w.qty_recovered }}</td>
+                        <td>{{ w.qty_recycled }}</td>
+                        <td>{{ w.recycler_name }}</td>
+                        <td>
+                            {% if w.agreement %}
+                            <a href="{% url 'protected_file_rvsf' w.agreement.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-1"></i>View
+                            </a>
+                            {% else %}&mdash;{% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'delete_waste' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="waste_id" value="{{ w.id }}">
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this entry?');">
+                                    <i class="fas fa-trash-alt me-1"></i>Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No entries yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Device Modal -->
+        <div class="modal fade" id="deviceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <form method="post" enctype="multipart/form-data" action="{% url 'add_device' %}" class="modal-content">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Pollution Control Device</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label><strong>Type of Pollution Control Device<span class="text-danger">*</span></strong></label>
+                            <select name="pollutionType" class="form-select" required>
+                                <option value="">Select Type</option>
+                                <option value="Air">Air</option>
+                                <option value="Water">Water</option>
+                                <option value="Noise">Noise</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label><strong>Name of Pollution Control Device<span class="text-danger">*</span></strong></label>
+                            <input type="text" name="pollution_control_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label><strong>No. of Devices<span class="text-danger">*</span></strong></label>
+                            <input type="number" name="number_of_devices" class="form-control" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label><strong>Upload Image of Device (Image Format Allowed Only)<span class="text-danger">*</span></strong></label>
+                            <input type="file" name="device_doc" class="form-control" accept="image/*" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" name="device-submit" class="btn btn-primary">Save Device</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Waste Modal -->
+        <div class="modal fade" id="wasteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <form method="post" enctype="multipart/form-data" action="{% url 'add_waste' %}" class="modal-content">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Waste Recycling Entry<span class="text-danger">*</span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label><strong>Category of Waste</strong></label>
+                                <select name="category" class="form-select bacgclr" required>
+                                    <option value="">Select category</option>
+                                    <option value="Used oil">Used oil</option>
+                                    <option value="Plastic Waste">Plastic Waste</option>
+                                    <option value="Battery Waste">Battery Waste</option>
+                                    <option value="Tyre Waste">Tyre Waste</option>
+                                    <option value="E Waste">E Waste</option>
+                                    <option value="Steel scrap">Steel scrap</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label><strong>If Other, specify</strong></label>
+                                <input type="text" name="category_other" class="form-control" placeholder="Specify if other">
+                            </div>
+                            <div class="col-md-6">
+                                <label><strong>Quantity Waste Recovered (Metric Ton)<span class="text-danger">*</span></strong></label>
+                                <input type="number" name="qty_recovered" class="form-control" min="0" step="any" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label><strong>Quantity Recycled / Refurbished (Metric Ton)<span class="text-danger">*</span></strong></label>
+                                <input type="number" name="qty_recycled" class="form-control" min="0" step="any" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label><strong>Name(s) of registered recycler(s)/refurbisher(s)<span class="text-danger">*</span></strong></label>
+                                <input type="text" name="recycler_name" class="form-control" placeholder="Enter names (and separated)" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label><strong>Agreement Details<span class="text-danger">*</span></strong></label>
+                                <textarea name="agreement_details" class="form-control" rows="3" placeholder="Describe agreement terms" required></textarea>
+                            </div>
+                            <div class="col-md-12">
+                                <label><strong>Upload Agreement (PDF)<span class="text-danger">*</span></strong></label>
+                                <input type="file" name="agreement" class="form-control" accept="application/pdf" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" name="waste-submit" class="btn btn-success">Save Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+        <a href="{% url 'capacityanddeclaration' %}" id="nextBtn" class="btn btn-success">
+            Save and Next <i class="fas fa-arrow-right me-2"></i>
+        </a>
+    
+    </div>
+    
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Select all message alerts
+    const messageAlerts = document.querySelectorAll('.message-alert');
+    
+    messageAlerts.forEach(alert => {
+        const messageType = alert.getAttribute('data-message-type');
+        
+        // Map message types to Bootstrap classes
+        const typeMap = {
+            'success': 'alert-success',
+            'error': 'alert-danger',  // Red color for error
+            'warning': 'alert-warning',
+            'info': 'alert-info',
+            'debug': 'alert-secondary'
+        };
+        
+        // Default to 'info' if type not found
+        const alertClass = typeMap[messageType] || 'alert-info';
+        
+        // Add the appropriate class
+        alert.classList.add(alertClass);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+  </script>
+  <script>
+    // Function to validate file name for special characters
+    function validateFileName(input) {
+        if (!input || !input.files || input.files.length === 0) {
+            return true;
+        }
+        
+        const fileName = input.files[0].name;
+        const fileExt = fileName.split('.').pop().toLowerCase();
+        
+        // Check if file extension is valid (pdf or image formats)
+        const validExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'img', 'webp'];
+        
+        if (!validExtensions.includes(fileExt)) {
+            alert('Invalid file type. Only PDF and image files (JPG, PNG, GIF, BMP, TIFF, WEBP) are allowed.');
+            input.value = ''; // Clear the file input
+            return false;
+        }
+        
+        // Check for special characters not allowed in filename
+        const specialCharRegex = /[<>:"/\\|?*]/;
+        
+        if (specialCharRegex.test(fileName)) {
+            alert('Special characters like < > : " / \\ | ? * are not allowed in the file name.');
+            input.value = ''; // Clear the file input
+            return false;
+        }
+        
+        // Check filename format (no special characters except allowed ones)
+        // Allow: alphanumeric, spaces, underscores, hyphens, parentheses, dots (except at beginning)
+        const validFileNameRegex = /^[a-zA-Z0-9][a-zA-Z0-9_\-\s()\.]*\.[a-zA-Z0-9]+$/i;
+        
+        if (!validFileNameRegex.test(fileName)) {
+            alert('Invalid file name. Special characters are not allowed in the file name.');
+            input.value = ''; // Clear the file input
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Apply onchange validation to all file inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        
+        fileInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    validateFileName(this);
+                }
+            });
+        });
+    });
+    </script>
+
+{% endblock %}

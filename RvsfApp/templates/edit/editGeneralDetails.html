@@ -1,0 +1,150 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">(A).General Details</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+        <li class="breadcrumb-item active">Add Product</li>
+    </ol>
+    <div class="card mb-4">
+        <div class="card-body">
+          <h3>PART A</h3>
+
+          <form method="post" action="{% url "AddGeneralDetails" %}" enctype="multipart/form-data">
+            {% csrf_token %}
+          
+            <div class="mb-3">
+              <label for="id_address" class="form-label">1. Address *</label>
+              <textarea id="id_address" name="address" class="form-control" required>{{ general.address }}</textarea>
+            </div>
+          
+            <div class="mb-3 row">
+              <label class="col-form-label col-sm-2">2. GPS Location *</label>
+              <div class="col-sm-5">
+                <input type="text" id="id_latitude" name="latitude" class="form-control"
+                  value="{{ general.latitude }}" placeholder="Latitude (e.g., 23.4567)" required>
+              </div>
+              <div class="col-sm-5">
+                <input type="text" id="id_longitude" name="longitude" class="form-control"
+                  value="{{ general.longitude }}" placeholder="Longitude (e.g., 78.1234)" required>
+              </div>
+            </div>
+          
+            <button type="button" class="btn btn-secondary mb-3" onclick="fillLocation()">Use My Location</button>
+          
+            <div class="mb-3">
+              <label for="id_state" class="form-label">3. State *</label>
+              <input id="id_state" type="text" name="state" value="{{ statename }}" class="form-control" required readonly>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_cto_number" class="form-label">4. Consent Application Number (CTO) *</label>
+              <input id="id_cto_number" type="text" name="cto_number" value="{{ general.cto_number }}" class="form-control" required>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_consent_validity" class="form-label">5. Consent Validity *</label>
+              <input id="id_consent_validity" type="date" name="consent_validity"
+                value="{{ general.consent_validity|date:'Y-m-d' }}" class="form-control" required>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_cto_pdf" class="form-label">6. Upload CTO *</label>
+              {% if general.cto_pdf %}
+              <span><a href="{{ general.cto_pdf.url }}" target="_blank">View Document</a></span>
+              {% endif %}
+              <input id="id_cto_pdf" type="file" name="cto_pdf" class="form-control"
+                accept="application/pdf" {% if not general.cto_pdf %}required{% endif %}>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_howm_validity" class="form-label">7. HOWM Validity *</label>
+              <input id="id_howm_validity" type="date" name="howm_validity"
+                value="{{ general.howm_validity|date:'Y-m-d' }}" class="form-control" required>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_howm_pdf" class="form-label">8. Upload HOWM Authorization *</label>
+              {% if general.howm_pdf %}
+              <span><a href="{{ general.howm_pdf.url }}" target="_blank">View Document</a></span>
+              {% endif %}
+              <input id="id_howm_pdf" type="file" name="howm_pdf" class="form-control"
+                accept="application/pdf" {% if not general.howm_pdf %}required{% endif %}>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_dic_validity" class="form-label">9. DIC Validity *</label>
+              <input id="id_dic_validity" type="date" name="dic_validity"
+                value="{{ general.dic_validity|date:'Y-m-d' }}" class="form-control" required>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_dic_pdf" class="form-label">10. Upload DIC Registration *</label>
+              {% if general.dic_pdf %}
+              <span><a href="{{ general.dic_pdf.url }}" target="_blank">View Document</a></span>
+              {% endif %}
+              <input id="id_dic_pdf" type="file" name="dic_pdf" class="form-control"
+                accept="application/pdf" {% if not general.dic_pdf %}required{% endif %}>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_rvsf_reg_no" class="form-label">11. RVSF Registration No *</label>
+              <input id="id_rvsf_reg_no" type="text" name="rvsf_reg_no" value="{{ general.rvsf_reg_no }}" class="form-control" required>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_rvsf_validity" class="form-label">12. RVSF Validity *</label>
+              <input id="id_rvsf_validity" type="date" name="rvsf_validity"
+                value="{{ general.rvsf_validity|date:'Y-m-d' }}" class="form-control" required>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_rvsf_pdf" class="form-label">13. Upload RVSF Certificate *</label>
+              {% if general.rvsf_pdf %}
+              <span><a href="{{ general.rvsf_pdf.url }}" target="_blank">View Document</a></span>
+              {% endif %}
+              <input id="id_rvsf_pdf" type="file" name="rvsf_pdf" class="form-control"
+                accept="application/pdf" {% if not general.rvsf_pdf %}required{% endif %}>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_process_flow_pdf" class="form-label">14. Upload Process Flow *</label>
+              {% if general.process_flow_pdf %}
+              <span><a href="{{ general.process_flow_pdf.url }}" target="_blank">View Document</a></span>
+              {% endif %}
+              <input id="id_process_flow_pdf" type="file" name="process_flow_pdf" class="form-control"
+                accept="application/pdf" {% if not general.process_flow_pdf %}required{% endif %}>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_material_balance_pdf" class="form-label">15. Upload Material Balance *</label>
+              {% if general.material_balance_pdf %}
+              <span><a href="{{ general.material_balance_pdf.url }}" target="_blank">View Document</a></span>
+              {% endif %}
+              <input id="id_material_balance_pdf" type="file" name="material_balance_pdf" class="form-control"
+                accept="application/pdf" {% if not general.material_balance_pdf %}required{% endif %}>
+            </div>
+          
+            <div class="mb-3">
+              <label for="id_annual_returns_pdf" class="form-label">16. Upload Annual Returns (2 PDFs) *</label>
+              {% if general.annual_returns_pdf %}
+              <span><a href="{{ general.annual_returns_pdf.url }}" target="_blank">View Document</a></span>
+              {% endif %}
+              <input id="id_annual_returns_pdf" type="file" name="annual_returns_pdf" class="form-control"
+                accept="application/pdf" multiple {% if not general.annual_returns_pdf %}required{% endif %}>
+            </div>
+          
+            <button type="submit" class="btn btn-primary">Save</button>  <a href="{% url 'rvsf_dashboard' %}" class="btn btn-secondary">Home</a>
+            
+
+          </form>
+          
+        </div>
+    </div>
+  
+</div>
+
+{% endblock  %}
+<!-- Load external JS -->
+<script src="{% static 'js/rvsfappjs/edit/editGeneralDetails.js' %}"></script>

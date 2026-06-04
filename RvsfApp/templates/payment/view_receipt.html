@@ -1,0 +1,410 @@
+{% load humanize %}
+{% load custom_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<title>Payment Receipt</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+body{
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: #eef2f6;
+  padding: 40px;
+}
+
+.receipt-wrapper{
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 35px 45px;
+  border-radius: 8px;
+  box-shadow: 0 5px 25px rgba(0,0,0,.08);
+}
+
+.header-flex{
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.header-text{
+  flex:1;
+}
+
+.header-text h2{
+  margin:0;
+  color:#007bff;
+}
+
+.meta-box{
+  border:1px solid #ccc;
+  margin-top:15px;
+}
+
+.meta-box table{
+  width:100%;
+  border-collapse: collapse;
+}
+
+.meta-box td{
+  padding:8px 10px;
+  border:1px solid #ccc;
+}
+
+.section-title{
+  font-weight:bold;
+  margin-top:20px;
+  text-decoration: underline;
+}
+
+.two-col{
+  display:flex;
+  gap:20px;
+}
+
+.card{
+  border:1px solid #ccc;
+  padding:10px 15px;
+  flex:1;
+  border-radius:6px;
+  background:#fafafa;
+}
+
+.card p{
+  margin:3px 0;
+}
+
+table.receipt-table{
+  margin-top:15px;
+  width:100%;
+  border-collapse: collapse;
+}
+
+table.receipt-table th,
+table.receipt-table td{
+  border:1px solid #ccc;
+  padding:8px;
+  text-align:center;
+}
+
+.summary-row{
+  background:#f8f8f8;
+  font-weight:bold;
+}
+
+.footer-note{
+  margin-top:18px;
+  font-size:13px;
+}
+
+.payment-details-table {
+  margin-top: 15px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payment-details-table th,
+.payment-details-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+.payment-details-table thead {
+  background-color: #f1f1f1;
+}
+
+.actions {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.success {
+  color: green;
+  font-weight: bold;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 22px;
+  margin: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.btn-print {
+  background: #28a745;
+  color: white;
+}
+
+.btn-print:hover {
+  background: #218838;
+}
+
+.btn-back {
+  background: #007bff;
+  color: white;
+}
+
+.btn-back:hover {
+  background: #0056b3;
+}
+.btn-download {
+  background: #ff6b35;
+  color: white;
+}
+.btn-download:hover {
+  background: #e55a2b;
+}
+@media print {
+  .actions {
+    display: none !important;
+  }
+  body {
+    padding: 0;
+    background: white;
+  }
+  .receipt-wrapper {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="receipt-wrapper" id="receipt">
+
+<div class="header-flex">
+  <img src="{% static 'img/golden_jubilee_logo.png' %}" style="width:90px">
+
+  <div class="header-text">
+    <h2>PAYMENT RECEIPT</h2>
+    <small>Central Pollution Control Board</small>
+  </div>
+</div>
+
+<div class="meta-box">
+<table>
+<tr>
+  <td><strong>Transaction No.</strong></td>
+  <td>{% if latest_payment %}{{ latest_payment.txn_id }}{% else %}N/A{% endif %}</td>
+  <td><strong>Payment Date</strong></td>
+  <td>{% if latest_payment %}{{ latest_payment.txn_date }}{% else %}N/A{% endif %}</td>
+</tr>
+<tr>
+  <td><strong>Payment Mode</strong></td>
+  <td>Online</td>
+  <td><strong>Payment Status</strong></td>
+  <td><span class="success">Success</span></td>
+</tr>
+<tr>
+  <td><strong>Total Amount Paid</strong></td>
+  <td colspan="3">₹{{ total_amount|indian_currency }}</td>
+</tr>
+</table>
+</div>
+
+<p class="section-title">Party Details</p>
+
+<div class="two-col">
+
+<div class="card">
+  <strong>Payer - RVSF</strong> 
+  {% if payee_detail %}
+  <p>{{ payee_detail.company_name }}</p>
+  <p>{{ payee_address }}</p>
+  <p>PAN: <strong>{{ payee_detail.company_pan }}</strong></p>
+  {% else %}
+  <p>Details not available</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <strong>Payee</strong>
+  <p>Central Pollution Control Board</p>
+  <p>Parivesh Bhawan, East Arjun Nagar<br>Shahdara, Delhi-110032</p>
+</div>
+
+</div>
+
+<p class="section-title">Payment Summary</p>
+
+
+<table class="receipt-table">
+  <thead>
+  <tr>
+    <th>S. No.</th>
+    <!-- <th>Financial Year</th> -->
+    <th>No. of Vehicles Scrapped / Annum </th>
+  </tr>
+  </thead>
+  
+  <tbody>
+  <tr>
+    <td>1</td>
+    <td>3</td>
+    
+  </tr>
+  
+  <!-- <tr>
+    <td>2</td>
+    <td>2024–2025</td>
+    <td>{{ turnover_24_25 }}</td>
+  </tr> -->
+  
+  <!-- <tr class="summary-row">
+    <td colspan="1">Quantity of Steel Recovered / Annum (in MT)</td>
+    <td>3</td>
+  </tr> -->
+  
+  <!-- <tr class="summary-row">
+    <td colspan="1">Average Annual Turnover</td>
+    <td>{{ average_turnover|floatformat:2 }}</td>
+  </tr> -->
+  
+  <tr class="summary-row">
+    <td colspan="1">Registration Fees (INR)</td>
+    <td>₹{{ total_amount|indian_currency }}</td>
+  </tr>
+  </tbody>
+  </table>
+
+<div class="footer-note">
+<p><strong>Note:</strong> The above transaction services are provided by BillDesk Payment Gateway.</p>
+<p>This is a computer-generated receipt and does not require a signature.</p>
+</div>
+
+</div>
+
+<div class="actions">
+<button class="btn btn-print" onclick="printReceipt()">Print Receipt</button>
+<button class="btn btn-download" onclick="downloadPDF()">Download as PDF</button>
+<a href="/rvsf/dashboard/" class="btn btn-back">Back to Dashboard</a>
+</div>
+
+<script>
+function printReceipt(){
+  const original = document.body.innerHTML;
+  const receiptContent = document.getElementById("receipt").innerHTML;
+  document.body.innerHTML = `
+    <html>
+      <head>
+        <title>Payment Receipt - CPCB<</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
+          .header-flex { display: flex; align-items: center; gap: 15px; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+          .header-text h2 { margin:0; color:#007bff; }
+          .meta-box table { width:100%; border-collapse: collapse; }
+          .meta-box td { padding:8px 10px; border:1px solid #ccc; }
+          .section-title { font-weight:bold; margin-top:20px; text-decoration: underline; }
+          .two-col { display:flex; gap:20px; }
+          .card { border:1px solid #ccc; padding:10px 15px; flex:1; border-radius:6px; }
+          table.receipt-table { width:100%; border-collapse: collapse; margin-top:15px; }
+          table.receipt-table th, table.receipt-table td { border:1px solid #ccc; padding:8px; text-align:center; }
+          .summary-row { background:#f8f8f8; font-weight:bold; }
+          .success { color: green; font-weight: bold; }
+          @media print {
+            .btn { display: none !important; }
+          }
+        </style>
+      </head>
+      <body>${receiptContent}</body>
+    </html>
+  `;
+  window.print();
+  document.body.innerHTML = original;
+}
+
+function downloadPDF() {
+  const element = document.getElementById('receipt');
+  const transactionId = "{{ latest_payment.txn_id|default:'RECEIPT' }}";
+  const companyName = "{{ payee_detail.company_name|default:'RVSF'|slugify }}";
+  const filename = `CPCB_Payment_Receipt_${companyName}_${transactionId}.pdf`;
+  
+  const opt = {
+    margin: [10, 5, 10, 10],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      logging: true,
+      letterRendering: true
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait',
+      compress: true
+    }
+  };
+  // Show loading message
+  const originalText = event.target.innerHTML;
+  event.target.innerHTML = 'Generating PDF...';
+  event.target.disabled = true;
+  // Generate PDF
+  html2pdf().set(opt).from(element).save().then(() => {
+    // Reset button state
+    event.target.innerHTML = originalText;
+    event.target.disabled = false;
+  });
+}
+// Alternative method using jsPDF directly (uncomment if html2pdf doesn't work)
+/*
+function downloadPDF() {
+  import('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+    .then((module) => {
+      const { jsPDF } = module;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      
+      // Get HTML content
+      const element = document.getElementById('receipt');
+      
+      // Add receipt content as image (simplified approach)
+      html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 190; // A4 width in mm
+        const pageHeight = 280; // A4 height in mm
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        let heightLeft = imgHeight;
+        let position = 10;
+        
+        doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          doc.addPage();
+          doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+        
+        const transactionId = "{{ latest_payment.txn_id|default:'RECEIPT' }}";
+        doc.save(`CPCB_Payment_Receipt_${transactionId}.pdf`);
+      });
+    });
+}
+*/
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1173 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/viewchecklist.css' %}">
+<style>
+  .divpad {
+    margin-top: 25px;
+    border: outset;
+    border-color: #68656526;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .flx {
+    display: flex;
+  }
+  .marit {
+    margin-right: 5%;
+    margin-left: 1%;
+  }
+  .document-link { text-decoration: none; }
+  .validation-msg { color: #dc3545; }
+</style>
+<div class="container my-4">
+<h4>Query Raised : {{applicationstatus.incompleteRemark}}</h4 >
+</div>
+<form action="{% url 'resubmit_application' %}" method="post" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to re-submit the application?');">
+  {% csrf_token %}
+  <div class="container my-4">
+
+    
+
+  {# ---------------- SIGNUP DETAILS ---------------- #}
+  {% if signup %}
+  {% if signup.name_address == 'No' or signup.company_email == 'No' or signup.gst_certificate == 'No' or signup.company_pan_card == 'No' or signup.company_iec == 'No' or signup.company_cin == 'No' or signup.company_tin == 'No' %}
+  <div class="signupdetail divpad">
+    <h5>Signup Details</h5>
+
+    {# GST Section #}
+    <div class="row form-row">
+      {% if signup.gst_certificate == 'No' %}
+      
+      <div class="col-md-6 mb-4">
+        {% if data1.gst_no %}
+            <label for="id_gst_no" class="form-label required"> GST No. <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="id_gst_no" name="gst_no" value="{{data1.gst_no|default:''}}" disabled>
+        {% else %}
+            <label for="id_gst_no" class="form-label required"> GST No. <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="id_gst_no" name="gst_no" value="{{data1.gst|default:''}}"   disabled>
+        {% endif %}
+        
+      </div>
+
+      <div class="col-md-6 mb-4">
+        {% if data1.gst_no %}
+          {% if general.gst_pdf %}
+            <label class="form-label required"> GST Document (Only PDF max file size 2Mb)</label>
+            <a href="{% url 'protected_file_rvsf' general.gst_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+              <i class="fas fa-file-pdf me-2"></i>View GST Document
+            </a>
+            <input type="file" name="gst_pdf_signup" class="form-control" accept="application/pdf">
+            <input type="hidden" name="gst_pdf_signup_existing" value="{{ general.gst_pdf }}">
+          {% else %}
+            <label class="form-label required">Upload GST Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+            <input type="file" name="gst_pdf_signup" class="form-control" accept="application/pdf" {% if data1.gst_no or general.gst_no %} required {% endif %}>
+          {% endif %}
+        {% else %}
+          <label class="form-label required">Upload GST Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+          <input type="file" name="gst_pdf_signup" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if signup.name_address == 'No' %}
+    <div class="row form-row">
+      <div class="col-md-6 mb-4">
+        <label for="id_company_name_signup" class="form-label"> Company Name <span class="text-danger">*</span></label>
+        <input id="id_company_name_signup" type="text" name="company_name_signup" value="{{ data1.company_name }}" placeholder="Company Name" class="form-control" disabled>
+      </div>
+      {% if signup.company_email == 'No' %}
+      <div class="col-md-6 mb-4">
+        <label for="id_company_email_signup" class="form-label">Company Email <span class="text-danger">*</span></label>
+        <input id="id_company_email_signup" type="email" name="company_email_signup" value="{{ data1.company_email }}" placeholder="Company Email" class="form-control" disabled>
+      </div>
+      {% else %}
+      <input type="hidden" name="company_email_signup" value="{{ data1.company_email }}">
+      {% endif %}
+
+      <div class="col-md-12 mb-4">
+        <label for="id_address_signup" class="form-label"> Registered Address <span class="text-danger">*</span></label>
+        <textarea id="id_address_signup" name="address_signup" class="form-control" placeholder="Address_signup" required rows="3">{{ data1.registered_address }}, {{ districtname }}, {{ statename }}, {{ data1.pin_code }}</textarea>
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label for="id_address_signup_remarks" class="form-label">Registered Name & Address Remarks by Industry</label>
+        <textarea id="id_address_signup_remarks" class="form-control" rows="3" disabled>{{ signup.remarks_name_address }}</textarea>
+      </div> -->
+    </div>
+    {% else %}
+      <input type="hidden" name="address_signup" value="{{ data1.registered_address }}, {{ data1.district }}, {{ data1.state }}, {{ data1.pin_code }}">
+      <input type="hidden" name="company_name_signup" value="{{ data1.company_name }}">
+    {% endif %}
+
+    
+    
+      
+
+      <!-- <div class="col-md-6 mb-4">
+        <label for="id_company_email_signup_remarks" class="form-label">Email Remarks by Industry</label>
+        <textarea id="id_company_email_signup_remarks" class="form-control" rows="3" disabled>{{ signup.remarks_company_email }}</textarea>
+      </div> -->
+   
+    
+
+
+      
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label">GST Document Remarks by Industry</label>
+        <textarea class="form-control" rows="3" disabled>{{ signup.remarks_gst_certificate }}</textarea>
+      </div> -->
+
+    {% endif %}
+
+    {# PAN Section #}
+    {% if signup.company_pan_card == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-6 mb-4">
+        {% if data1.company_pan %}
+            <label for="id_pan_no" class="form-label required"> PAN No <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="id_pan_no" name="pan_no" value="{{data1.company_pan|default:''}}" disabled>
+        {% else %}
+            <label for="id_pan_no" class="form-label required"> PAN No <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="id_pan_no" name="pan_no" value="{{data1.company_pan|default:''}}" disabled >
+        {% endif %}
+      </div>
+      <div class="col-md-6 mb-4">
+        {% if data1.company_pan %}
+          {% if general.pan_pdf %}
+            <label class="form-label required">PAN Document (Only PDF max file size 2Mb)</label>
+            <a href="{% url 'protected_file_rvsf' general.pan_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+              <i class="fas fa-file-pdf me-2"></i>View PAN Document
+            </a>
+            <input type="file" name="pan_pdf_signup" class="form-control" accept="application/pdf">
+            <input type="hidden" name="pan_pdf_signup_existing" value="{{ general.pan_pdf }}">
+          {% else %}
+            <label class="form-label required">Upload PAN Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+            <input type="file" name="pan_pdf_signup" class="form-control" accept="application/pdf" {% if data1.company_pan or general.company_pan %} required {% endif %}>
+          {% endif %}
+        {% else %}
+          <label class="form-label required">Upload PAN Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+          <input type="file" name="pan_pdf_signup" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label">PAN Document Remarks by Industry</label>
+        <textarea class="form-control" rows="3" disabled>{{ signup.remarks_company_pan_card }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {# TIN Section #}
+    {% if signup.company_tin == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-6 mb-4">
+        {% if data1.tin_no %}
+            <label for="id_tin_no" class="form-label required"> Tax Identification Number (TIN)</label>
+            <input type="text" class="form-control" id="id_tin_no" maxlength="15" name="tin_no" value="{{data1.tin_no|default:''}}" required>
+        {% else %}
+            <label for="id_tin_no" class="form-label required"> Tax Identification Number (TIN)</label>
+            <input type="text" class="form-control" id="id_tin_no" maxlength="15" name="tin_no" value="{{data1.tin_no|default:''}}" required>
+        {% endif %}
+      </div>
+      <div class="col-md-6 mb-4">
+        {% if data1.tin_no %}
+          {% if general.tin_pdf %}
+            <label class="form-label required">TIN Document (Only PDF max file size 2Mb)</label>
+            <a href="{% url 'protected_file_rvsf' general.tin_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+              <i class="fas fa-file-pdf me-2"></i>View TIN Document
+            </a>
+            <input type="file" name="tin_pdf_signup" class="form-control" accept="application/pdf">
+            <input type="hidden" name="tin_pdf_signup_existing" value="{{ general.tin_pdf }}">
+          {% else %}
+            <label class="form-label required">Upload TIN Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+            <input type="file" name="tin_pdf_signup" class="form-control" accept="application/pdf" {% if data1.tin_no or general.tin_no %} required {% endif %}>
+          {% endif %}
+        {% else %}
+          <label class="form-label required">Upload TIN Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+          <input type="file" name="tin_pdf_signup" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label">TIN Document Remarks by Industry</label>
+        <textarea class="form-control" rows="3" disabled>{{ signup.remarks_company_tin }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {# CIN Section #}
+    {% if signup.company_cin == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-6 mb-4">
+        {% if data1.cin %}
+            <label for="id_cin_no" class="form-label required"> Corporate Identification Number (CIN)</label>
+            <input type="text" class="form-control" maxlength="21" id="id_cin_no" name="cin_no" value="{{data1.cin|default:''}}" required>
+        {% else %}
+            <label for="id_cin_no" class="form-label required"> Corporate Identification Number (CIN)</label>
+            <input type="text" class="form-control" id="id_cin_no" maxlength="21" name="cin_no" value="{{data1.cin|default:''}}" required>
+        {% endif %}
+      </div>
+      <div class="col-md-6 mb-4">
+        {% if data1.cin %}
+          {% if general.cin_pdf %}
+            <label class="form-label required">CIN Document (Only PDF max file size 2Mb)</label>
+            <a href="{% url 'protected_file_rvsf' general.cin_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+              <i class="fas fa-file-pdf me-2"></i>View CIN Document
+            </a>
+            <input type="file" name="cin_pdf_signup" class="form-control" accept="application/pdf">
+            <input type="hidden" name="cin_pdf_signup_existing" value="{{ general.cin_pdf }}">
+          {% else %}
+            <label class="form-label required">Upload CIN Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+            <input type="file" name="cin_pdf_signup" class="form-control" accept="application/pdf" {% if data1.cin or general.cin %} required {% endif %}>
+          {% endif %}
+        {% else %}
+          <label class="form-label required">Upload CIN Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+          <input type="file" name="cin_pdf_signup" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label">CIN Document Remarks by Industry</label>
+        <textarea class="form-control" rows="3" disabled>{{ signup.remarks_company_cin }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {# IEC Section #}
+    {% if signup.company_iec == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-6 mb-4">
+        {% if data1.iec %}
+            <label for="id_iec_no" class="form-label required"> Import Export Code (IEC)</label>
+            <input type="text" class="form-control" id="id_iec_no" maxlength="10" name="iec_no" value="{{data1.iec|default:''}}" required>
+        {% else %}
+            <label for="id_iec_no" class="form-label required"> Import Export Code (IEC)</label>
+            <input type="text" class="form-control" id="id_iec_no" maxlength="10" name="iec_no" value="{{data1.iec|default:''}}" required>
+        {% endif %}
+      </div>
+      <div class="col-md-6 mb-4" id="iec_upload_section" style="display: {% if data1.iec or general.iec %}block{% else %}block{% endif %};">
+        {% if data1.iec %}
+          {% if general.iec_pdf %}
+            <label class="form-label required">IEC Document (Only PDF max file size 2Mb)</label>
+            <a href="{% url 'protected_file_rvsf' general.iec_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+              <i class="fas fa-file-pdf me-2"></i>View IEC Document
+            </a>
+            <input type="file" name="iec_pdf_signup" class="form-control" accept="application/pdf">
+            <input type="hidden" name="iec_pdf_signup_existing" value="{{ general.iec_pdf }}">
+          {% else %}
+            <label class="form-label required">Upload IEC Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+            <input type="file" name="iec_pdf_signup" class="form-control" accept="application/pdf" {% if data1.iec or general.iec %} required {% endif %}>
+          {% endif %}
+        {% else %}
+          <label class="form-label required">Upload IEC Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+          <input type="file" name="iec_pdf_signup" class="form-control" accept="application/pdf" {% if data1.iec or general.iec %} required {% endif %}>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label">IEC Document Remarks by Industry</label>
+        <textarea class="form-control" rows="3" disabled>{{ signup.remarks_company_iec }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+   {# end signupdetail #}
+  {% endif %} {# end if signup #}
+
+  {# ---------------- RVSF / GENERAL 2 DETAILS ---------------- #}
+  {% if general2 %}
+  {% if general2.rvsf_address == 'No' or general2.gps_location == 'No' or  general2.annual_return == 'No' or general2.material_balance_sheet == 'No' or general2.process_flow == 'No' or general2.rvsf_certificate_validity == 'No' or general2.rvsf_certificate == 'No' or general2.dic_certificate == 'No' or general2.howm_certificate == 'No' or general2.cto_validity == 'No' or general2.cto_certificate == 'No' or general2.rvsf_state == 'No' %}
+  <div class="rvsfdetail divpad">
+    <h5>RVSF Details</h5>
+
+    <div class="row form-row">
+      {% if general2.rvsf_address == 'No' %}
+      <div class="col-md-6 mb-4">
+        <label for="id_address_rvsf" class="form-label"> Address <span class="text-danger">*</span></label>
+        <textarea id="id_address_rvsf" name="address_rvsf" class="form-control" placeholder="Address" required rows="4">{{ general1.address }}</textarea>
+      </div>
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> RVSF Address Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_rvsf_address }}</textarea>
+      </div> -->
+      {% else %}
+        <input type="hidden" name="address_rvsf" value="{{ general1.address }}">
+      {% endif %}
+
+      {% if general2.gps_location == 'No' %}
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> GPS Location <span class="text-danger">*</span></label>
+        <div class="gps-container">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <input type="text" id="id_latitude_rvsf" maxlength="15" name="latitude_rvsf" class="form-control" value="{{ general1.latitude }}" placeholder="Latitude (e.g., 23.4567)" required>
+            </div>
+            <div class="col-md-6">
+              <input type="text" id="id_longitude_rvsf" maxlength="15" name="longitude_rvsf" class="form-control" value="{{ general1.longitude }}" placeholder="Longitude (e.g., 78.1234)" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <button type="button" class="btn btn-outline-info location-btn" onclick="fillLocation()">
+                <i class="fas fa-location-arrow me-2"></i>Use My Location
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> GPS Location Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_gps_location }}</textarea>
+      </div> -->
+      {% else %}
+        <input type="hidden" name="latitude_rvsf" value="{{ general1.latitude }}">
+        <input type="hidden" name="longitude_rvsf" value="{{ general1.longitude }}">
+      {% endif %}
+    </div>
+
+    <div class="row form-row">
+      {% if general2.rvsf_state == 'No' %}
+      <div class="col-md-6 mb-4">
+        <label for="state_rvsf" class="form-label required"> State/UT <span class="text-danger">*</span></label>
+        <select class="form-select" id="stat_rvsfe" name="state_rvsf" data-selected="{{ general1.state|default:'' }}" required>
+          <option value="">Select</option>
+          {% for state in states %}
+            <option class="text-black" value="{{ state.state_id }}" {% if general1.state == state.state_id|stringformat:"s" %} selected {% endif %}>
+              {{ state.state_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> State Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_rvsf_state }}</textarea>
+      </div> -->
+      {% else %}
+        <input type="hidden" name="state_rvsf" value="{{ general1.state }}">
+      {% endif %}
+
+      <div class="col-md-6 mb-4 position-relative" id="gpcbid-container" style="display:none;">
+        <label class="form-label">Gpcbid <span class="text-danger">*</span></label>
+        <input type="text" name="gpcbid_rvsf" id="gpcbid-field" pattern="[0-9]+" inputmode="numeric" class="form-control">
+        <span id="gpcbid-tick" style="display:none;">✔</span>
+        <span id="gpcbid-cross" style="display:none;">✖</span>
+        <small id="gpcbid-msg" class="validation-msg"></small>
+      </div>
+    </div>
+
+    <div class="row form-row custborder">
+      {% if general2.cto_certificate == 'No' %}
+      <div class="col-md-4 mb-4">
+        <label for="id_cto_number" class="form-label"> Consent Application Number (CTO) <span class="text-danger">*</span></label>
+        <input id="id_cto_number" type="text" name="cto_number_rvsf" value="{{ general1.cto_number }}" placeholder="CTO Number RVSF" class="form-control" required>
+        <span id="consent-tick" style="display:none;">✔</span>
+        <span id="consent-cross" style="display:none;">✖</span>
+        <small id="consent-msg" class="validation-msg"></small>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <label for="id_consent_validity" class="form-label"> Consent Validity <span class="text-danger">*</span></label>
+        <input id="id_consent_validity" type="date" name="consent_validity_rvsf" value="{{ general1.consent_validity|date:'Y-m-d' }}" class="form-control" required>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <label for="id_cto_pdf_rvsf" class="form-label"> Upload CTO (Only PDF max file size 2Mb) <span class="text-danger">*</span></label>
+        {% if general1.cto_pdf %}
+          <a href="{% url 'protected_file_rvsf' general1.cto_pdf.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_cto_pdf_rvsf" type="file" name="cto_pdf_rvsf" class="form-control" accept="application/pdf">
+          <input type="hidden" name="cto_pdf_rvsf_existing" value="{{ general1.cto_pdf }}">
+        {% else %}
+          <input id="id_cto_pdf_rvsf" type="file" name="cto_pdf_rvsf" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> CTO Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_cto_certificate }}</textarea>
+      </div> -->
+      {% endif %}
+
+      {% if general2.cto_validity == 'No' %}
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> Consent Validity <span class="text-danger">*</span></label>
+        <input id="id_consent_validity_rvsf" type="date" name="consent_validity_rvsf" value="{{ general1.consent_validity|date:'Y-m-d' }}" class="form-control" required>
+      </div>
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> CTO Validity Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_cto_validity }}</textarea>
+      </div> -->
+      {% endif %}
+    </div>
+
+    {% if general2.howm_certificate == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> Validity of Authorization under HOWM (2016) <span class="text-danger">*</span></label>
+        <input id="id_howm_validity_rvsf" type="date" name="howm_validity_rvsf" value="{{ general1.howm_validity|date:'Y-m-d' }}" class="form-control" required>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> Upload Authorization (Only PDF max file size 2Mb) <span class="text-danger">*</span></label>
+        {% if general1.howm_pdf %}
+          <a href="{% url 'protected_file_rvsf' general1.howm_pdf.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_howm_pdf_rvsf" type="file" name="howm_pdf_rvsf" class="form-control" accept="application/pdf">
+          <input type="hidden" name="howm_pdf_rvsf_existing" value="{{ general1.howm_pdf }}">
+        {% else %}
+          <input id="id_howm_pdf_rvsf" type="file" name="howm_pdf_rvsf" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> HOWM Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_howm_certificate }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {% if general2.dic_certificate == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-4 mb-4">
+        <label class="form-label"> Validity of DIC Registration <span class="text-danger">*</span></label>
+        <input id="id_dic_validity_rvsf" type="date" name="dic_validity_rvsf" value="{{ general1.dic_validity|date:'Y-m-d' }}" class="form-control" required>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <label class="form-label"> Upload Registration with DIC (Only PDF max file size 2Mb) <span class="text-danger">*</span></label>
+        {% if general1.dic_pdf %}
+          <a href="{% url 'protected_file_rvsf' general1.dic_pdf.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_dic_pdf_rvsf" type="file" name="dic_pdf_rvsf" class="form-control" accept="application/pdf">
+          <input type="hidden" name="dic_pdf_rvsf_existing" value="{{ general1.dic_pdf }}">
+        {% else %}
+          <input id="id_dic_pdf_rvsf" type="file" name="dic_pdf_rvsf" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-4 mb-4">
+        <label class="form-label"> DIC Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_dic_certificate }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {% if general2.rvsf_certificate == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-12 mb-4">
+        <label class="form-label"> Registration No. for setting up of RVSF (Form 1A) <span class="text-danger">*</span></label>
+        <input id="id_rvsf_reg_no_rvsf" type="text" name="rvsf_reg_no_rvsf" value="{{ general1.rvsf_reg_no }}" class="form-control" placeholder="RVSF Registration No" required>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> Upload RVSF Certificate (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+        {% if general1.rvsf_pdf %}
+          <a href="{% url 'protected_file_rvsf' general1.rvsf_pdf.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_pdf_rvsf" type="file" name="pdf_rvsf" class="form-control" accept="application/pdf">
+          <input type="hidden" name="pdf_rvsf_existing" value="{{ general1.rvsf_pdf }}">
+        {% else %}
+          <input id="id_pdf_rvsf" type="file" name="pdf_rvsf" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> RVSF Certificate Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_rvsf_certificate }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {% if general2.rvsf_certificate_validity == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> RVSF Validity <span class="text-danger">*</span></label>
+        <input id="id_rvsf_validity_rvsf" type="date" name="rvsf_validity_rvsf" value="{{ general1.rvsf_validity|date:'Y-m-d' }}" class="form-control" required>
+      </div>
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> RVSF Validity Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_rvsf_certificate_validity }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {% if general2.process_flow == 'No' %}
+    <div class="row form-row">
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> Upload Process Flow diagram (Only PDF max file size 2Mb) <span class="text-danger">*</span></label>
+        {% if general1.process_flow_pdf %}
+          <a href="{% url 'protected_file_rvsf' general1.process_flow_pdf.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_process_flow_pdf_rvsf" type="file" name="process_flow_pdf_rvsf" class="form-control" accept="application/pdf">
+          <input type="hidden" name="process_flow_pdf_rvsf_existing" value="{{ general1.process_flow_pdf }}">
+        {% else %}
+          <input id="id_process_flow_pdf_rvsf" type="file" name="process_flow_pdf_rvsf" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> Process Flow diagram Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_process_flow }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {% if general2.material_balance_sheet == 'No' %}
+    <div class="row form-row">
+      <div class="col-md-6 mb-4">
+        <label class="form-label"> Upload Material Balance Sheet (Only PDF max file size 2Mb) <span class="text-danger">*</span></label>
+        {% if general1.material_balance_pdf %}
+          <a href="{% url 'protected_file_rvsf' general1.material_balance_pdf.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_material_balance_pdf_rvsf" type="file" name="material_balance_pdf_rvsf" class="form-control" accept="application/pdf">
+          <input type="hidden" name="material_balance_pdf_rvsf_existing" value="{{ general1.material_balance_pdf }}">
+        {% else %}
+          <input id="id_material_balance_pdf_rvsf" type="file" name="material_balance_pdf_rvsf" class="form-control" accept="application/pdf" required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> Material Balance Sheet Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_material_balance_sheet }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+
+    {% if general2.annual_return == 'No' %}
+    <div class="row form-row custborder">
+      <div class="col-md-4 mb-4">
+        <label class="form-label"> Upload Annual Returns for ({{ financial_years.0 }}) (Only PDF max file size 2Mb) <span class="text-danger">*</span></label>
+        {% if general1.annual_returns_pdf %}
+          <a href="{% url 'protected_file_rvsf' general1.annual_returns_pdf.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_annual_returns_pdf_rvsf_0" type="file" name="annual_returns_pdf_rvsf_0" class="form-control" accept="application/pdf" multiple>
+          <input type="hidden" name="annual_returns_pdf_rvsf_0_existing" value="{{ general1.annual_returns_pdf }}">
+        {% else %}
+          <input id="id_annual_returns_pdf_rvsf_0" type="file" name="annual_returns_pdf_rvsf_0" class="form-control" accept="application/pdf" multiple required>
+        {% endif %}
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <label class="form-label"> Upload Annual Returns for ({{ financial_years.1 }}) (Only PDF max file size 2Mb) <span class="text-danger">*</span></label>
+        {% if general1.annual_returns_pdf1 %}
+          <a href="{% url 'protected_file_rvsf' general1.annual_returns_pdf1.name %}" target="_blank" class="document-link">
+            <i class="fas fa-file-pdf me-2"></i>View Document
+          </a>
+          <input id="id_annual_returns_pdf_rvsf_1" type="file" name="annual_returns_pdf_rvsf_1" class="form-control" accept="application/pdf" multiple>
+          <input type="hidden" name="annual_returns_pdf_rvsf_1_existing" value="{{ general1.annual_returns_pdf1 }}">
+        {% else %}
+          <input id="id_annual_returns_pdf_rvsf_1" type="file" name="annual_returns_pdf_rvsf_1" class="form-control" accept="application/pdf" multiple required>
+        {% endif %}
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> Annual Return Remarks by Industry </label>
+        <textarea class="form-control" rows="3" disabled>{{ general2.remarks_annual_return }}</textarea>
+      </div> -->
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+   {# end rvsfdetail #}
+  {% endif %} {# end if general2 #}
+
+  {# ---------------- EQUIPMENT DETAILS ---------------- #}
+  {% if equipments %}
+  {% if not equipments.dismantling_equipment or not equipments.depollution_equipment or not equipments.bailing_equipment or not equipments.shredding_equipment or not equipments.storage_equipment or not equipments.classifier_equipment or not equipments.other_equipment or not facility1.geo_tagged_video or not facility1.employees_number or not facility1.sectioned_power or not facility1.shift_number or not facility1.total_rvsf_area  %}
+  <div class="equipdetail divpad">
+    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
+      <!-- <strong>Industry Remarks</strong><br>
+      {% if not equipments.dismantling_equipment %}
+        dismantling_equipment: {{ equipments.remarks_dismantling_equipment }}<br>
+      {% endif %}
+      {% if not equipments.depollution_equipment %}
+        depollution_equipment: {{ equipments.remarks_depollution_equipment }}<br>
+      {% endif %}
+      {% if not equipments.bailing_equipment %}
+        bailing_equipment: {{ equipments.remarks_bailing_equipment }}<br>
+      {% endif %}
+      {% if not equipments.shredding_equipment %}
+        shredding_equipment: {{ equipments.remarks_shredding_equipment }}<br>
+      {% endif %}
+      {% if not equipments.storage_equipment %}
+        storage_equipment: {{ equipments.remarks_storage_equipment }}<br>
+      {% endif %}
+      {% if not equipments.classifier_equipment %}
+        classifier_equipment: {{ equipments.remarks_classifier_equipment }}<br>
+      {% endif %}
+      {% if not equipments.other_equipment %}
+        other_equipment: {{ equipments.remarks_other_equipment }}<br>
+      {% endif %}
+    </div> -->
+
+    {% if not equipments.dismantling_equipment or not equipments.depollution_equipment or not equipments.bailing_equipment or not equipments.shredding_equipment or not equipments.storage_equipment or not equipments.classifier_equipment or not equipments.other_equipment %}
+    <h5>Equipment Details</h5>
+    <div class="maincard">
+      <div class="card mb-4 form-card">
+        <div class="section-header">
+          <h5 class="section-title">(A). Details of installed equipment at RVSFs</h5>
+        </div>
+
+        {% for eq in data %}
+        <div class="equipment-item mb-4 p-3 border rounded">
+          <h6>Equipment {{ forloop.counter }}</h6>
+          <input type="hidden" name="equipment_id_{{ eq.equipment_id }}" value="{{ eq.equipment_id }}">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Name of Equipment</label>
+              <input type="text" class="form-control" name="equipment_{{ eq.equipment_id }}_type" value="{{ eq.equipment_type }}" disabled>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">No. of Equipment</label>
+              <input type="number" class="form-control" name="equipment_{{ eq.equipment_id }}_qty" value="{{ eq.quantity }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Power Rating (kWh)</label>
+              <input type="number" class="form-control" name="equipment_{{ eq.equipment_id }}_power" value="{{ eq.power_rating }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Operating Hours</label>
+              <input type="number" class="form-control" name="equipment_{{ eq.equipment_id }}_hours" value="{{ eq.operating_hours }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Capacity of the Equipment (Tones/Day)</label>
+              <input type="number" class="form-control" name="equipment_{{ eq.equipment_id }}_capacity" value="{{ eq.capacity_equipment_perton }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Geo-tagged Photo</label>
+              {% if eq.geo_tagged_pdf %}
+                <a href="{% url 'protected_file_rvsf' eq.geo_tagged_pdf.name %}" target="_blank" class="document-link d-block">
+                  <i class="fas fa-file-pdf me-2"></i>View PDF
+                </a>
+                <input type="hidden" name="equipment_{{ eq.equipment_id }}_geo_tagged_pdf_existing" value="{{ eq.geo_tagged_pdf }}">
+                <input type="file" name="equipment_{{ eq.equipment_id }}_geo_tagged_pdf" class="form-control" accept="application/pdf">
+              {% else %}
+                <input type="file" name="equipment_{{ eq.equipment_id }}_geo_tagged_pdf" class="form-control" accept="application/pdf">
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  
+  
+{% if not facility1.geo_tagged_video or not facility1.employees_number or not facility1.sectioned_power or not facility1.shift_number or not facility1.total_rvsf_area  %}
+  {# ---------------- FACILITY DETAILS (B) ---------------- #}
+  <div class="maincard">
+    <div class="section-header">
+      <h5 class="section-title">(B). RVSF Facility Details</h5>
+    </div>
+
+    <div class="row form-row">
+      {% if not facility1.geo_tagged_video %}
+      <div class="col-md-6 mb-4">
+        <label for="geo_video" class="form-label">Geo-tagged Video of RVSF (MP4 only, Max 20 MB) <span class="text-danger">*</span></label>
+        {% if facility.geo_video %}
+          <video id="videoPreview" width="100%" height="300" class="mt-3" controls>
+            <source src="{% url 'protected_file_rvsf' facility.geo_video.name %}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <input type="file" class="form-control mt-2" id="geo_video" name="geo_video" accept="video/mp4">
+          <input type="hidden" name="geo_video_existing" value="{{ facility.geo_video }}">
+        {% else %}
+          <input type="file" class="form-control" id="geo_video" name="geo_video" accept="video/mp4" required>
+          <video id="videoPreview" width="100%" height="300" class="mt-3 d-none" controls></video>
+        {% endif %}
+        <small id="videoError" class="text-danger d-none">Only MP4 videos up to 20 MB are allowed.</small>
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label for="id_videoPreview_remarks" class="form-label"> Geo-tagged Video of RVSF Remarks by Industry </label>
+        <textarea id="id_videoPreview_remarks" name="videoPreview_remarks" class="form-control" rows="3" disabled>{{ facility1.remarks_geo_tagged_video }}</textarea>
+      </div> -->
+      {% endif %}
+    </div>
+
+    {% if not facility1.total_rvsf_area %}
+    <div class="row form-row">
+      <div class="col-md-6 mb-4">
+        <label for="total_area" class="form-label"> Total Area of the RVSF (in sq. meters) <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" id="total_area" name="total_area" min="0" step="0.01" value="{{ facility.total_area }}" required>
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label for="id_total_area_remarks" class="form-label"> Total Area of the RVSF Remarks by Industry </label>
+        <textarea id="id_total_area_remarks" name="total_area_remarks" class="form-control" rows="3" disabled>{{ facility1.remarks_total_rvsf_area }}</textarea>
+      </div> -->
+    </div>
+    {% else %}
+      <input type="hidden" name="total_area" value="{{ facility.total_area }}">
+    {% endif %}
+
+    {% if not facility1.shift_number %}
+    <div class="row form-row">
+      <div class="col-md-6 mb-4">
+        <label for="shifts_per_day" class="form-label"> Number of Shifts Operated Per Day <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" id="shifts_per_day" name="shifts_per_day" min="1" max="3" value="{{ facility.shifts_per_day }}" required>
+      </div>
+
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> Number of Shifts Operated Per Day Remarks by Industry </label>
+        <textarea id="id_shifts_per_day_remarks" name="shifts_per_day_remarks" class="form-control" rows="3" disabled>{{ facility1.remarks_shift_number }}</textarea>
+      </div> -->
+    </div>
+    {% else %}
+      <input type="hidden" name="shifts_per_day" value="{{ facility.shifts_per_day }}">
+    {% endif %}
+
+    <div class="row form-row">
+      {% if not facility1.sectioned_power %}
+      <div class="col-md-6 mb-4">
+        <label for="sectioned_power" class="form-label"> Sactioned Power Load(kWh) <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" id="sectioned_power" name="sectioned_power" value="{{ facility.sectioned_power }}" required>
+      </div>
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> Sactioned Power Remarks by Industry </label>
+        <textarea id="id_sectioned_power_remarks" name="sectioned_power_remarks" class="form-control" rows="3" disabled>{{ facility1.remarks_sectioned_power }}</textarea>
+      </div> -->
+      {% else %}
+        <input type="hidden" name="sectioned_power" value="{{ facility.sectioned_power }}">
+      {% endif %}
+    </div>
+
+    <div class="row form-row">
+      {% if not facility1.employees_number %}
+      <div class="col-md-6 mb-4">
+        <label for="no_of_employees" class="form-label"> Number of Employees Working <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" id="no_of_employees" name="no_of_employees" min="1" value="{{ facility.no_of_employees }}" required>
+      </div>
+      <!-- <div class="col-md-6 mb-4">
+        <label class="form-label"> Number of Employees Working Remarks by Industry </label>
+        <textarea id="id_no_of_employees_remarks" name="no_of_employees_remarks" class="form-control" rows="3" disabled>{{ facility1.remarks_employees_number }}</textarea>
+      </div> -->
+      {% else %}
+        <input type="hidden" name="no_of_employees" value="{{ facility.no_of_employees }}">
+      {% endif %}
+    </div>
+
+    <small id="formError" class="text-danger mt-2 d-none">⚠ Please fill all required fields before proceeding.</small>
+
+  </div>
+  {% endif %} 
+</div>
+{% endif %}
+{% endif %}
+<!-- {# end maincard facility #} -->
+  {# ---------------- CAPACITY DETAILS ---------------- #}
+  {% if capacity %}
+  {% if not capacity.vehicle_category or not capacity.vehicle_installed_capacity or not capacity.steel_installed_capacity or not capacity.vehicle_operating_capacity or not capacity.steel_operating_capacity %}
+  <div class="capcdetail divpad">
+    {% if not capacity.vehicle_category %}
+      <h5>Capacity Details</h5>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Select Vehicle Types<span class="text-danger">*</span></label>
+          <div class="multiselect-container" id="vehicleOptions">
+            <div class="multiselect-option" data-value="2W">2W (Two-Wheeler)</div>
+            <div class="multiselect-option" data-value="3W">3W (Three-Wheeler)</div>
+            <div class="multiselect-option" data-value="LMV">LMV (Light Motor Vehicle)</div>
+            <div class="multiselect-option" data-value="MMV">MMV (Medium Motor Vehicle)</div>
+            <div class="multiselect-option" data-value="HMV">HMV (Heavy Motor Vehicle)</div>
+            <div class="multiselect-option" data-value="Others">Others (Manual Entry)</div>
+          </div>
+        </div>
+
+        <div class="mb-3" id="othersContainer" style="display: none;">
+          <label for="otherVehicles" class="form-label">Other Vehicle Types</label>
+          <input type="text" class="form-control" id="otherVehicles" placeholder="Enter vehicle types separated by commas">
+          <small class="form-text text-muted">Example: Bus, Truck, Trailer</small>
+        </div>
+
+        <div class="selected-options" id="selectedOptions">
+          <p><strong>Selected Vehicles:</strong></p>
+          <!-- Selected options will appear here -->
+        </div>
+        <!-- <div class="col-md-6 mb-4">
+          <label class="form-label"> Vehicles Type Remarks by Industry </label>
+          <textarea id="id_vehicle_category_remarks" name="vehicle_category_remarks" class="form-control" rows="3" disabled>{{ capacity.remarks_vehicle_category }}</textarea>
+        </div> -->
+        <input type="hidden" name="selected_vehicles" id="selectedVehicles">
+      </div>
+    {% else %}
+      <input type="hidden" name="selected_vehicles" value="{{ capacity.vehicle_category }}">
+    {% endif %}
+
+    {% if not capacity.vehicle_installed_capacity or not capacity.steel_installed_capacity or not capacity.vehicle_operating_capacity or not capacity.steel_operating_capacity %}
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Capacity Type</th>
+            <th>No. of Vehicles Scrapped / Annum</th>
+            <th>Quantity of Steel Scrapped / Annum (in MT)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Installed Capacity<span class="text-danger">*</span><br><small>(as per consents/licenses)</small></td>
+            {% if not capacity.vehicle_installed_capacity %}
+            <td>
+              <input type="number" class="form-control" name="installed_vehicles" value="{{ capacitydata.installed_vehicles|default:'' }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="installed_vehicles" value="{{ capacitydata.installed_vehicles }}">
+            {% endif %}
+            {% if not capacity.steel_installed_capacity %}
+            <td>
+              <input type="number" class="form-control" name="installed_steel" value="{{ capacitydata.installed_steel|default:'' }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="installed_steel" value="{{ capacitydata.installed_steel }}">
+            {% endif %}
+          </tr>
+
+          <tr>
+            <td>
+              Operating Capacity<span class="text-danger">*</span><br><small>FY {{ year1 }}</small>
+              <input type="hidden" name="year1" value="{{ year1 }}">
+            </td>
+            {% if not capacity.vehicle_operating_capacity %}
+            <td>
+              <input type="number" class="form-control" name="operating_vehicles1" value="{{ capacitydata.operating_vehicles1 }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="operating_vehicles1" value="{{ capacitydata.operating_vehicles1 }}">
+            {% endif %}
+            {% if not capacity.steel_operating_capacity %}
+            <td>
+              <input type="number" class="form-control" name="operating_steel1" value="{{ capacitydata.operating_steel1 }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="operating_steel1" value="{{ capacitydata.operating_steel1 }}">
+            {% endif %}
+          </tr>
+
+          <tr>
+            <td>
+              Operating Capacity<span class="text-danger">*</span><br><small>FY {{ year2 }}</small>
+              <input type="hidden" name="year2" value="{{ year2 }}">
+            </td>
+            {% if not capacity.vehicle_operating_capacity %}
+            <td>
+              <input type="number" class="form-control" name="operating_vehicles2" value="{{ capacitydata.operating_vehicles2 }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="operating_vehicles2" value="{{ capacitydata.operating_vehicles2 }}">
+            {% endif %}
+            {% if not capacity.steel_operating_capacity %}
+            <td>
+              <input type="number" class="form-control" name="operating_steel2" value="{{ capacitydata.operating_steel2 }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="operating_steel2" value="{{ capacitydata.operating_steel2 }}">
+            {% endif %}
+          </tr>
+
+          <tr>
+            <td>
+              Operating Capacity<span class="text-danger">*</span><br><small>FY {{ year3 }}</small>
+              <input type="hidden" name="year3" value="{{ year3 }}">
+            </td>
+            {% if not capacity.vehicle_operating_capacity %}
+            <td>
+              <input type="number" class="form-control" name="operating_vehicles3" value="{{ capacitydata.operating_vehicles3 }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="operating_vehicles3" value="{{ capacitydata.operating_vehicles3 }}">
+            {% endif %}
+            {% if not capacity.steel_operating_capacity %}
+            <td>
+              <input type="number" class="form-control" name="operating_steel3" value="{{ capacitydata.operating_steel3 }}" required>
+            </td>
+            {% else %}
+              <input type="hidden" name="operating_steel3" value="{{ capacitydata.operating_steel3 }}">
+            {% endif %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {# ---------------- POLLUTION & WASTE ---------------- #}
+  {% if pollution %}
+  {% if not pollution.noise_pollution or not pollution.water_pollution or not pollution.air_pollution or not  wasterec.used_oil or not wasterec.plastic_waste or not wasterec.battery_waste or not wasterec.tyre_waste or not wasterec.e_waste or not wasterec.steel_scrap  %}
+  <div class="polldetail divpad">
+    <h5>Pollution Details</h5>
+    <div class="maincard">
+      <div class="card mb-4 form-card maincard">
+
+        {% if not pollution.noise_pollution or not pollution.water_pollution or not pollution.air_pollution %}
+        <h4>1. Pollution Control Devices</h4>
+
+        {% for eq in devices %}
+        <div class="device-item mb-4 p-3 border rounded">
+          <h6>Device {{ forloop.counter }}</h6>
+          <input type="hidden" name="device_id_{{ eq.id }}" value="{{ eq.id }}">
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Type</label>
+              <input type="text" class="form-control" name="device_{{ eq.id }}_type" value="{{ eq.device_type }}" disabled>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Name</label>
+              <input type="text" class="form-control" name="device_{{ eq.id }}_name" value="{{ eq.name }}" required>
+            </div>
+            <div class="col-md-2 mb-3">
+              <label class="form-label">Qty</label>
+              <input type="number" class="form-control" name="device_{{ eq.id }}_qty" value="{{ eq.quantity }}" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Image</label>
+              {% if eq.device_doc %}
+                <a href="{% url 'protected_file_rvsf' eq.device_doc.name %}" target="_blank" class="document-link d-block">
+                  <i class="fas fa-image me-1"></i>View Image
+                </a>
+                <input type="hidden" name="device_{{ eq.id }}_device_doc_existing" value="{{ eq.device_doc }}">
+                <input type="file" name="device_{{ eq.id }}_doc" class="form-control" accept="image/*">
+              {% else %}
+                <input type="file" name="device_{{ eq.id }}_doc" class="form-control" accept="image/*">
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info">No devices added yet.</div>
+        {% endfor %}
+
+        <!-- <div class="row">
+          {% if not pollution.air_pollution %}
+          <div class="col-md-4 mb-4">
+            <label class="form-label"> Air Pollution Remarks by Industry </label>
+            <textarea class="form-control" rows="3" disabled>{{ pollution.remarks_air_pollution }}</textarea>
+          </div>
+          {% endif %}
+          {% if not pollution.water_pollution %}
+          <div class="col-md-4 mb-4">
+            <label class="form-label"> Water Pollution Remarks by Industry </label>
+            <textarea class="form-control" rows="3" disabled>{{ pollution.remarks_water_pollution }}</textarea>
+          </div>
+          {% endif %}
+          {% if not pollution.noise_pollution %}
+          <div class="col-md-4 mb-4">
+            <label class="form-label"> Noise Pollution Remarks by Industry </label>
+            <textarea class="form-control" rows="3" disabled>{{ pollution.remarks_noise_pollution }}</textarea>
+          </div>
+          {% endif %}
+        </div> -->
+        {% endif %}
+
+        {% if not wasterec.used_oil or not wasterec.plastic_waste or not wasterec.battery_waste or not wasterec.tyre_waste or not wasterec.e_waste or not wasterec.steel_scrap %}
+        <h4 class="mt-4">(2). Details of the categories of waste recycled/refurbished in the unit/sent to registered entities or reuse, recycling and refurbishing in last FY</h4>
+        <!-- <label class="form-label"> Waste Remarks by Industry </label>
+        <textarea id="id_waste_remarks" name="id_waste_remarks" class="form-control" rows="6" disabled>
+{% if not wasterec.used_oil %}Used Oil Waste Remarks - {{ wasterec.remarks_used_oil }}{% endif %}
+{% if not wasterec.plastic_waste %}Plastic Waste Remarks - {{ wasterec.remarks_plastic_waste }}{% endif %}
+{% if not wasterec.battery_waste %}Battery Waste Remarks - {{ wasterec.remarks_battery_waste }}{% endif %}
+{% if not wasterec.tyre_waste %}Tyre Waste Remarks - {{ wasterec.remarks_tyre_waste }}{% endif %}
+{% if not wasterec.e_waste %}E Waste Remarks - {{ wasterec.remarks_e_waste }}{% endif %}
+{% if not wasterec.steel_scrap %}Steel Scrap Waste Remarks - {{ wasterec.remarks_steel_scrap }}{% endif %}
+        </textarea> -->
+
+        {% for w in wastes %}
+        <div class="waste-item mb-4 p-3 border rounded">
+          <h6>Waste Entry {{ forloop.counter }}</h6>
+          <input type="hidden" name="waste_id_{{ w.id }}" value="{{ w.id }}">
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Category of waste</label>
+              <input type="text" class="form-control" name="waste_{{ w.id }}_category" value="{{ w.category }}" disabled>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Waste Quantity Recovered</label>
+              <input type="text" class="form-control" name="waste_{{ w.id }}_qty_recovered" value="{{ w.qty_recovered }}" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Quantity recycled/refurbished</label>
+              <input type="text" class="form-control" name="waste_{{ w.id }}_qty_recycled" value="{{ w.qty_recycled }}" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Name(s) of registered recycler(s)</label>
+              <input type="text" class="form-control" name="waste_{{ w.id }}_recycler" value="{{ w.recycler_name }}" required>
+            </div>
+            <!-- <div class="col-md-12 mb-3">
+              <label class="form-label">Agreement details between RVSFs and registered recycler(s)</label>
+              {% if w.agreement %}
+                <a href="{% url 'protected_file_rvsf' w.agreement.name %}" target="_blank" class="document-link d-block">
+                  <i class="fas fa-file-pdf me-1"></i>View Agreement
+                </a>
+                <input type="hidden" name="waste_{{ w.id }}_agreement_existing" value="{{ w.agreement }}">
+                <input type="file" name="waste_{{ w.id }}_agreement" class="form-control" accept="application/pdf">
+              {% else %}
+                <input type="file" name="waste_{{ w.id }}_agreement" class="form-control" accept="application/pdf">
+              {% endif %}
+            </div> -->
+          </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info">No waste entries yet.</div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {# ---------------- CAPACITY & DECLARATION / PAYMENT ---------------- #}
+  {% if fetchpayment %}
+  {% if not fetchpayment.declaration or not fetchpayment.registration_fee_details %}
+  <div class="capcanddec divpad">
+    <div class="maincard">
+      <h5 class="mb-3 fw-bold">Capacity & Declaration</h5>
+      <div class="card mb-4 form-card">
+        <div class="row form-row">
+          {% if not fetchpayment.declaration %}
+          <!-- <div class="col-md-4 mb-4">
+            <label for="Installed_capacity" class="form-label"> Installed Capacity of the RVSF <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="Installed_capacity" name="Installed_capacity" value="{{ capacitydata.installed_vehicles|default:'' }}" readonly required>
+          </div> -->
+
+          <div class="col-md-4 mb-4">
+            <label for="Undertaking_pdf" class="form-label"> Upload Undertaking (PDF only, Max 2 MB) <span class="text-danger">*</span></label>
+            {% if data1.undertaking %}
+              <a href="{% url 'protected_file_rvsf' data1.undertaking.name %}" target="_blank" class="btn btn-outline-primary btn-sm mb-2">
+                <i class="fas fa-file-pdf me-2"></i>View Undertaking
+              </a>
+              <div class="custom" style="display:flex;">
+                <div class="col-md-10 mb-4">
+                  <input type="file" class="form-control" id="Undertaking_pdf" name="Undertaking_pdf" accept="application/pdf">
+                </div>
+                <div class="col-md-1 mb-4 ms-2">
+                  <a href="{{ file_url }}" class="btn btn-outline-secondary btn-sm" target="_blank" download>
+                    <i class="fas fa-download me-1"></i>Sample
+                  </a>
+                </div>
+              </div>
+              <input type="hidden" name="undertaking_existing" value="{{ data1.undertaking }}">
+            {% else %}
+              <div class="custom" style="display:flex;">
+                <div class="col-md-10 mb-4">
+                  <input type="file" class="form-control" id="Undertaking_pdf" name="Undertaking_pdf" accept="application/pdf" required>
+                </div>
+                <div class="col-md-1 mb-4">
+                  <a href="{{ file_url }}" class="btn btn-outline-secondary btn-sm" target="_blank" download>
+                    <i class="fas fa-download me-1"></i>Sample
+                  </a>
+                </div>
+              </div>
+            {% endif %}
+
+            <small id="pdfError" class="text-danger d-none">Only PDF files up to 2 MB are allowed.</small>
+          </div>
+
+          <!-- <div class="col-md-4 mb-4">
+            <label class="form-label"> Declaration and Undertaking Remarks by Industry </label>
+            <textarea id="id_declaration_remarks" name="declaration_remarks" class="form-control" rows="3" disabled>{{ fetchpayment.remarks_declaration }}</textarea>
+          </div> -->
+          {% else %}
+            <!-- <input type="hidden" name="Installed_capacity" value="{{ capacitydata.installed_vehicles }}"> -->
+            <input type="hidden" name="undertaking_existing" value="{{ data1.undertaking }}">
+          {% endif %}
+
+          {% if not fetchpayment.registration_fee_details %}
+          <div class="col-md-6 mb-4">
+            <label class="form-label"> Payment <span class="text-danger">*</span></label>
+            <input type="text" name="payment" value="{{ payment }}" id="id_payment" readonly>
+          </div>
+          <!-- <div class="col-md-6 mb-4">
+            <label class="form-label"> Payment Remarks by Industry </label>
+            <textarea id="id_payment_remarks" name="payment_remarks" class="form-control" rows="3" disabled>{{ fetchpayment.remarks_registration_fee_details }}</textarea>
+          </div> -->
+          {% else %}
+            <input type="hidden" name="payment" value="{{ payment }}">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {# ---------------- INDUSTRY COMMENT & SUBMIT ---------------- #}
+  <div class="mb-3 divpad">
+    <label for="spcb_comment" class="form-label"><strong>Industry Comment</strong></label>
+    <textarea class="form-control" id="spcb_comment" name="industry_comment" rows="4" placeholder="Enter Your comment here..." required>{{ existing_spcb_comment }}</textarea>
+  </div>
+
+  <input type="hidden" name="industryid" value="{{ fetchpayment.industryid }}">
+  <div class="mb-4">
+    <button type="submit" name="action" value="save" class="btn btn-secondary">Save Application</button>
+  </div>
+
+</div> {# end container #}
+</form>
+
+{# ---------------- JS: remove required for fields hidden by CSS/display:none ---------------- #}
+<script>
+document.querySelector("form").addEventListener("submit", function () {
+    document.querySelectorAll("input[required], select[required], textarea[required]").forEach(function (el) {
+        if (el.offsetParent === null) {
+            el.removeAttribute("required");
+        }
+    });
+});
+</script>
+
+<script>
+  window.alreadySavedVehicles = [
+      {% for vehicle in Vehicledata %}
+          "{{ vehicle.vehicle_type }}"{% if not forloop.last %},{% endif %}
+      {% endfor %}
+  ];
+  window.hasVehicleData = {% if Vehicledata %}true{% else %}false{% endif %};
+</script>
+
+<script src="{% static 'js/rvsfappjs/user/capacity.js' %}"></script>
+
+<script>
+(function() {
+  const videoInput = document.getElementById('geo_video');
+  if (videoInput) {
+    videoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const max = 20 * 1024 * 1024;
+      if (file.size > max) {
+        alert('Geo-tagged video must be 20 MB or less.');
+        e.target.value = '';
+      }
+    });
+  }
+
+  const undertakingInput = document.getElementById('Undertaking_pdf');
+  if (undertakingInput) {
+    undertakingInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const max = 2 * 1024 * 1024;
+      if (file.size > max) {
+        alert('Undertaking PDF must be 2 MB or less.');
+        e.target.value = '';
+      }
+    });
+  }
+})();
+</script>
+
+{% endblock %}

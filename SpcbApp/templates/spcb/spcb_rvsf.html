@@ -1,0 +1,1834 @@
+{% extends "layouts/spcbsidebar.html" %}
+<p>Hello</p>
+<h1>{{rvsf_id}}</h1>
+{% load custom_tags %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+<!-- Add this to your template if not already present -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    .no-edit {
+        pointer-events: none;
+    }
+    .custcls {
+    max-width: fit-content; !important
+}
+.custclsa {
+    max-width: 12%; !important
+}
+    .form-check-input.no-edit:checked {
+        filter: grayscale(100%);
+    }
+
+    .radio-group {
+        display: flex;
+        padding-left: 20px;
+        gap: 50px; /* spacing between Yes and No */
+    }
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #09baf0;
+        padding: 8px 20px;
+        /* text-align: center; */
+    }
+    textarea {
+        width: 100%;
+    }
+    
+</style>
+<style>
+    .no-edit {
+        pointer-events: none;
+    }
+
+    .form-check-input.no-edit:checked {
+        filter: grayscale(100%);
+    }
+
+    /* Custom colors for tab buttons */
+    #transportTabLink {
+        background-color: #1cc3ec; /* blue */
+        color: white;
+        margin-right: 10px;
+    }
+
+    #nonTransportTabLink {
+        background-color: #21973c; /* green */
+        color: white;
+    }
+
+    /* Active tab highlight */
+    .nav-link.active {
+        font-weight: bold;
+        border: 2px solid black;
+    }
+
+    /* Unique content box colors */
+    #transportTab {
+        background-color: #e3f2fd; /* light blue */
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    #nonTransportTab {
+        background-color: #e8f5e9; /* light green */
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .section-header {
+        cursor: pointer;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sub-section-header {
+        cursor: pointer;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-content {
+        display: none;
+    }
+
+        
+</style>
+
+<style>
+    .status-stamp {
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: 2px solid;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-block;
+        text-transform: uppercase;
+        transform: rotate(-5deg);
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        letter-spacing: 1px;
+        width: 60%;
+        text-align: center;
+        margin: auto;
+    }
+    .approved {
+        color: #28a745;
+        border-color: #28a745;
+        background-color: #eafaf1;
+    }
+    .certificate {
+        color: #ffc107;
+        border-color: #ffc107;
+        background-color: #fff8e1;
+    }
+    .rejected {
+        color: #dc3545;
+        border-color: #dc3545;
+        background-color: #fdecea;
+    }
+</style>
+
+<!-- <style>
+    .status-stamp {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Circle shape */
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+
+    /* Border (outer ring) */
+    border: 6px solid currentColor;
+    position: relative;
+
+    /* Stamp look */
+    transform: rotate(-40deg);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.3), 2px 2px 6px rgba(0,0,0,0.2);
+    letter-spacing: 2px;
+}
+
+/* Inner ring */
+.status-stamp::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 3px solid currentColor;
+    border-radius: 50%;
+}
+
+/* Variants */
+.approved {
+    color: #28a745; /* Green */
+}
+
+.certificate {
+    color: #ffc107; /* Yellow */
+}
+
+.rejected {
+    color: #dc3545; /* Red */
+}
+
+</style> -->
+
+
+
+<h3>{{rvsf_details.entity.company_name}}</h3>
+
+<br>
+<ul class="nav nav-tabs d-flex justify-content-between w-100" id="myTab" role="tablist">
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link active btn btn-info text-white w-100" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-tab-pane" type="button" role="tab" aria-controls="signup-tab-pane" aria-selected="true">
+            General Details
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="general1-tab" data-bs-toggle="tab" data-bs-target="#general1-tab-pane" type="button" role="tab" aria-controls="general1-tab-pane" aria-selected="false">
+            RVSF Details
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment-tab-pane" type="button" role="tab" aria-controls="equipment-tab-pane" aria-selected="false">
+            Details of Installed Equipment at RVSFs
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="facility-tab" data-bs-toggle="tab" data-bs-target="#facility-tab-pane" type="button" role="tab" aria-controls="facility-tab-pane" aria-selected="false">
+            Facility Details
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="capacity-tab" data-bs-toggle="tab" data-bs-target="#capacity-tab-pane" type="button" role="tab" aria-controls="capacity-tab-pane" aria-selected="false">
+            RVSFs Capacity
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="pollution-tab" data-bs-toggle="tab" data-bs-target="#pollution-tab-pane" type="button" role="tab" aria-controls="pollution-tab-pane" aria-selected="false">
+            Pollution Control Devices
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="wasterecycle-tab" data-bs-toggle="tab" data-bs-target="#wasterecycle-tab-pane" type="button" role="tab" aria-controls="wasterecycle-tab-pane" aria-selected="false">
+            Waste Recycled/Refurbished Details in last FY
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="regfee-tab" data-bs-toggle="tab" data-bs-target="#regfee-tab-pane" type="button" role="tab" aria-controls="regfee-tab-pane" aria-selected="false">
+            Registration Fee & Undertaking Details
+        </button>
+    </li>
+    <li class="nav-item flex-grow-1 mx-1" role="presentation">
+        <button class="nav-link btn btn-info text-white w-100" id="comment-tab" data-bs-toggle="tab" data-bs-target="#comment-tab-pane" type="button" role="tab" aria-controls="comment-tab-pane" aria-selected="false">
+            Comments
+        </button>
+    </li>
+</ul>
+
+
+<!-- General details -->
+<div class="tab-content mt-3" id="myTabContent">
+    <!-- General Form Tab -->
+    <div class="tab-pane fade show active p-4 card" id="signup-tab-pane" role="tabpanel" aria-labelledby="signup-tab">
+        <div id="generalForm">
+    
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Entity Details</h5>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="gst_no" class="form-label required">GST Number <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                    <input type="text" class="form-control" id="gst_no" name="gst_no" value="{{rvsf_details.entity.gst_no}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+                
+            </div>
+            <!-- <div class="col-md-4">
+                <label class="form-label required" for="gst_doc"> GST Document <span class="text-danger">*</span></label> <br>
+                
+                {% if general.gst_doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{% url 'protected_file_spcb' general.gst_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i> 
+                        </a>
+                        
+                    </div>
+                {% endif %}
+                
+            </div> -->
+            
+            
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6 mt-3">
+                <label for="company_name" class="form-label">Name of the Company <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="company_name" name="company_name" value="{{rvsf_details.entity.company_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-6 mt-3 ">
+                <label for="legal_name" class="form-label">Legal Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="legal_name" name="legal_name" value="{{rvsf_details.entity.legal_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="company_email" class="form-label required">Company Email <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="company_email" name="company_email" value="{{ rvsf_details.entity.company_email}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+
+            <!-- <div class="col-md-4">
+                <label for="incorporation_date" class="form-label required">Date of Incorporation <span class="text-danger">*</span></label>
+                <!-- <input type="text" class="form-control" id="incorporation_date" name="incorporation_date" value="{{general.incorporation_date}}" placeholder="Auto Fetched from Registration" readonly> --
+                <input type="date" class="form-control" id="incorporation_date" name="incorporation_date" value="{{ general.incorporation_date|date:'Y-m-d' }}" placeholder="Enter date of Incorporation" required>
+            </div> -->
+            <!-- Year of Establishment -->
+            <!-- <div class="col-md-4">
+                <label for="incorporation_date" class="form-label required">Year of Incorporation <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="incorporation_date" name="incorporation_date" value="{{ general.incorporation_date }}" placeholder="Enter date of Incorporation" readonly>
+            </div> -->
+            <div class="col-md-4">
+                <label for="business_category" class="form-label required">Business Category <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="business_category" name="business_category" value="{{rvsf_details.entity.business_category}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <label for="registered_address" class="form-label required">Registered Address <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="registered_address" name="registered_address" rows="2" placeholder="Auto Fetched from Registration" readonly>{{rvsf_details.entity.registered_address}}</textarea>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="state" class="form-label required">State/UT <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="state" name="state" value="{{rvsf_details.statename}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="district" class="form-label required">District <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="district" name="district" value="{{rvsf_details.districtname}}" placeholder="Auto Fetched from Registration" readonly>
+            </select>
+            </div>
+            <div class="col-md-4">
+                <label for="pin_code" class="form-label required">Pin Code <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{rvsf_details.entity.pin_code}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="website" class="form-label">Website Address</label>
+                <input type="url" class="form-control" id="website" name="website" value="{{rvsf_details.entity.website|default:''}}" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="pan_no" class="form-label required">Company PAN Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="pan_no" name="pan_no" value="{{rvsf_details.entity.company_pan}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <!-- <div class="col-md-4">
+                <label class="form-label required" for="pan_doc"> Company PAN Card <span class="text-danger">*</span></label><br>
+                
+                {% if general.pan_doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{{ general.pan_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i> 
+                        </a>
+                        
+                    </div>
+                
+                {% endif %}
+                
+            </div> -->
+        </div>
+        <div class="row g-3 mb-4">
+            {% if general.tin %}
+            <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="tin" class="form-label required">Tax Identification Number (TIN)</label>
+                        <input type="text" class="form-control" id="tin" name="tin" value="{{rvsf_details.entity.tin_no|default:''}}" readonly>
+                    </div>
+                    <!-- <div>
+                        <label class="form-label required" for="tin_doc"> TIN Document <span class="text-danger">*</span></label><br>
+                    
+                        {% if general.tin_doc %}
+                            <div class="d-flex mb-2">
+                                <a href="{{ general.tin_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                                </a>
+                                
+                            </div>
+                        
+                        {% endif %}
+                    </div>
+                 -->
+            </div>
+            {% else %}
+                <div class="col-md-4">
+                    <label for="tin" class="form-label required">Tax Identification Number (TIN)</label>
+                    <input type="text" class="form-control" id="tin" name="tin" value="{{rvsf_details.entity.cin|default:''}}" readonly>
+                </div>
+            {% endif %}
+
+            
+            {% if general.cin %}
+            <div class="col-md-4">
+                
+                    <div class="mb-3">
+                        <label for="cin" class="form-label required">Corporate Identification Number (CIN)</label>
+                        <input type="text" class="form-control" id="cin" name="cin" value="{{rvsf_details.entity.cin|default:''}}" readonly>
+                    </div>
+                    <!-- <div>
+                        <label class="form-label required" for="cin_doc"> CIN Document <span class="text-danger">*</span></label><br>
+                    
+                        {% if general.cin_doc %}
+                            <div class="d-flex mb-2">
+                                <a href="{{ general.cin_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                                </a>
+                            
+                            </div>
+                        
+                        {% endif %}
+                    </div> -->
+                
+            </div>
+            {% else %}
+                <div class="col-md-4">
+                    <label for="cin" class="form-label required">Corporate Identification Number (CIN)</label>
+                    <input type="text" class="form-control" id="cin" name="cin" value="{{rvsf_details.entity.cin|default:''}}" readonly>
+                </div>
+            {% endif %}
+
+            {% if general.iec %}
+                <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="iec" class="form-label required">Import Export Code (IEC)</label>
+                            <input type="text" class="form-control" id="iec" name="iec" value="{{rvsf_details.entity.iec|default:'' }}"  readonly>
+                        </div>
+                        <!-- <div class="mb-3">
+                            <label class="form-label required" for="iec_doc"> IEC Document <span class="text-danger">*</span></label><br>
+                        
+                            {% if general.iec_doc %}
+                                <div class="d-flex mb-2">
+                                    <a href="{{ general.iec_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                                    </a>
+                                    
+                                </div>
+                            
+                            {% endif %}
+                        </div> -->
+                    
+                </div>
+                {% else %}
+                <div class="col-md-4 field-iec">
+                    <label for="iec" class="form-label required">Import Export Code (IEC)</label>
+                    <input type="text" class="form-control" id="iec" name="iec" value="{{rvsf_details.entity.iec|default:'' }}"  readonly>
+                </div>
+            {% endif %}
+            
+        </div>
+        
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Authorized Person Details</h5>
+        </div>
+        <!-- <h5 class="section-title text-info">Authorized Person Details</h5> <hr> -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label for="authorized_person_name" class="form-label required">Name of Authorized Person <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="authorized_person_name" name="authorized_person_name" value="{{rvsf_details.entity.authorized_person_name}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="authorized_person_designation" class="form-label required">Designation of Authorized Person <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="authorized_person_designation" name="authorized_person_designation" value="{{rvsf_details.entity.auth_designation}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="authorized_person_email" class="form-label required">Authorized Person Email <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span> 
+                    <input type="email" class="form-control" id="authorized_person_email" name="authorized_person_email" value="{{rvsf_details.entity.auth_email}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label for="authorized_person_mobile" class="form-label required">Authorized Person Mobile Number <span class="text-danger">*</span> </label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                    <input type="text" class="form-control" id="authorized_person_mobile" name="authorized_person_mobile" value="{{rvsf_details.entity.auth_mobile}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <label for="authorized_pan" class="form-label required">PAN No <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="authorized_pan" name="authorized_pan" value="{{rvsf_details.entity.auth_pan}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <!-- <div class="col-md-4">
+                <label class="form-label required" for="doc"> Authorized Person PAN Card <span class="text-danger">*</span></label><br>
+                
+                {% if general.doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{{ general.doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                        </a>
+                    </div> -->
+                    <!-- <small class="text-info">You can  a new document to replace the existing one before proceeding to payment.</small> -->
+                    
+                <!-- {% endif %}
+                
+            </div> -->
+        </div>
+        
+        </div>
+    </div>
+    <div class="tab-pane fade show p-4 card" id="general1-tab-pane" role="tabpanel" aria-labelledby="general1-tab">
+        <div id="general1Form">
+    
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Compliance Document Check RVSF Details</h5>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4 d-flex align-items-center">
+                <label class="form-label required d-block me-3 mb-0">GPS Location <span class="text-danger">*</span></label>
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#mapModal">
+                    Show Map
+                </button>
+            </div>
+
+            
+        </div>
+        <div class="row g-3 mb-3">
+            <!-- <div class="col-md-6 mt-3">
+                <label for="company_name" class="form-label">Name of the Company <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="company_name" name="company_name" value="{{rvsf_details.statename}}" placeholder="Auto Fetched from Registration" readonly>
+            </div> -->
+            <div class="col-md-6 mt-3 ">
+                <label for="legal_name" class="form-label">State <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="legal_name" name="legal_name" value="{{rvsf_details.statename}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="cto_number" class="form-label required">CTO Application No. <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="text" class="form-control" id="cto_number" name="cto_number" value="{{ rvsf_details.rvsf.cto_number}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+
+            <!-- <div class="col-md-4">
+                <label for="incorporation_date" class="form-label required">Date of Incorporation <span class="text-danger">*</span></label>
+                <!-- <input type="text" class="form-control" id="incorporation_date" name="incorporation_date" value="{{general.incorporation_date}}" placeholder="Auto Fetched from Registration" readonly> --
+                <input type="date" class="form-control" id="incorporation_date" name="incorporation_date" value="{{ general.incorporation_date|date:'Y-m-d' }}" placeholder="Enter date of Incorporation" required>
+            </div> -->
+            <!-- Year of Establishment -->
+            <!-- <div class="col-md-4">
+                <label for="incorporation_date" class="form-label required">Year of Incorporation <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="incorporation_date" name="incorporation_date" value="{{ general.incorporation_date }}" placeholder="Enter date of Incorporation" readonly>
+            </div> -->
+            <div class="col-md-4">
+                <label for="consent_validity" class="form-label required">Consent Validity <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="consent_validity" name="consent_validity" value="{{rvsf_details.rvsf.consent_validity}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <label for="cto_pdf" class="form-label required">CTO Document <span class="text-danger">*</span></label>
+                <!-- <textarea class="form-control" id="cto_pdf" name="cto_pdf" rows="2" placeholder="Auto Fetched from Registration" readonly>{{rvsf_details.rvsf.cto_pdf.name %}</textarea> -->
+                {% if rvsf_details.rvsf.cto_pdf.url %}<a href="{% url 'protected_file_spcb' rvsf_details.rvsf.cto_pdf.name %}"><b>View PDF</b></a>{% else %}&mdash;{% endif %}
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="state" class="form-label required">Authorization Validity (HOWM Rules) <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="state" name="state" value="{{rvsf_details.rvsf.howm_validity}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="district" class="form-label required">Authorization Doc <span class="text-danger">*</span></label>
+                <!-- <input type="text" class="form-control" id="district" name="district" value="{{rvsf_details.districtname}}" placeholder="Auto Fetched from Registration" readonly> -->
+                {% if rvsf_details.rvsf.howm_pdf.url %}<a href="{% url 'protected_file_spcb' rvsf_details.rvsf.howm_pdf.name %}"><b>View PDF</b></a>{% else %}&mdash;{% endif %}
+            </select>
+            </div>
+            <div class="col-md-4">
+                <label for="pin_code" class="form-label required">DIC Registration Validity <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{rvsf_details.rvsf.dic_validity}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="website" class="form-label"> DIC Registration Doc</label>
+                <!-- <input type="url" class="form-control" id="website" name="website" value="{{rvsf_details.entity.website|default:''}}" readonly> -->
+                {% if rvsf_details.rvsf.dic_pdf.url %}<a href="{% url 'protected_file_spcb' rvsf_details.rvsf.dic_pdf.name %}"><b>View PDF</b></a>{% else %}&mdash;{% endif %}
+            </div>
+            <div class="col-md-4">
+                <label for="pan_no" class="form-label required">RVSF Reg. No. (Form 1A) <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="pan_no" name="pan_no" value="{{rvsf_details.rvsf.rvsf_reg_no}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <!-- <div class="col-md-4">
+                <label class="form-label required" for="pan_doc"> Company PAN Card <span class="text-danger">*</span></label><br>
+                
+                {% if general.pan_doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{{ general.pan_doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i> 
+                        </a>
+                        
+                    </div>
+                
+                {% endif %}
+                
+            </div> -->
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="state" class="form-label required">Registration Validity <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="state" name="state" value="{{rvsf_details.rvsf.dic_validity}}" placeholder="Auto Fetched from Registration" readonly>
+            </div>
+            <div class="col-md-4">
+                <label for="district" class="form-label required">RVSF Reg. Cert <span class="text-danger">*</span></label>
+                <!-- <input type="text" class="form-control" id="district" name="district" value="{{rvsf_details.districtname}}" placeholder="Auto Fetched from Registration" readonly> -->
+                {% if rvsf_details.rvsf.rvsf_pdf.url %}<a href="{% url 'protected_file_spcb' rvsf_details.rvsf.rvsf_pdf.name %}"><b>View PDF</b></a>{% else %}&mdash;{% endif %}
+            </select>
+            </div>
+            <div class="col-md-4">
+                <label for="pin_code" class="form-label required">Process Flow Diagram <span class="text-danger">*</span></label>
+                {% if rvsf_details.rvsf.process_flow_pdf.url %}<a href="{% url 'protected_file_spcb' rvsf_details.rvsf.process_flow_pdf.name %}">View PDF</a>{% else %}&mdash;{% endif %}
+                <!-- <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{rvsf_details.rvsf.dic_validity}}" placeholder="Auto Fetched from Registration" readonly> -->
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            
+            <div class="col-md-4">
+                <label for="district" class="form-label required">Material Balance Sheet <span class="text-danger">*</span></label>
+                <!-- <input type="text" class="form-control" id="district" name="district" value="{{rvsf_details.districtname}}" placeholder="Auto Fetched from Registration" readonly> -->
+                {% if rvsf_details.rvsf.material_balance_pdf.url %}<a href="{% url 'protected_file_spcb' rvsf_details.rvsf.material_balance_pdf.name %}"><b>View PDF</b></a>{% else %}&mdash;{% endif %}
+            </select>
+            </div>
+            <div class="col-md-4">
+                <label for="pin_code" class="form-label required"> Annual Returns (Form 4) for FY 22–23 & 23–24 <span class="text-danger">*</span></label>
+                {% if rvsf_details.rvsf.annual_returns_pdf.url %}<a href="{% url 'protected_file_spcb' rvsf_details.rvsf.annual_returns_pdf.name %}">View PDF</a>{% else %}&mdash;{% endif %}
+                <!-- <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{rvsf_details.rvsf.dic_validity}}" placeholder="Auto Fetched from Registration" readonly> -->
+            </div>
+        </div>
+        
+        
+        <!-- <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Authorized Person Details</h5>
+        </div> -->
+        <div>
+        <!-- <h5 class="section-title text-info">Authorized Person Details</h5> <hr> -->
+       
+            <!-- <div class="col-md-4">
+                <label class="form-label required" for="doc"> Authorized Person PAN Card <span class="text-danger">*</span></label><br>
+                
+                {% if general.doc %}
+                    <div class="d-flex mb-2">
+                        <a href="{{ general.doc.name %}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-earmark-text"> View Uploaded Document</i>
+                        </a>
+                    </div> -->
+                    <!-- <small class="text-info">You can  a new document to replace the existing one before proceeding to payment.</small> -->
+                    
+                <!-- {% endif %}
+                
+            </div> -->
+        </div>
+        
+        </div>
+    </div>
+
+    
+    <!-- <div class="tab-pane fade p-4 card" id="equipment-tab-pane" role="tabpanel" aria-labelledby="equipment-tab">
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Equipment Details Preview</h5>
+        </div>   
+
+        <div class="row mt-4">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="state" class="form-label required">Authorization Validity (HOWM Rules) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="state" name="state" value="{{rvsf_details.rvsf.howm_validity}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="pin_code" class="form-label required">DIC Registration Validity <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{rvsf_details.rvsf.dic_validity}}" placeholder="Auto Fetched from Registration" readonly>
+                </div>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="field4" class="form-label required">Field 4 Label <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="field4" name="field4" value="{{ value_for_field4 }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="field5" class="form-label required">Field 5 Label <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="field5" name="field5" value="{{ value_for_field5 }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="field6" class="form-label required">Field 6 Label <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="field6" name="field6" value="{{ value_for_field6 }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="district" class="form-label required">Authorization Doc <span class="text-danger">*</span></label>
+                    {% if rvsf_details.rvsf.howm_pdf.url %}
+                        <a href="{{ rvsf_details.rvsf.howm_pdf.name %}"><b>View PDF</b></a>
+                    {% else %}
+                        &mdash;
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <div class="tab-pane fade p-4 card" id="equipment-tab-pane" role="tabpanel" aria-labelledby="equipment-tab">
+
+        <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+            <h5 class="mb-0 text-info"><i class="bi bi-building me-2"></i>Equipment Details Preview</h5>
+        </div>
+    
+        <div class="row mt-4">
+    
+            {% for eq in rvsf_details.data %}
+            <div class="row g-3 mb-3 border p-3 rounded">
+    
+                <!-- COUNTER -->
+                <div class="col-md-1 d-flex custcls align-items-center">
+                    <label class="fw-bold">{{ forloop.counter }}</label>
+                </div>
+    
+                <!-- 1 -->
+                <div class="col-md-2">
+                    <label class="form-label required">Equipment Type <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" value="{{ eq.equipment_type }}" readonly>
+                </div>
+    
+                <!-- 2 -->
+                <div class="col-md-2">
+                    <label class="form-label required">Quantity <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" value="{{ eq.quantity }}" readonly>
+                </div>
+    
+                <!-- 3 -->
+                <div class="col-md-2">
+                    <label class="form-label required">Power Rating <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" value="{{ eq.power_rating }}" readonly>
+                </div>
+    
+                <!-- 4 -->
+                <div class="col-md-2">
+                    <label class="form-label required">Operating Hours <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" value="{{ eq.operating_hours }}" readonly>
+                </div>
+    
+                <!-- 5 -->
+                <div class="col-md-2">
+                    <label class="form-label required">Capacity (Per Ton) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" value="{{ eq.capacity_equipment_perton }}" readonly>
+                </div>
+    
+                <!-- 6 -->
+                <div class="col-md-2 custclsa">
+                    <label class="form-label required">Geo Tagged PDF <span class="text-danger">*</span></label>
+                    {% if eq.geo_tagged_pdf %}
+                        <a href="{% url 'protected_file_spcb' eq.geo_tagged_pdf.name %}" target="_blank" class="btn btn-sm btn-outline-primary ">
+                            View PDF
+                        </a>
+                    {% else %}
+                        <input type="text" class="form-control" value="N/A" readonly>
+                    {% endif %}
+                </div>
+    
+            </div>
+            {% endfor %}
+    
+        </div>
+    </div>
+    
+    
+
+    <div class="tab-pane fade p-4 card" id="facility-tab-pane" role="tabpanel" aria-labelledby="facility-tab">
+        <div id="declarationForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Annual turnover and Declaration</h5>
+            </div>
+            <form action="#" method="post" enctype="multipart/form-data" id="declarationForm" class="mx-4">
+                                {% csrf_token %}
+                                    <div class="d-flex mb-4">
+                                        <h5>Annual turnover(in Crores, INR) 2023-2024 <span class="text-danger">*</span></h5>
+                                        <input type="number" name="turnover_23_24" id="turnover_23_24" class="form-control w-25 mx-5 non-int" step="0.01" value="{{ declaration.turnover_23_24 }}" readonly>
+                                        {% if declaration.ca_certificate_23_24 %}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    CA Certificate
+                                                    <a href="{% url 'protected_file_spcb' declaration.ca_certificate_23_24.name %}" target="_blank" class="ms-2">View Certificate</a>
+                                                </label>
+                                                
+                                            </div>
+                                        {% else %}
+                                            <div class=" mb-3">
+                                                <label class="form-label fw-bold">
+                                                    No CA Certificate uploaded
+                                                </label>
+                                                
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex mb-4">
+                                        <h5>Annual turnover(in Crores, INR) 2024-2025 <span class="text-danger">*</span> </h5>
+                                        <input type="number" name="turnover_24_25" id="turnover_24_25" class="form-control w-25 mx-5 non-int" step="0.01" value="{{ declaration.turnover_24_25 }}" readonly>
+                                        {% if declaration.ca_certificate_24_25 %}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    CA Certificate
+                                                    <a href="{% url 'protected_file_spcb' declaration.ca_certificate_24_25.name %}" target="_blank" class="ms-2">View Certificate</a>
+                                                </label>
+                                                
+                                            </div>
+                                        {% else %}
+                                            <div class=" mb-3">
+                                                <label class="form-label fw-bold">
+                                                    No CA Certificate Uploaded<span class="text-danger">*</span>
+                                                </label>
+                                                
+                                            </div>
+                                        {% endif %}
+                                    
+                                    </div>
+                                
+                                <div class="mb-4">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            Undertaking
+                                            <a href="{% url 'protected_file_spcb' declaration.undertaking_file.name %}" target="_blank" class="ms-2 fw-bold">View Undertaking</a>
+                                        </label>
+                                        
+                                    </div>
+                                    
+                                </div>
+
+                        
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input border border-4 border-dark no-edit" type="checkbox" id="declarationCheckbox" name="declarationCheckbox" {% if declaration.declaration %}checked{% endif %}>
+                                    <label class="form-check-label" for="declaration">
+                                        I <strong>{{user.authorized_person_name}}</strong> on behalf of <strong>{{user.company_name}}</strong> hereby declares that the information furnished is true, complete and correct to the best of my knowledge and belief. I understand that in the event of my information being found false or incorrect at any stage, my registration shall be liable to be cancelled without notice or any compensation in lieu thereof.
+                                    </label>
+                                </div>
+                    
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-info" id="saveDeclaration" disabled>Save and Next</button>
+                                </div>
+                            </form>
+        </div>
+    </div>
+
+    <div class="tab-pane fade p-4 card" id="capacity-tab-pane" role="tabpanel" aria-labelledby="capacity-tab">
+        <div id="paymentForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Payment Details</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S. No.</th>
+                            <th>Financial Year</th>
+                            <!-- <th>Unit</th> -->
+                            <th>Annual Turnover (in Crores, INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1.</td>
+                            <td>2023-24</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover22">{{ declaration.turnover_23_24 }}</td>
+                        </tr>
+                        <tr>
+                            <td>2.</td>
+                            <td>2024-25</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover23">{{ declaration.turnover_24_25 }}</td>
+                        </tr>
+                        
+                        
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Total Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_total_turnover">{{ total_turnover }} </td>
+                        </tr>
+
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Average Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_average_turnover">{{ average_turnover|floatformat:2 }}</td>
+                        </tr>
+
+                        <tr class="fw-bold text-success">
+                            <td colspan="2">Registration Fees Amount (INR)</td>
+                            <td id="payment_reg_fee">₹{{ registration_fee|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- Payment Slab -->
+            <h5 class="mt-5 fs-3 text-info text-center mb-4">REGISTRATION FEE STRUCTURE</h5>
+
+            {% if general.user_type == "Producer" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for Producers</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Annual Turn Over</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in producer_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            {% if general.user_type == "Rvsf" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for RVSFs</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Capacity of RVSF Unit (No. ELVs/Year)</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in rvsf_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            <form method="post" action="{% url 'payment_receipt_admin'  %}" target="_blank">
+                {% csrf_token %}
+                <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-info">View Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="tab-pane fade p-4 card" id="pollution-tab-pane" role="tabpanel" aria-labelledby="pollution-tab">
+        <div id="pollutionForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>Pollution Details</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S. No.</th>
+                            <th>Financial Year</th>
+                            <!-- <th>Unit</th> -->
+                            <th>Annual Turnover (in Crores, INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1.</td>
+                            <td>2023-24</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover22">{{ declaration.turnover_23_24 }}</td>
+                        </tr>
+                        <tr>
+                            <td>2.</td>
+                            <td>2024-25</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover23">{{ declaration.turnover_24_25 }}</td>
+                        </tr>
+                        
+                        
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Total Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_total_turnover">{{ total_turnover }} </td>
+                        </tr>
+
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Average Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_average_turnover">{{ average_turnover|floatformat:2 }}</td>
+                        </tr>
+
+                        <tr class="fw-bold text-success">
+                            <td colspan="2">Registration Fees Amount (INR)</td>
+                            <td id="payment_reg_fee">₹{{ registration_fee|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- Payment Slab -->
+            <h5 class="mt-5 fs-3 text-info text-center mb-4">REGISTRATION FEE STRUCTURE</h5>
+
+            {% if general.user_type == "Producer" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for Producers</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Annual Turn Over</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in producer_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            {% if general.user_type == "Rvsf" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for RVSFs</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Capacity of RVSF Unit (No. ELVs/Year)</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in rvsf_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            <form method="post" action="{% url 'payment_receipt_admin'  %}" target="_blank">
+                {% csrf_token %}
+                <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-info">View Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+     <div class="tab-pane fade p-4 card" id="wasterecycle-tab-pane" role="tabpanel" aria-labelledby="wasterecycle-tab">
+        <div id="wasterecycleForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>wasterecycle Details</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S. No.</th>
+                            <th>Financial Year</th>
+                            <!-- <th>Unit</th> -->
+                            <th>Annual Turnover (in Crores, INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1.</td>
+                            <td>2023-24</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover22">{{ declaration.turnover_23_24 }}</td>
+                        </tr>
+                        <tr>
+                            <td>2.</td>
+                            <td>2024-25</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover23">{{ declaration.turnover_24_25 }}</td>
+                        </tr>
+                        
+                        
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Total Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_total_turnover">{{ total_turnover }} </td>
+                        </tr>
+
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Average Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_average_turnover">{{ average_turnover|floatformat:2 }}</td>
+                        </tr>
+
+                        <tr class="fw-bold text-success">
+                            <td colspan="2">Registration Fees Amount (INR)</td>
+                            <td id="payment_reg_fee">₹{{ registration_fee|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- Payment Slab -->
+            <h5 class="mt-5 fs-3 text-info text-center mb-4">REGISTRATION FEE STRUCTURE</h5>
+
+            {% if general.user_type == "Producer" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for Producers</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Annual Turn Over</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in producer_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            {% if general.user_type == "Rvsf" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for RVSFs</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Capacity of RVSF Unit (No. ELVs/Year)</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in rvsf_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            <form method="post" action="{% url 'payment_receipt_admin'  %}" target="_blank">
+                {% csrf_token %}
+                <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-info">View Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div> 
+    <div class="tab-pane fade p-4 card" id="regfee-tab-pane" role="tabpanel" aria-labelledby="regfee-tab">
+        <div id="regfeeForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"> <i class="bi bi-building me-2"></i>regfee Details</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S. No.</th>
+                            <th>Financial Year</th>
+                            <!-- <th>Unit</th> -->
+                            <th>Annual Turnover (in Crores, INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1.</td>
+                            <td>2023-24</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover22">{{ declaration.turnover_23_24 }}</td>
+                        </tr>
+                        <tr>
+                            <td>2.</td>
+                            <td>2024-25</td>
+                            <!-- <td>{{ item.unit }}</td> -->
+                            <td id="payment_turnover23">{{ declaration.turnover_24_25 }}</td>
+                        </tr>
+                        
+                        
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Total Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_total_turnover">{{ total_turnover }} </td>
+                        </tr>
+
+                        <tr class="fw-bold bg-light">
+                            <td colspan="2">Average Annual Turnover (in Crores, INR)</td>
+                            <td id="payment_average_turnover">{{ average_turnover|floatformat:2 }}</td>
+                        </tr>
+
+                        <tr class="fw-bold text-success">
+                            <td colspan="2">Registration Fees Amount (INR)</td>
+                            <td id="payment_reg_fee">
+                                {% if rvsf_details.payment and rvsf_details.payment.count > 0 %}
+                                    ₹{{ rvsf_details.payment.0.amount_initiated|intcomma }}
+                                {% else %}
+                                    ₹0
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- Payment Slab -->
+            <h5 class="mt-5 fs-3 text-info text-center mb-4">REGISTRATION FEE STRUCTURE</h5>
+
+            {% if general.user_type == "Producer" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for Producers</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Annual Turn Over</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in producer_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            {% if general.user_type == "Rvsf" %}
+            <!-- <h5 class="mt-5 text-center">Table-1: Proposed registration fee for RVSFs</h5> -->
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>S No</th>
+                        <th>Capacity of RVSF Unit (No. ELVs/Year)</th>
+                        <th>Registration Fees Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in rvsf_fees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if fee.max_turnover and fee.min_turnover %}
+                                >{{ fee.min_turnover|floatformat:0 }} Cr. to ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% elif fee.min_turnover == NULL %}
+                                ≤{{ fee.max_turnover|floatformat:0 }} Cr.
+                            {% else %}
+                                > {{ fee.min_turnover|floatformat:0 }} Cr.
+                            {% endif %}
+                        </td>
+                        <td>{{ fee.registration_fee|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            
+            <form method="post" action="{% url 'payment_receipt_admin'  %}" target="_blank">
+                {% csrf_token %}
+                <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-info">View Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="tab-pane fade p-4 card" id="comment-tab-pane" role="tabpanel" aria-labelledby="comment-tab">
+        <div id="commentForm">
+            <div class="mb-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
+                <h5 class="mb-0 text-info"><i class="bi bi-building me-2"></i>Comments</h5>
+            </div>
+
+            
+            
+                {% if general.status > 0 %}
+                    <div class="mb-4">
+                        <!-- <h5 class="fw-bold text-dark"><i class="bi bi-building me-2"></i>{{ general.company_name }}</h5> -->
+
+                        {% with noting_dict|dictkey:general.id as notings %}
+                            {% if notings %}
+                                <div class="timeline">
+                                {% for note in notings %}
+                                <div class="card mb-4 shadow-sm border-start border-4 border-info">
+                                    <div class="card-body">
+                                        <!-- Top: From & To -->
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div>
+                                                <h5 class="mb-0 text-primary">
+                                                    <i class="bi bi-person-fill me-1"></i>
+                                                    From:
+                                                    {% if note.forwarded_from %}
+                                                        {{ user_dict|dictkey:note.forwarded_from|dictkey:"name" }}
+                                                        <span class="badge bg-info ms-1">{{ user_dict|dictkey:note.forwarded_from|dictkey:"role_name" }}</span>
+                                                    {% else %}
+                                                        User
+                                                    {% endif %}
+                                                </h5>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0 text-success">
+                                                    <i class="bi bi-person-check-fill me-1"></i>
+                                                    To:
+                                                    {% if note.forwarded_to %}
+                                                        {{ user_dict|dictkey:note.forwarded_to|dictkey:"name" }}
+                                                        <span class="badge bg-success ms-1">{{ user_dict|dictkey:note.forwarded_to|dictkey:"role_name" }}</span>
+                                                    {% else %}
+                                                        User
+                                                    {% endif %}
+                                                </h5>
+                                            </div>
+                                        </div>
+
+                                        <!-- Comment -->
+                                        <blockquote class="blockquote mb-3 ps-2 border-start border-3 border-secondary">
+                                            <p class="mb-0"><i class="bi bi-chat-left-text me-2 text-secondary"></i>{{ note.comment }}</p>
+                                        </blockquote>
+
+                                        <!-- Timestamp -->
+                                        <div class="text-end">
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                {{ note.forwarded_at|date:"d M Y, H:i" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            {% else %}
+                                <p class="text-muted fst-italic">No comments for this producer.</p>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                {% endif %}
+            
+        </div>
+    </div>
+
+    {% include 'admin/checklist.html' %}
+    {% if general.status == 5 %}
+        <div class="status-stamp approved mt-3">APPROVED</div>
+    {% elif general.status == 6 %}
+        <div class="status-stamp certificate mt-3">CERTIFICATE GRANTED</div>
+    {% elif general.status == 7 %}
+        <div class="status-stamp rejected mt-3">REJECTED</div>
+    {% else %}
+        {% if not request.path|slice:":26" == "/elv/admin/producers/total" %}
+            <form id="forwardForm" method="POST" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="producer_id" value="{{ general.id|encrypt_id }}">
+                <div class="card p-4">
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment <span class="text-danger"> *</span> </label>
+                        <textarea name="comment" id="comment" rows="4" class="form-control" placeholder="Enter your comment here..." required></textarea>
+                    </div>
+
+                
+
+                    {% if officer.division == '1' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="user">Back to User</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                                    {% if ro.division == '2' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                            <!-- <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                            
+                                    {% if ro.division == '2' %}
+                                        <option value="{{ ro.id }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select> -->
+                    </div>
+
+                    {% endif %}
+
+                    {% if officer.division == '2' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="ms_cpcb">MS-CPCB</option>
+                                <option value="user">Back to User</option>
+                            </select>
+                        </div>
+            
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                                    {% if ro.division != '2' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% endif %}
+                    
+
+                    {% if officer.division == '4' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="dh">Back to DH</option>
+                                <option value="user">Back to User</option>
+                            </select>
+                        </div>
+            
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                            
+                                    {% if ro.division == '5' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% endif %}
+
+                    {% if officer.division == '5' %}
+            
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="forwarded_to" class="form-label">Forwarded To <span class="text-danger"> *</span> </label>
+                            <select name="forwarded_to" id="forwarded_to" class="form-select" required>
+                                <option value="">-- Please select --</option>
+                                <option value="officers">Officers</option>
+                                <option value="dh">Back to DH</option>
+                            </select>
+                        </div>
+            
+                        <div class="col-md-4 mb-3 d-none" id="officers_select_box">
+                            <label for="id_division" class="form-label">Select Officers <span class="text-danger"> *</span> </label>
+                            <select name="division" class="form-select" id="id_division">
+                                <option value="">-- Please select --</option>
+                                {% for ro in reporting_officers %}
+                            
+                                    {% if ro.division == '4' %}
+                                        <option value="{{ ro.id }}" data-division="{{ ro.division }}">{{ ro.first_name }} {{ ro.last_name }} ({{ role_dict|get_item:ro.division }})</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% endif %}
+
+                    {% if officer.division != '1' %}
+                        <button type="submit" name="submit_noting" class="btn btn-info p-2 rounded-3 mt-2" style="width: 10%;">Submit</button>
+                    {% else %}
+                        
+                            <div class="d-flex justify-content-between mt-5">
+                                <button type="submit" name="submit_noting" class="btn btn-info p-2 rounded-3 mt-2" style="width: 10%;">Submit</button>
+                                <button type="submit" name="approved" class="btn btn-success p-2 rounded-3 mt-2" style="width: 10%;">Approve</button>
+                                <button type="submit" name="rejected" class="btn btn-danger p-2 rounded-3 mt-2" style="width: 10%;">Reject</button>
+                            </div>
+                        
+                    {% endif %}
+
+                </div>
+            </form>
+        {% endif %}
+    {% endif %}
+
+
+</div>
+<!-- Map Modal -->
+<div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="mapModalLabel">GPS Location Map</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="rvsf-map" style="height: 400px; width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Leaflet CSS and JS if not already included in the page head -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var modal = document.getElementById('mapModal');
+      var map = null;
+      var mapContainerId = "rvsf-map";
+      var latitude = parseFloat("{{ rvsf_details.rvsf.latitude|default:'0' }}");
+      var longitude = parseFloat("{{ rvsf_details.rvsf.longitude|default:'0' }}");
+      // Provide a sensible fallback for both coordinates if undefined or not valid
+      if (isNaN(latitude)) latitude = 28.6139;
+      if (isNaN(longitude)) longitude = 77.2090;
+
+      modal.addEventListener('shown.bs.modal', function () {
+        setTimeout(function () {
+          // Remove any old map DOM in case of re-render
+          if (map) {
+            map.remove();
+            map = null;
+          }
+          var coordsValid = (latitude !== 0 && longitude !== 0);
+          var mapDiv = document.getElementById(mapContainerId);
+          mapDiv.innerHTML = ""; // cleanup
+
+          if (coordsValid) {
+            map = L.map(mapContainerId).setView([latitude, longitude], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 19,
+              attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+            }).addTo(map);
+            L.marker([latitude, longitude]).addTo(map)
+              .bindPopup('GPS Location')
+              .openPopup();
+            // Resize fix for leaflet in modals
+            setTimeout(function () { map.invalidateSize(); }, 200); 
+          } else {
+            mapDiv.innerHTML = "<p class='text-danger'>Coordinates not available or not set.</p>";
+          }
+        }, 300); // Wait a bit for modal animation to finish
+      });
+
+      modal.addEventListener('hidden.bs.modal', function () {
+        if (map) {
+          map.remove();
+          map = null;
+        }
+        var mapDiv = document.getElementById(mapContainerId);
+        if (mapDiv) {
+          mapDiv.innerHTML = "";
+        }
+      });
+    });
+  </script>
+
+
+<script>
+document.getElementById('forwardForm').addEventListener('submit', function (e) {
+    const submitButton = e.submitter?.name || '';
+    const forwardedTo = document.getElementById('forwarded_to')?.value || '';
+    // const selectedDivision = document.getElementById('id_division')?.value || '';
+    const officerSelect = document.getElementById('id_division');
+    const selectedOption = officerSelect.options[officerSelect.selectedIndex];
+    const selectedOfficerId = selectedOption.value;
+    const selectedDivision = selectedOption.getAttribute('data-division');
+    const currentDivision = parseInt("{{ officer.division }}");
+
+    // Define authority hierarchy (higher number = lower authority)
+    const hierarchy = {
+        '1': 1,  // ms_cpcb
+        '2': 2,  // dh
+        '4': 4,  // ro
+        '5': 5   // do
+    };
+
+    const forwardedDivisionLevel = hierarchy[selectedDivision] || 0;
+    const currentDivisionLevel = hierarchy[currentDivision] || 0;
+    // alert(forwardedDivisionLevel)
+    // alert(currentDivisionLevel)
+
+    // Determine if forwarding to a higher authority
+    const isForwardingUp = forwardedDivisionLevel < currentDivisionLevel;
+
+    // Also run validation if forwarding to ms_cpcb or officers
+    if (isForwardingUp ||  submitButton === 'save_checklist') {
+        let isValid = true;
+        let checklistGroups = new Set();
+        let missingRadios = [];
+        let missingRemarks = [];
+
+        document.querySelectorAll('.checklist-radio').forEach(radio => {
+            checklistGroups.add(radio.name);
+        });
+
+        checklistGroups.forEach(groupName => {
+            const radios = document.querySelectorAll(`input[name="${groupName}"]`);
+            const selectedRadio = [...radios].find(r => r.checked);
+            const remarksField = document.querySelector(`textarea[name="remarks_${groupName}"]`);
+
+            if (!selectedRadio) {
+                isValid = false;
+                missingRadios.push(groupName);
+                radios.forEach(r => {
+                    const label = r.closest('label');
+                    if (label) label.style.color = 'red';
+                });
+
+                if (remarksField) {
+                    remarksField.style.borderColor = 'red';
+                    missingRemarks.push(groupName);
+                }
+
+            } else {
+                radios.forEach(r => {
+                    const label = r.closest('label');
+                    if (label) label.style.color = '';
+                });
+
+                const selectedValue = selectedRadio.value.trim().toLowerCase();
+                if (selectedValue === 'no') {
+                    if (remarksField && !remarksField.value.trim()) {
+                        isValid = false;
+                        remarksField.style.borderColor = 'red';
+                        missingRemarks.push(groupName);
+                    } else if (remarksField) {
+                        remarksField.style.borderColor = '';
+                    }
+                } else {
+                    if (remarksField) {
+                        remarksField.style.borderColor = '';
+                    }
+                }
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            alert(
+                `Please complete all checklist fields before submission.\n` +
+                `Missing Yes/No: ${missingRadios.length}\n` +
+                `Missing remarks (for "No" responses): ${missingRemarks.length}`
+            );
+        }
+    }
+});
+</script>
+
+
+<script>
+    const forwardedTo = document.getElementById('forwarded_to');
+    const officersBox = document.getElementById('officers_select_box');
+    const officersSelect = document.getElementById('id_division');
+    const form = document.getElementById('forwardForm');
+
+    let clickedButton = null;  // to track which button was clicked
+
+    // Track button clicks
+    document.querySelectorAll('#forwardForm button[type="submit"]').forEach(button => {
+        button.addEventListener('click', function () {
+            clickedButton = this.name;
+        });
+    });
+
+    // document.querySelectorAll('#forwardForm button[type="submit"]').forEach(btn => btn.disabled = true);
+
+    // Show/hide officer select based on dropdown
+    forwardedTo?.addEventListener('change', function () {
+        if (this.value === 'officers') {
+            officersBox.classList.remove('d-none');
+            officersSelect?.setAttribute('required', 'required');
+        } else {
+            officersBox.classList.add('d-none');
+            officersSelect?.removeAttribute('required');
+            officersSelect.value = '';  // reset selection when hidden
+        }
+    });
+
+    // Main form submission logic
+    form.addEventListener('submit', function (e) {
+        if (clickedButton === 'approved' || clickedButton === 'rejected') {
+            // Remove required attributes if approving or rejecting
+            forwardedTo?.removeAttribute('required');
+            officersSelect?.removeAttribute('required');
+        }
+
+        // Let HTML5 handle form validation only if not approve/reject
+        if ((clickedButton !== 'approved' && clickedButton !== 'rejected') && !form.checkValidity()) {
+            e.preventDefault(); // block form submission
+            form.classList.add('was-validated');
+            alert('Please fill comment and officers.');
+        }
+    });
+</script>
+
+
+<script>
+function toggleSection(id, header) {
+    const section = document.getElementById(id);
+    const icon = header.querySelector('.toggle-icon i');
+
+    // Toggle collapse class
+    section.classList.toggle('collapse');
+
+    // Toggle icon direction
+    if (section.classList.contains('collapse')) {
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-right');
+    } else {
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+
+function toggleSection(id, headerElement) {
+    const section = document.getElementById(id);
+    const icon = headerElement.querySelector('.toggle-icon i');
+    if (section.classList.contains('show')) {
+        section.classList.remove('show');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-right');
+    } else {
+        section.classList.add('show');
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+</script>
+
+
+{% endblock %}

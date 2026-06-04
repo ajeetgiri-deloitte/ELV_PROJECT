@@ -1,0 +1,200 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .opening-container {
+        /* background: #f2f2f2; */
+        padding: 30px;
+    }
+
+    .opening-card {
+        background: white;
+        padding: 30px;
+        max-width: 700px;
+        margin: auto;
+        border-radius: 12px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    .title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #000;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #444;
+        font-size: 1rem;
+        /* margin-bottom: 25px; */
+    }
+
+    .pill {
+        display: inline-block;
+        padding: 6px 18px;
+        background: #7b3fe4;
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        background: #f9f9f9;
+    }
+
+    .btn-save {
+        background: #8ca57b;
+        padding: 8px 22px;
+        border-radius: 8px;
+        border: none;
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+    }
+
+    .btn-reset {
+        background: #e5e5e5;
+        padding: 8px 22px;
+        border-radius: 8px;
+        border: none;
+        font-size: 15px;
+        font-weight: 600;
+        color: #444;
+        cursor: pointer;
+    }
+
+    .header-box {
+        background: #d0d0d0;   /* steel grey */
+        padding: 20px 10px 10px 10px;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .compact-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;           /* smaller text */
+    }
+
+    .compact-table th,
+    .compact-table td {
+        padding: 6px 10px;         /* reduce padding */
+        vertical-align: middle;
+    }
+
+    .compact-table th {
+        background: #e8e8e8;       /* light grey */
+        font-weight: 600;
+    }
+
+    .compact-table td input[type="number"] {
+        padding: 4px 6px;          /* smaller input */
+        height: 32px;              /* compact height */
+        font-size: 14px;
+    }
+
+    .compact-checkbox {
+        width: 16px;
+        height: 16px;
+    }
+</style>
+
+<div class="opening-container">
+    <div class="opening-card">
+
+        <div class="header-box">
+            <h2 class="title">Add No Of Vehicles</h2>
+
+            <p class="subtitle">
+                Please enter number of Vehicles as on <strong class="text-success fs-6">1st April 2025</strong>
+                <!-- Please enter Opening Balance of ELVs as on <strong>1st April {{ financial_year|slice:":4" }}</strong> i.e., 
+                available No. of ELVs to be scrapped at your facility (if any) -->
+            </p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <!-- <label>Select ELV Types & Enter Opening Balance</label> -->
+
+                <table class="compact-table table-bordered">
+                    <thead>
+                        <tr>
+                            <!-- <th style="width: 60px;">Select</th> -->
+                            <th class="text-center">ELV Type</th>
+                            <!-- <th>Opening Balance (No.)</th> -->
+                            <th>No Of Vehicles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in elv_types %}
+                        <tr>
+                            <!-- <td class="text-center">
+                                <input type="checkbox" 
+                                    class="compact-checkbox"
+                                    name="elv_type" 
+                                    value="{{ t.id }}">
+                            </td> -->
+                            <td class="text-center">{{ t.vehicle_type }}</td>
+                            <td>
+                                <input 
+                                    type="number" 
+                                    name="qty_{{ t.id }}" 
+                                    class="form-control qty-input"
+                                    min="0"
+                                    style="max-width: 140px;" 
+                                    required 
+                                >
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button type="submit" class="btn btn-success">Save</button>
+                <button type="reset" class="btn-reset">Reset</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+<script>
+document.querySelectorAll(".qty-input").forEach(function(input) {
+
+    // Block typing "-" or "e"
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "-" || e.key === "e") {
+            e.preventDefault();
+        }
+    });
+
+    // Fix if value becomes negative
+    input.addEventListener("input", function() {
+        if (this.value < 0) {
+            this.value = 0;
+        }
+    });
+
+});
+</script>
+{% endblock %}

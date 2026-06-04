@@ -1,0 +1,199 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/equipmentdetails.css' %}">
+{% if messages %}
+<div class="container-fluid px-4">
+    {% for message in messages %}
+    <div class="alert alert-dismissible fade show mt-3 message-alert" 
+         role="alert"
+         data-message-type="{{ message.tags }}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+<div class="container-fluid px-4 page-container">
+<div class="maincard">
+    <h5 class="mb-3  fw-bold">Registration Fee Structure</h5>
+    <div class="card mb-4 form-card">
+        
+       <div class="container my-4">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle text-center">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>S No</th>
+                            <th>Capacity of the RVSF (No. of vehicles per annum)</th>
+                            <th>Registration Fees Amount (INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>≤ 6,000</td><td>25,000</td></tr>
+                        <tr><td>2</td><td>≥ 6,000 to ≤ 15,000</td><td>50,000</td></tr>
+                        <tr><td>3</td><td>≥ 15,000 to ≤ 30,000</td><td>75,000</td></tr>
+                        <tr><td>4</td><td>&gt; 30,000</td><td>1,00,000</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Capacity and Amount Fields - ALWAYS VISIBLE -->
+        <div class="row form-row">
+            <div class="col-md-6 mb-4">
+                <label for="Installed_capacity" class="form-label">Installed Capacity of the RVSF <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="Installed_capacity" name="quatity_installed_fees" value="{{ capacitydata.installed_vehicles|default:'' }}" required readonly>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <label for="amount" class="form-label">Payment Amount <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="amount" name="amount" min="1" required readonly>
+            </div>
+        </div>
+
+        {% if not payment_status.has_successful_payment %}
+        <!-- Initial Payment Form - Only show when no successful payment exists -->
+        <form id="rvsfForm" action="{% url 'initiateRvsfPayment' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- Hidden fields for capacity and amount -->
+            <input type="hidden" name="quatity_installed_fees" value="{{ capacitydata.installed_vehicles|default:'' }}">
+            <input type="hidden" name="amount" id="hidden_amount">
+            
+            <div class="row form-row">
+                <div class="col-md-10 mb-4"></div>
+                <div class="col-md-2 mb-4">
+                    <div class="action-buttons">
+                        {% if capacitydata.installed_vehicles and all_forms_filled %}
+                            <button type="submit" name="confirm_btn" class="btn btn-success">Pay Now</button>
+                        {% else %}
+                            <button type="submit" name="confirm_btn" class="btn btn-success" disabled>Pay Now</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Validation Messages -->
+        {% if not all_forms_filled %}
+        <div class="alert alert-warning mt-3">
+            <strong>Please complete all required forms before making payment:</strong>
+            <ul class="mb-0 mt-2">
+                {% if not generalcheck %}<li>Please fill the general form first</li>{% endif %}
+                {% if not rvsfcheck %}<li>Please fill the RVSF details form</li>{% endif %}
+                {% if not capcacitycheck %}<li>Please fill the plant capacity form</li>{% endif %}
+                {% if not equipmentcheck %}<li>Please fill the equipment form</li>{% endif %}
+                <!-- {% if not pollutioncheck %}<li>Please fill the pollution device form</li>{% endif %} -->
+                {% if not wastecheck %}<li>Please fill the waste recycled form</li>{% endif %}
+                {% if not declarationcheck %}<li>Please fill the RVSF registration declaration form</li>{% endif %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if payment_status.has_successful_payment %}
+            <!-- Show payment status for users with successful payments -->
+            {% if payment_status.requires_additional_payment %}
+            <div class="alert alert-warning">
+                <strong>Additional Payment Required:</strong> 
+                Your capacity has increased. Additional amount of ₹{{ payment_status.additional_amount }} is required.
+                <br>
+                <small>Already paid: ₹{{ payment_status.total_paid_amount }} | Total required: ₹{{ payment_status.calculated_amount }}</small>
+            </div>
+            
+            <!-- Additional Payment Form -->
+            <form id="additionalPaymentForm" action="{% url 'initiateRvsfPayment' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="is_additional_payment" value="true">
+                <input type="hidden" name="additional_amount" value="{{ payment_status.additional_amount }}">
+                <input type="hidden" name="quatity_installed_fees" value="{{ capacitydata.installed_vehicles|default:'' }}">
+                
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-warning">Pay Additional Amount</button>
+                </div>
+            </form>
+            {% else %}
+            <div class="alert alert-success">
+                <strong>Payment Complete:</strong> 
+                Your registration fee payment of ₹{{ payment_status.total_paid_amount }} has been successfully processed.
+            </div>
+            {% endif %}
+
+            <!-- View Receipt Button - Always show for users with successful payments -->
+            <form method="post" action="{% url 'paymentreciept' %}" target="_blank">
+                {% csrf_token %}
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-info">View Receipt</button>
+                </div>
+            </form>
+        {% endif %}
+        
+        <small id="formError" class="text-danger mt-2 d-none">⚠ Please fill all required fields before proceeding.</small>
+    </div>
+</div>
+</div>
+
+<script src="{% static 'js/rvsfappjs/user/equipmentdetails.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Select all message alerts
+    const messageAlerts = document.querySelectorAll('.message-alert');
+    
+    messageAlerts.forEach(alert => {
+        const messageType = alert.getAttribute('data-message-type');
+        
+        // Map message types to Bootstrap classes
+        const typeMap = {
+            'success': 'alert-success',
+            'error': 'alert-danger',  // Red color for error
+            'warning': 'alert-warning',
+            'info': 'alert-info',
+            'debug': 'alert-secondary'
+        };
+        
+        // Default to 'info' if type not found
+        const alertClass = typeMap[messageType] || 'alert-info';
+        
+        // Add the appropriate class
+        alert.classList.add(alertClass);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const installedCapacityInput = document.getElementById('Installed_capacity');
+    const amountInput = document.getElementById('amount');
+    const hiddenAmountInput = document.getElementById('hidden_amount');
+
+    function updateAmount() {
+        const capacity = parseFloat(installedCapacityInput?.value) || 0;
+        let amount = 0;
+
+        if (capacity < 6000) {
+            amount = 25000;
+        } else if (capacity >= 6000 && capacity < 15000) {
+            amount = 50000;
+        } else if (capacity >= 15000 && capacity < 30000) {
+            amount = 75000;
+        } else if (capacity >= 30000) {
+            amount = 100000;
+        }
+
+        if (amountInput) amountInput.value = amount;
+        if (hiddenAmountInput) hiddenAmountInput.value = amount;
+    }
+
+    updateAmount();
+    if (installedCapacityInput) {
+        installedCapacityInput.addEventListener('input', updateAmount);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,527 @@
+{% extends "consumer_layouts/main.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .form-header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .section-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
+
+<div class="container-fluid mt-2">
+    <!-- Form Header -->
+    <div class="form-header">
+        <div class="container-fluid">
+            <h1 class="h3 mb-0">Steel Scrap Generation Entry Form</h1>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Date of Scrapping -->
+        <div class="section-card">
+            <div class="card-header d-flex align-items-center">
+                <label class="me-2 mb-0 fw-bold">Date of Scrapping:</label>
+                <input type="date" class="form-control w-auto">
+            </div>
+        </div>
+
+        <!-- Category Section -->
+        <div class="section-card">
+            <div class="card-body">
+                <!-- Type of ELV -->
+                <div class="section-card mb-3">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label for="category" class="fw-bold me-2 mb-0">Category:</label>
+                        <select id="category" class="form-select w-auto">
+                          <option value="">Select</option>
+                          <option value="type_of_elv">Type of ELV</option>
+                          <option value="automobile_steel_scrap">Automobile steel scrap</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Type of ELV -->
+                <div class="section-card mb-3" id="sec_type_of_elv">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label for="typeOfElv" class="fw-bold me-2 mb-0">Type of ELV:</label>
+                        <select id="typeOfElv" class="form-select w-auto">
+                        <option value="">Select</option>
+                        <option value="2W">2W</option>
+                        <option value="3W">3W</option>
+                        <option value="LMV">LMV</option>
+                        <option value="HMV">HMV</option>
+                        <option value="Others">Others</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Quantity of Automobile steel scrap Processed -->
+                <div class="section-card mb-3" id="sec_auto_scrap">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-2 mb-0">Quantity of Automobile steel scrap Processed (Metric Ton):</label>
+                        <input type="number" class="form-control w-auto" placeholder="Numeric Input">
+                    </div>
+                </div>
+
+                <!-- No. of ELVs scrapped -->
+                <div class="section-card mb-3" id="sec_no_elvs">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-2 mb-0">No. of ELV scrapped:</label>
+                        <input type="number" class="form-control w-auto" placeholder="Numeric Input">
+                    </div>
+                </div>
+
+                <!-- Total weight of the ELVs scrapped -->
+                <div class="section-card mb-3" id="sec_total_weight">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-2 mb-0">Total weight of the ELV scrapped:</label>
+                        <input type="number" class="form-control w-auto" placeholder="Numeric Input">
+                    </div>
+                </div>
+
+                <!-- Quantity of Steel Scrap recovered -->
+                <div class="section-card mb-3" id="sec_steel_recovered">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-2 mb-0">Quantity of Steel Scrap recovered:</label>
+                        <input type="number" class="form-control w-auto" placeholder="Numeric Input">
+                    </div>
+                </div>
+
+                <!-- Qualified Quantity of Steel Scrap for certificates -->
+                <div class="section-card mb-3" id="sec_qualified_qty">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-2 mb-0">Qualified Quantity of Steel Scrap for certificates (Metric Ton):</label>
+                        <input type="number" class="form-control w-auto" placeholder="Auto calculate" readonly>
+                    </div>
+                </div>
+
+                <!-- Quantity of Other Scraps recovered -->
+                <div class="section-card mb-3" id="sec_other_scrap">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-2 mb-0">Quantity of Other Scraps recovered (other than steel) (Metric Ton):</label>
+                        <input type="number" class="form-control w-auto" placeholder="Numeric Input">
+                    </div>
+                </div>
+
+                <div class="section-card mb-3" id="sec_waste_dropdown">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-3 mb-0">Details on management of other wastes recovered:</label>
+
+                        <!-- Dropdown inline with label -->
+                        <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="wasteDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Select Waste Type
+                        </button>
+
+                        <div class="dropdown-menu p-3" aria-labelledby="wasteDropdown" style="min-width: 320px;">
+                            <!-- Plastic Waste -->
+                            <div class="d-flex align-items-center mb-2">
+                            <div class="form-check me-2">
+                                <input class="form-check-input waste-checkbox" type="checkbox" value="Plastic Waste" id="plasticWaste">
+                                <label class="form-check-label" for="plasticWaste">Plastic Waste</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm waste-qty" id="qty-plasticWaste"
+                                    placeholder="Qty" min="1" step="1" style="width:110px; display:none;" required>
+                            </div>
+
+                            <!-- Used Oil -->
+                            <div class="d-flex align-items-center mb-2">
+                            <div class="form-check me-2">
+                                <input class="form-check-input waste-checkbox" type="checkbox" value="Used Oil" id="usedOil">
+                                <label class="form-check-label" for="usedOil">Used Oil</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm waste-qty" id="qty-usedOil"
+                                    placeholder="Qty" min="1" step="1" style="width:110px; display:none;" required>
+                            </div>
+
+                            <!-- Battery Waste -->
+                            <div class="d-flex align-items-center mb-2">
+                            <div class="form-check me-2">
+                                <input class="form-check-input waste-checkbox" type="checkbox" value="Battery Waste" id="batteryWaste">
+                                <label class="form-check-label" for="batteryWaste">Battery Waste</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm waste-qty" id="qty-batteryWaste"
+                                    placeholder="Qty" min="1" step="1" style="width:110px; display:none;" required>
+                            </div>
+
+                            <!-- Tyre Waste -->
+                            <div class="d-flex align-items-center mb-2">
+                            <div class="form-check me-2">
+                                <input class="form-check-input waste-checkbox" type="checkbox" value="Tyre Waste" id="tyreWaste">
+                                <label class="form-check-label" for="tyreWaste">Tyre Waste</label>
+                            </div>
+                            <input type="number" class="form-control form-control-sm waste-qty" id="qty-tyreWaste"
+                                    placeholder="Qty" min="1" step="1" style="width:110px; display:none;" required>
+                            </div>
+
+                            <!-- Other -->
+                            <div class="d-flex align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input waste-checkbox" type="checkbox" value="Other" id="otherWaste">
+                                <label class="form-check-label" for="otherWaste">Other</label>
+                            </div>
+                            <input type="text" class="form-control form-control-sm me-2" id="otherText"
+                                    placeholder="Specify type" style="width:130px; display:none;">
+                            <input type="number" class="form-control form-control-sm waste-qty" id="qty-otherWaste"
+                                    placeholder="Qty" min="1" step="1" style="width:110px; display:none;" required>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Live Chips Display -->
+                        <div id="selectedWastes" class="mt-3" style="display:none;">
+                        <h6 class="fw-bold">Selected Wastes:</h6>
+                        <div id="chipsContainer" class="d-flex flex-wrap gap-2 mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Qualified Potential for EPS Certificate Generation -->
+                <div class="section-card mb-3" id="sec_eps_potential">
+                    <div class="card-header d-flex align-items-center flex-wrap">
+                        <label class="fw-bold me-2 mb-0">Qualified Potential for EPS Certificate Generation (Metric Ton):</label>
+                        <input type="number" class="form-control w-auto" placeholder="Numeric Input">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-md-12 text-center">
+                <button type="button" class="btn btn-primary me-2">Preview</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const category = document.getElementById("category");
+
+    // Sections
+    const sec_type_of_elv = document.getElementById("sec_type_of_elv");
+    const sec_no_elvs = document.getElementById("sec_no_elvs");
+    const sec_total_weight = document.getElementById("sec_total_weight");
+    const sec_auto_scrap = document.getElementById("sec_auto_scrap");
+    const sec_steel_recovered = document.getElementById("sec_steel_recovered");
+    const sec_qualified_qty = document.getElementById("sec_qualified_qty");
+
+    // Always visible common fields (no need to toggle)
+    const sec_other_scrap = document.getElementById("sec_other_scrap");
+    const sec_waste_dropdown = document.getElementById("sec_waste_dropdown");
+    const sec_eps_potential = document.getElementById("sec_eps_potential");
+
+    function updateFields() {
+        const val = category.value;
+
+        // Hide everything first
+        sec_type_of_elv.style.display = "none";
+        sec_no_elvs.style.display = "none";
+        sec_total_weight.style.display = "none";
+        sec_auto_scrap.style.display = "none";
+        sec_steel_recovered.style.display = "none";
+        sec_qualified_qty.style.display = "none";
+
+        // Show based on selected category
+        if (val === "type_of_elv") {
+
+            sec_type_of_elv.style.display = "block";
+            sec_no_elvs.style.display = "block";
+            sec_total_weight.style.display = "block";
+            sec_steel_recovered.style.display = "block";
+
+        } else if (val === "automobile_steel_scrap") {
+            
+            sec_auto_scrap.style.display = "block";
+            sec_steel_recovered.style.display = "block";
+            sec_qualified_qty.style.display = "block";
+        }
+    }
+
+    // Run when category changes
+    category.addEventListener("change", updateFields);
+
+    // Run on page load
+    updateFields();
+});
+</script>
+
+
+
+<!-- ✅ Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="previewModalLabel">Preview Form Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="previewContent">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Edit</button>
+        <button type="button" id="confirmSubmit" class="btn btn-success">Submit</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript: show qty inputs and enforce integer-only -->
+<!-- ✅ JavaScript Logic -->
+<script>
+(function() {
+  const checkboxes = document.querySelectorAll('.waste-checkbox');
+  const selectedContainer = document.getElementById('selectedWastes');
+  const selectedList = document.getElementById('selectedWastesList');
+
+  // Function to refresh the live summary
+  function updateSelectedList() {
+    selectedList.innerHTML = ''; // Clear old data
+    let anyVisible = false;
+
+    checkboxes.forEach(cb => {
+      const qtyInput = document.getElementById('qty-' + cb.id);
+      const otherText = document.getElementById('otherText');
+      let label = cb.value;
+      let qty = qtyInput?.value || '';
+      
+      if (cb.checked) {
+        anyVisible = true;
+        if (cb.value === 'Other' && otherText.value.trim() !== '') {
+          label = otherText.value.trim();
+        }
+        const li = document.createElement('li');
+        li.classList.add('list-group-item', 'py-1');
+        li.innerHTML = `<strong>${label}</strong> — ${qty || 0}`;
+        selectedList.appendChild(li);
+      }
+    });
+
+    selectedContainer.style.display = anyVisible ? 'block' : 'none';
+  }
+
+  // Toggle visibility for quantity fields and handle updates
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', function () {
+      const qtyInput = document.getElementById('qty-' + this.id);
+      const otherText = document.getElementById('otherText');
+
+      if (this.checked) {
+        if (qtyInput) qtyInput.style.display = 'inline-block';
+        if (this.value === 'Other' && otherText) otherText.style.display = 'inline-block';
+      } else {
+        if (qtyInput) { qtyInput.value = ''; qtyInput.style.display = 'none'; }
+        if (this.value === 'Other' && otherText) { otherText.value = ''; otherText.style.display = 'none'; }
+      }
+
+      updateSelectedList();
+    });
+  });
+
+  // Watch for quantity and "Other" text input changes
+  document.querySelectorAll('.waste-qty, #otherText').forEach(input => {
+    input.addEventListener('input', function () {
+      // Force integers only
+      if (this.classList.contains('waste-qty')) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+      }
+      updateSelectedList();
+    });
+  });
+})();
+</script>
+
+<script>
+document.querySelector('.btn-primary').addEventListener('click', function () {
+  const modalBody = document.getElementById('previewContent');
+  let previewHTML = `<div class="table-responsive">
+    <table class="table table-bordered">
+      <tbody>`;
+
+  // Collect form data in order
+  const date = document.querySelector('input[type="date"]').value || '—';
+  const elvType = document.getElementById('typeOfElv').value || '—';
+  const qtyScrap = document.querySelectorAll('input[type="number"]')[0]?.value || '—';
+  const noElv = document.querySelectorAll('input[type="number"]')[1]?.value || '—';
+  const totalWeight = document.querySelectorAll('input[type="number"]')[2]?.value || '—';
+  const steelRecovered = document.querySelectorAll('input[type="number"]')[3]?.value || '—';
+  const qualifiedSteel = document.querySelectorAll('input[type="number"]')[4]?.value || '—';
+  const otherScrap = document.querySelectorAll('input[type="number"]')[5]?.value || '—';
+  const epsPotential = document.querySelectorAll('input[type="number"]')[6]?.value || '—';
+
+  // Add rows
+  previewHTML += `
+    <tr><th>Date of Scrapping</th><td>${date}</td></tr>
+    <tr><th>Type of ELV</th><td>${elvType}</td></tr>
+    <tr><th>Quantity of Automobile steel scrap Processed (Metric Ton)</th><td>${qtyScrap}</td></tr>
+    <tr><th>No. of ELV scrapped</th><td>${noElv}</td></tr>
+    <tr><th>Total weight of the ELV scrapped</th><td>${totalWeight}</td></tr>
+    <tr><th>Quantity of Steel Scrap recovered</th><td>${steelRecovered}</td></tr>
+    <tr><th>Qualified Quantity of Steel Scrap for certificates (Metric Ton)</th><td>${qualifiedSteel}</td></tr>
+    <tr><th>Quantity of Other Scraps recovered</th><td>${otherScrap}</td></tr>`;
+
+  // ✅ Get selected waste details
+  const selectedItems = document.querySelectorAll('#selectedWastesList li');
+  if (selectedItems.length > 0) {
+    previewHTML += `<tr><th>Other Wastes Recovered</th><td><ul>`;
+    selectedItems.forEach(item => {
+      previewHTML += `<li>${item.innerHTML}</li>`;
+    });
+    previewHTML += `</ul></td></tr>`;
+  }
+
+  previewHTML += `
+    <tr><th>Qualified Potential for EPS Certificate Generation (Metric Ton)</th><td>${epsPotential}</td></tr>
+    </tbody></table></div>`;
+
+  modalBody.innerHTML = previewHTML;
+
+  // Show modal
+  const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+  previewModal.show();
+
+  // Handle submit
+  document.getElementById('confirmSubmit').onclick = function () {
+    previewModal.hide();
+    alert('Form submitted successfully!');
+    // You can trigger actual form submit here if needed
+  };
+});
+</script>
+
+<!-- ✅ JS Logic for Mandatory Qty + Chips -->
+<script>
+(function() {
+  const checkboxes = document.querySelectorAll('.waste-checkbox');
+  const chipsContainer = document.getElementById('chipsContainer');
+  const selectedContainer = document.getElementById('selectedWastes');
+
+  function updateChips() {
+    chipsContainer.innerHTML = ''; // Clear old chips
+    let hasAny = false;
+
+    checkboxes.forEach(cb => {
+      const qtyInput = document.getElementById('qty-' + cb.id);
+      const otherText = document.getElementById('otherText');
+
+      if (cb.checked) {
+        hasAny = true;
+        let label = cb.value;
+        if (cb.value === 'Other' && otherText.value.trim() !== '') {
+          label = otherText.value.trim();
+        }
+        const qty = qtyInput?.value || '0';
+
+        // Create chip
+        const chip = document.createElement('span');
+        chip.classList.add('badge', 'bg-purple', 'text-white', 'p-2', 'd-flex', 'align-items-center');
+        chip.innerHTML = `
+          <strong>${label}</strong>: ${qty}
+          <button type="button" class="btn-close btn-close-white btn-sm ms-2" aria-label="Remove"></button>
+        `;
+
+        // Remove on click
+        chip.querySelector('button').addEventListener('click', () => {
+          cb.checked = false;
+          qtyInput.value = '';
+          qtyInput.style.display = 'none';
+          if (cb.value === 'Other') {
+            otherText.value = '';
+            otherText.style.display = 'none';
+          }
+          updateChips();
+        });
+
+        chipsContainer.appendChild(chip);
+      }
+    });
+
+    selectedContainer.style.display = hasAny ? 'block' : 'none';
+  }
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', function () {
+      const qtyInput = document.getElementById('qty-' + this.id);
+      const otherText = document.getElementById('otherText');
+
+      if (this.checked) {
+        qtyInput.style.display = 'inline-block';
+        qtyInput.required = true;
+        if (this.value === 'Other') otherText.style.display = 'inline-block';
+      } else {
+        qtyInput.value = '';
+        qtyInput.style.display = 'none';
+        qtyInput.required = false;
+        if (this.value === 'Other') {
+          otherText.value = '';
+          otherText.style.display = 'none';
+        }
+      }
+
+      updateChips();
+    });
+  });
+
+  // Watch for input in qty and other fields
+  document.querySelectorAll('.waste-qty, #otherText').forEach(input => {
+    input.addEventListener('input', function () {
+      // Integer only for qty fields
+      if (this.classList.contains('waste-qty')) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+      }
+      updateChips();
+    });
+  });
+})();
+</script>
+
+<!-- Optional style for better chip look -->
+<style>
+  .bg-purple {
+    background-color: #2c3e50 !important;
+  }
+</style>
+{% endblock %}

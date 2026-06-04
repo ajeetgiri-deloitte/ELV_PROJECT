@@ -1,0 +1,180 @@
+<form action="{% url 'save_equipment_checklist' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+
+    <table class="checklist-table">
+        <thead>
+            <tr>
+                <th>Checklist Item</th>
+                <th>Yes / No</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>Provided Dismantling Equipment details and corresponding Geo-tagged photos *</td>
+                <td>
+                    <select name="dismantling_equipment" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if equipment.dismantling_equipment %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if equipment and not equipment.dismantling_equipment %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_dismantling_equipment" class="form-control remarks-field" value="{{ equipment.remarks_dismantling_equipment|default:'' }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided De-pollution Equipment details and corresponding Geo-tagged photo *</td>
+                <td>
+                    <select name="depollution_equipment" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if equipment.depollution_equipment %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if equipment and not equipment.depollution_equipment %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_depollution_equipment" class="form-control remarks-field" value="{{ equipment.remarks_depollution_equipment }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided Bailing Equipment details and corresponding Geo-tagged photo *</td>
+                <td>
+                    <select name="bailing_equipment" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if equipment.bailing_equipment %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if equipment and not equipment.bailing_equipment %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_bailing_equipment" class="form-control remarks-field" value="{{ equipment.remarks_bailing_equipment }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided Shredding Equipment details and corresponding Geo-tagged photo *</td>
+                <td>
+                    <select name="shredding_equipment" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if equipment.shredding_equipment %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if equipment and not equipment.shredding_equipment %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_shredding_equipment" class="form-control remarks-field" value="{{ equipment.remarks_shredding_equipment }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided Storage Equipment details and corresponding Geo-tagged photo *</td>
+                <td>
+                    <select name="storage_equipment" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if equipment.storage_equipment %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if equipment and not equipment.storage_equipment %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_storage_equipment" class="form-control remarks-field" value="{{ equipment.remarks_storage_equipment }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided Classifiers/Separators Equipment details and corresponding Geo-tagged photo *</td>
+                <td>
+                    <select name="classifier_equipment" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if equipment.classifier_equipment %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if equipment and not equipment.classifier_equipment %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_classifier_equipment" class="form-control remarks-field" value="{{ equipment.remarks_classifier_equipment }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Provided all other the Equipment’s available at facility *</td>
+                <td>
+                    <select name="other_equipment" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if equipment.other_equipment %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if equipment and not equipment.other_equipment %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_other_equipment" class="form-control remarks-field" value="{{ equipment.remarks_other_equipment }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</form>
+
+<form action="{% url 'ViewEquipmentDetails' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+    <button type="submit" class="btn btn-warning">View Submitted Data</button>
+</form>
+
+
+<!-- ============================= -->
+<!--       VALIDATION SCRIPT       -->
+<!-- ============================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const selects = document.querySelectorAll('.check-select');
+    const remarksFields = document.querySelectorAll('.remarks-field');
+    const form = document.querySelector("form[action*='save_equipment_checklist']");
+
+    function updateRemarksState(select, remarks) {
+        const hasValue = remarks.value.trim() !== '';
+
+        if (select.value === "Yes") {
+            remarks.disabled = false;
+            remarks.style.backgroundColor = "#e9ecef";
+            remarks.style.borderColor = "#ccc";
+        } 
+        else if (select.value === "No") {
+            remarks.disabled = false;
+            remarks.style.backgroundColor = "white";
+            remarks.style.borderColor = hasValue ? "#ced4da" : "red";
+        } 
+        else {
+            remarks.disabled = false;
+            remarks.style.backgroundColor = "white";
+            remarks.style.borderColor = hasValue ? "#ced4da" : "red";
+        }
+    }
+
+    // Initialize all rows on load
+    selects.forEach(select => {
+        const row = select.closest("tr");
+        const remarks = row.querySelector(".remarks-field");
+
+        updateRemarksState(select, remarks);
+
+        select.addEventListener("change", () => updateRemarksState(select, remarks));
+        remarks.addEventListener("input", () => updateRemarksState(select, remarks));
+    });
+
+    // Prevent form submit if No + empty remarks
+    form.addEventListener("submit", function (e) {
+        let valid = true;
+
+        selects.forEach(select => {
+            const row = select.closest("tr");
+            const remarks = row.querySelector(".remarks-field");
+
+            if (select.value === "No" && remarks.value.trim() === "") {
+                remarks.style.borderColor = "red";
+                valid = false;
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            alert("❗ Please fill remarks for all items where 'No' is selected.");
+        }
+    });
+
+});
+</script>

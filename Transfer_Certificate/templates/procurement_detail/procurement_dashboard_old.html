@@ -1,0 +1,353 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+<!-- <style>
+    .dashboard-header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .total-row {
+        background-color: #e9ecef;
+        font-weight: 600;
+    }
+    
+    .btn-add-procurement {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        text-align: center;
+    }
+    .mb-0 {
+    text-align: center;
+    }
+</style> -->
+
+<style>
+    .dashboard-header {
+        /* background: #0b3c5d; */
+        background: #2c3e50;
+        color: #fff;
+        padding: 1rem;
+        margin-bottom: 20px;
+        border-radius: 12px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.3rem;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .dashboard-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+.table thead th {
+    /* background: linear-gradient(135deg, #0b3c5d, #0a4d7a);
+    color: #ffffff; */
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #0b3c5d;
+    font-weight: 600;
+    font-size: 1.04rem;
+    letter-spacing: 0.6px;
+    /* border-bottom: 2px solid #08304a; */
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+table.dataTable thead th {
+    text-align: center !important;
+    vertical-align: middle !important;
+    /* padding: 12px 10px !important; */
+}
+
+
+    .table tbody td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+        text-align: center;
+        background-color: #fff;
+    }
+
+    .total-row {
+        background: #eef3f8 !important;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .auto-calculated {
+        color: #007bff;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+    .table-bordered td, 
+    .table-bordered th {
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .total-row td:first-child {
+        text-align: center;
+        padding-left: 15px;
+    }
+
+
+
+</style>
+
+{% if messages %}
+    <div class="container-fluid mt-1">
+        {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger{% endif %}
+                {% if message.tags == 'success' %}alert-success{% endif %}
+                {% if message.tags == 'warning' %}alert-warning{% endif %}
+                {% if message.tags == 'info' %}alert-info{% endif %}
+                alert-dismissible fade show"
+                role="alert">
+
+                <strong>
+                    {% if message.tags == 'error' %}❌ Error:{% endif %}
+                    {% if message.tags == 'success' %}✅ Success:{% endif %}
+                    {% if message.tags == 'warning' %}⚠ Warning:{% endif %}
+                    {% if message.tags == 'info' %}ℹ Info:{% endif %}
+                </strong>
+                {{ message }}
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+<div class="container-fluid">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <h3 class="fw-bold mb-0 text-center">Procurement Dashboard</h3>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+
+        <!-- FY Filter + Add Procurement Button -->
+        <form method="get" class="row mb-3 align-items-center">
+            
+            <!-- Financial Year Dropdown -->
+            <div class="col-md-3">
+                <select name="fy" class="form-select" onchange="this.form.submit()">
+                    <option value="" disabled>Select Financial Year</option>
+                    {% for year in fy_list %}
+                        <option value="{{ year }}"
+                            {% if year == selected_fy %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <!-- Add Procurement Button -->
+            <div class="col-md-9 text-end mt-4">
+                <a href="{% url 'add_procurement_details' %}" class="btn btn-success btn-md px-4">
+                    <i class="fa fa-plus me-1"></i> Add Procurement Details
+                </a>
+            </div>
+
+        </form>
+
+        
+
+        <!-- Table 1 -->
+        <div class="dashboard-header">
+            <div class="container-fluid">
+                <h5 class="fw-bold mb-0">Procurred ELV</h5>
+            </div>
+        </div>
+        
+        <div class="dashboard-card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="elvTable" class="table table-bordered w-100">
+                        <thead>
+                            <tr class="text-center fw-bold">
+                                <th>S.No.</th>
+                                <th>Type of ELV</th>
+                                <th>Opening Balance (No. of Vehicles)</th>
+                                <th>Total No. of ELV Procured</th>
+                                <th>Total No. of ELV Available at RVSF</th>
+                            </tr>
+                        </thead>
+                        
+                        <tbody>
+                            {% for row in rows %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ row.elv_name }}</td>
+                                <td>{{ row.opening_qty }}</td>
+                                <td>{{ row.procured_qty }}</td>
+                                <td>{{ row.available_qty }}</td>
+                            </tr>
+                            {% endfor %}
+
+                            
+                        </tbody>
+
+                        <tfoot>
+                            <!-- Total Row -->
+                            <tr class="total-row">
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td><strong>{{ total_opening }}</strong></td>
+                                <td><strong>{{ total_procured }}</strong></td>
+                                <td><strong>{{ total_available }}</strong></td>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table 2 -->
+        <div class="dashboard-header">
+            <div class="container-fluid">
+                <h5 class="fw-bold mb-0">Procurred Automobile Steel Scrap</h5>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="autoSteelTable" class="table table-bordered w-100">
+                        <thead>
+                            <tr class="text-center">
+                                <th>S.No.</th>
+                                <th>Automobile Steel Scrap</th>
+                                <th>Quantity (Metric Ton)</th>
+                            </tr>
+                        </thead>
+                        
+                        <tbody>
+                            
+                            <tr class="fw-bold">
+                                <td><strong>1</strong></td>
+                                <td>Automobile Steel Scrap</td>
+                                <td><strong>{{ automobile_qty }}</strong></td>
+                            </tr>
+                            
+
+                            
+                            <!-- <tr class="total-row">
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td><strong>{{ total_qty }}</strong></td>
+                            </tr> -->
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        function initTable(tableId) {
+            $('#' + tableId).DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+
+                pageLength: 10,
+                lengthMenu: [5, 10, 25, 50, 100],
+
+                /* ✅ THIS IS THE KEY */
+                scrollY: "300px",
+                scrollCollapse: true,
+                scrollX: true,
+
+                order: [],
+                columnDefs: [
+                    { orderable: false }
+                ],
+
+                language: {
+                    search: "Search:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    paginate: {
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+        }
+
+        initTable('elvTable');
+        initTable('autoSteelTable');
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                alert.classList.remove('show'); // start fade out
+                alert.classList.add('fade');
+
+                // remove element after animation
+                setTimeout(() => {
+                    alert.remove();
+                }, 500); // Bootstrap fade duration
+            });
+        }, 4000); // 4 seconds visible
+    });
+</script>
+
+
+{% endblock %}

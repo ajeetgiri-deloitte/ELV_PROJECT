@@ -1,0 +1,94 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .form-select{
+    background-color: purple;
+    color: whitesmoke;
+    }
+</style> 
+<div class="container-fluid px-4">
+    <div class="card mb-4">
+        <div class="card-header text-center">
+            <br><br><br><br><h1 class="card-title"><b>Opening Balance</b></h1><br><br>
+            <p class="card-text"><b>Please enter Opening Balance of ELV as on 1st April 2025 i.e., available<br>
+            No. of ELV to be scrapped at your facility (if any)</b></p><br><br>
+            
+        </div>
+        <div class="card-body">
+            
+            <form>
+                <div class="col mb-3 d-flex align-items-center">
+                    <label class="form-label me-2 mb-0">Type of ELV</label>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Select Types
+                        </button>
+
+                        <!-- Dropdown menu with checkboxes and quantity inputs -->
+                        <div class="dropdown-menu p-3" style="min-width: 250px;">
+                            <div class="form-check mb-2 d-flex align-items-center justify-content-between">
+                                <label class="form-check-label">2W</label>
+                                <div>
+                                <input class="form-check-input me-2" type="checkbox" value="2W">
+                                <input type="number" min="0" placeholder="Qty" class="form-control form-control-sm d-inline-block" style="width: 70px;">
+                                </div>
+                            </div>
+
+                            <div class="form-check mb-2 d-flex align-items-center justify-content-between">
+                                <label class="form-check-label">3W</label>
+                                <div>
+                                <input class="form-check-input me-2" type="checkbox" value="3W">
+                                <input type="number" min="0" placeholder="Qty" class="form-control form-control-sm d-inline-block" style="width: 70px;">
+                                </div>
+                            </div>
+
+                            <div class="form-check mb-2 d-flex align-items-center justify-content-between">
+                                <label class="form-check-label">LMV</label>
+                                <div>
+                                <input class="form-check-input me-2" type="checkbox" value="LMV">
+                                <input type="number" min="0" placeholder="Qty" class="form-control form-control-sm d-inline-block" style="width: 70px;">
+                                </div>
+                            </div>
+
+                            <div class="form-check mb-2 d-flex align-items-center justify-content-between">
+                                <label class="form-check-label">MMV</label>
+                                <div>
+                                <input class="form-check-input me-2" type="checkbox" value="MMV">
+                                <input type="number" min="0" placeholder="Qty" class="form-control form-control-sm d-inline-block" style="width: 70px;">
+                                </div>
+                            </div>
+
+                            <div class="form-check mb-2 d-flex align-items-center justify-content-between">
+                                <label class="form-check-label">HMV</label>
+                                <div>
+                                <input class="form-check-input me-2" type="checkbox" value="HMV">
+                                <input type="number" min="0" placeholder="Qty" class="form-control form-control-sm d-inline-block" style="width: 70px;">
+                                </div>
+                            </div>
+
+                            <div class="form-check d-flex align-items-center justify-content-between">
+                                <label class="form-check-label text-purple fw-bold">Others</label>
+                                <div>
+                                <input class="form-check-input me-2" type="checkbox" value="Others">
+                                <input type="number" min="0" placeholder="Qty" class="form-control form-control-sm d-inline-block" style="width: 70px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
+
+
+
+
+ {% endblock %}

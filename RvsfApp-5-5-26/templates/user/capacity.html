@@ -1,0 +1,266 @@
+
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/capacity.css' %}">
+<style>
+    /* Chrome, Edge, Safari */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+</style>
+{% if messages %}
+<div class="container-fluid px-4">
+    {% for message in messages %}
+    <div class="alert alert-dismissible fade show mt-3 message-alert" 
+         role="alert"
+         data-message-type="{{ message.tags }}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+<div class="maincard">
+    <div class="card mb-4 form-card maincard">
+        <h3>Unit Capacity Details</h3>
+        <hr>
+        
+        <!-- Vehicle Types Section -->
+        <button type="button" class="btn btn-success widfit" data-bs-toggle="modal" data-bs-target="#equipmentModal">
+            <i class="fas fa-plus-circle me-2 "></i>Add Type of Vehicles
+        </button>
+        
+        <!-- Vehicle Types Table -->
+        <div class="table-responsive mt-3" id="vehicleTable" {% if not Vehicledata %}style="display: none;"{% endif %}>
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Type of Vehicles</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in Vehicledata %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ vehicle.vehicle_type }}{% if vehicle.vehicle_type == "Others" %} ({{ vehicle.Remarks }}){% endif %}</td>
+                        <td>
+                            <form method="post" action="{% url 'delete_vehicle_type' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this vehicle type?')">
+                                    <i class="fas fa-trash-alt me-1"></i>Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Vehicle Modal -->
+        <div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{% url 'AddVehicleType' %}" method="post" enctype="multipart/form-data" id="vehicleForm">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="equipmentModalLabel">Add Type of Vehicles Scrapping at the Facility</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Select Vehicle Types<span class="text-danger">*</span></label>
+                                <div class="multiselect-container" id="vehicleOptions">
+                                    <div class="multiselect-option" data-value="2W">2W (Two-Wheeler)</div>
+                                    <div class="multiselect-option" data-value="3W">3W (Three-Wheeler)</div>
+                                    <div class="multiselect-option" data-value="LMV">LMV (Light Motor Vehicle)</div>
+                                    <div class="multiselect-option" data-value="MMV">MMV (Medium Motor Vehicle)</div>
+                                    <div class="multiselect-option" data-value="HMV">HMV (Heavy Motor Vehicle)</div>
+                                    <div class="multiselect-option" data-value="Others">Others (Manual Entry)</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3" id="othersContainer" style="display: none;">
+                                <label for="otherVehicles" class="form-label">Other Vehicle Types</label>
+                                <input type="text" class="form-control" id="otherVehicles" placeholder="Enter vehicle types separated by commas">
+                                <small class="form-text text-muted">Example: Bus, Truck, Trailer</small>
+                            </div>
+                            
+                            <div class="selected-options" id="selectedOptions">
+                                <p><strong>Selected Vehicles:</strong></p>
+                                <!-- Selected options will appear here -->
+                            </div>
+                            
+                            <input type="hidden" name="selected_vehicles" id="selectedVehicles">
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="plant_capacity_section" style="display: {% if Vehicledata %}block{% else %}none{% endif %};">
+   
+        <hr>
+        
+        <!-- Plant Capacity Section -->
+        <h5 class="mt-4">Plant Capacity Details</h5>
+        
+        <form action="{% url 'submit_plant_capacity' %}" method="post">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Capacity Type</th>
+                            <th>No. of Vehicles Scrapped / Annum</th>
+                            <th>Quantity of Steel Recovered / Annum (in MT)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Installed Capacity<span class="text-danger">*</span><br><small>(as per consents/licenses)</small></td>
+                            <td>
+                                <input type="number" class="form-control" name="installed_vehicles"
+                                       value="{{ capacitydata.installed_vehicles|default:'' }}" required>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="installed_steel"
+                                       value="{{ capacitydata.installed_steel|default:'' }}" required>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                Operating Capacity<span class="text-danger">*</span><br><small>FY {{ year5 }} - {{ year1 }}</small>
+                                <input type="hidden" name="year1" value="{{ year1 }}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="operating_vehicles1" value="{{ capacitydata.operating_vehicles1 }}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="operating_steel1" value="{{ capacitydata.operating_steel1 }}" required>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                Operating Capacity<span class="text-danger">*</span><br><small>FY {{ year1 }} - {{ year2 }}</small>
+                                <input type="hidden" name="year2" value="{{ year2 }}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="operating_vehicles2" value="{{ capacitydata.operating_vehicles2 }}" required>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="operating_steel2" value="{{ capacitydata.operating_steel2 }}" required>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                Operating Capacity<span class="text-danger">*</span><br><small>FY {{ year2 }} - {{ year3 }}</small>
+                                <input type="hidden" name="year3" value="{{ year3 }}">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="operating_vehicles3" value="{{ capacitydata.operating_vehicles3 }}" required>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="operating_steel3" value="{{ capacitydata.operating_steel3 }}" required>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                {% if Vehicledata %}
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i>Save and Next
+                </button>
+                {% else %}
+                <button type="submit" class="btn btn-success" disabled>
+                    <i class="fas fa-save me-2"></i>Save and Next
+                </button>
+                {% endif %}
+<!--                <a href="{% url 'pollutiondetails' %}" id="nextBtn" class="btn btn-success" {% if not Vehicledata %}disabled{% endif %}>-->
+<!--                    <i class="fas fa-arrow-right me-2"></i>Next-->
+<!--                </a>-->
+
+              <!-- {% if Vehicledata %}
+                  <a href="{% url 'pollutiondetails' %}" id="nextBtn" class="btn btn-success">
+                      <i class="fas fa-arrow-right me-2"></i>Next
+                  </a>
+              {% else %}
+                  <button class="btn btn-success" disabled>
+                      <i class="fas fa-arrow-right me-2"></i>Next
+                  </button>
+              {% endif %} -->
+                <a href="{% url 'rvsf_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-home me-2"></i>Home
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Select all message alerts
+    const messageAlerts = document.querySelectorAll('.message-alert');
+    
+    messageAlerts.forEach(alert => {
+        const messageType = alert.getAttribute('data-message-type');
+        
+        // Map message types to Bootstrap classes
+        const typeMap = {
+            'success': 'alert-success',
+            'error': 'alert-danger',  // Red color for error
+            'warning': 'alert-warning',
+            'info': 'alert-info',
+            'debug': 'alert-secondary'
+        };
+        
+        // Default to 'info' if type not found
+        const alertClass = typeMap[messageType] || 'alert-info';
+        
+        // Add the appropriate class
+        alert.classList.add(alertClass);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+</script>
+<script>
+    window.alreadySavedVehicles = [
+        {% for vehicle in Vehicledata %}
+            "{{ vehicle.vehicle_type }}",
+        {% endfor %}
+    ];
+    window.hasVehicleData = {% if Vehicledata %}true{% else %}false{% endif %};
+</script>
+
+
+<!-- Load external JS -->
+<script src="{% static 'js/rvsfappjs/user/capacity.js' %}"></script>
+
+{% endblock %}

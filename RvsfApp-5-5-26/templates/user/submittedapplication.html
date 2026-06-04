@@ -1,0 +1,322 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/submittedapplication.css' %}">
+<div class="container py-4">
+  
+
+  <h4 class="mb-4">(1).Entity Details Confirmation</h2>
+  
+  <table class="table mb-5">
+    <tbody>
+      <tr><th>GST No.</th><td>{{ entity.gst_no }}</td><th>Company PAN</th><td>{{ entity.company_pan }}</td></tr>
+      <tr><th>Name of Company</th><td>{{ entity.company_name }}</td><th>Legal Name</th><td>{{ entity.legal_name }}</td></tr>
+      <tr><th>Company Email</th><td>{{ entity.company_email }}</td><th>Business Category</th><td>{{ entity.business_category }}</td></tr>
+      <tr><th>Registered Address</th><td colspan="3">{{ entity.registered_address }}</td></tr>
+      <tr><th>State/UT</th><td>{{ statename }}</td><th>District</th><td>{{ districtname }}</td></tr>
+      <tr><th>Pincode</th><td>{{ entity.pin_code }}</td><th>Website</th><td>{{ entity.website }}</td></tr>
+      <tr><th>TIN No.</th><td>{{ entity.tin_no }}</td><th>CIN</th><td>{{ entity.cin }}</td></tr>
+      <tr><th>IEC</th><td>{{ entity.iec }}</td><td class="border-0"></td><td class="border-0"></td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="text-center mb-4">(2).Authorized Person Details</h2>
+  
+  <table class="table mb-5">
+    <tbody>
+      
+      <tr><th>Email ID</th><td>{{ entity.auth_email }}</td><th>Mobile Number</th><td>{{ entity.auth_mobile }}</td></tr>
+      <tr><th>Authorized Person PAN</th><td>{{ entity.auth_pan }}</td><td class="border-0"></td><td class="border-0"></td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="mb-4">(3).Compliance Document Check  RVSF Details</h4>
+  <table class="table mb-5">
+    <tbody>
+      <tr><th>1. GPS Location</th><td colspan="3">  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mapModal">
+        Show Map
+      </button> </td></tr>
+      <tr><th>2. State</th><td>{{ general.state }}</td><th>3. CTO Application No.</th><td>{{ general.cto_number }}</td></tr>
+      <tr><th>4. Consent Validity</th><td>{{ general.consent_validity }}</td><th>5. CTO Document</th><td>
+        {% if general.cto_pdf %}<a href="{% url 'protected_file_rvsf' general.cto_pdf.name %}" target="_blank" ">View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>6. Authorization Validity (HOWM Rules)</th><td colspan="3">{{ general.howm_validity }}</td></tr>
+      <tr><th>7. Authorization Doc</th><td colspan="3">
+        {% if general.howm_pdf %}<a href="{% url 'protected_file_rvsf' general.howm_pdf.name %}" target="_blank" >View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>8. DIC Registration Validity</th><td colspan="3">{{ general.dic_validity }}</td></tr>
+      <tr><th>9. DIC Registration Doc</th><td colspan="3">
+        {% if general.dic_pdf %}<a href="{% url 'protected_file_rvsf' general.dic_pdf.name %}" target="_blank" >View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>10. RVSF Reg. No. (Form 1A)</th><td>{{ general.rvsf_reg_no }}</td><th>11. Registration Validity</th><td>{{ general.rvsf_validity }}</td></tr>
+      <tr><th>12. RVSF Reg. Cert</th><td colspan="3">
+        {% if general.rvsf_pdf %}<a href="{% url 'protected_file_rvsf' general.rvsf_pdf.name %}" target="_blank">View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>13. Process Flow Diagram</th><td colspan="3">
+        {% if general.process_flow_pdf %}<a href="{% url 'protected_file_rvsf' general.process_flow_pdf.name %}" target="_blank">View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>14. Material Balance Sheet</th><td colspan="3">
+        {% if general.material_balance_pdf %}<a href="{% url 'protected_file_rvsf' general.material_balance_pdf.name %}" target="_blank">View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>15. Annual Returns (Form 4) for FY 22–23 & 23–24</th><td colspan="3">
+        {% if general.annual_returns_pdf %}<a href="{% url 'protected_file_rvsf' general.annual_returns_pdf.name %}" target="_blank">FY 22–23</a>{% else %}&mdash;{% endif %}
+             </td></tr>
+    </tbody>
+  </table>
+  <h4 class="mb-4">(4).Equipment Details Preview</h4>
+
+  <table class="table table-bordered mt-3">
+    <thead class="table-light"> 
+      <tr>
+        <th>S.No</th>
+        <th>Name of Equipment</th>
+        <th>No. of Equipment</th>
+        <th>Equipment Capacity</th>
+        <th>Equipment Operting hours</th>
+        <th>Equipment Power Rating</th>
+        <th>Geo-tagged Photo</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Optional: Render saved equipment rows here -->
+      {% for eq in data %}
+      <tr>
+          <td>{{ forloop.counter}}</td>
+        <td>{{ eq.equipment_type }}</td>
+        <td>{{ eq.quantity }}</td>
+        <td>{{ eq.capacity_equipment_perton }}</td>
+        <td>{{ eq.operating_hours }}</td>
+        <td>{{ eq.power_rating }}</td>
+        <td>
+          {% if eq.geo_tagged_pdf %}
+          <a href="{% url 'protected_file_rvsf' eq.geo_tagged_pdf.name %}" target="_blank" target="_blank">View PDF</a>
+          {% else %}
+          N/A
+          {% endif %}
+        </td>
+       
+  
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <h4 class="mb-4">(5).RVSF Facility Details Preview</h4>
+
+  <table class="table mb-5">
+    <tbody>
+      <tr><th>1. Geo‑tagged Video</th><td colspan="3">
+        {% if facilitydata.geo_video %}
+      <video width="320" height="180" controls>
+        <source src="{% url 'protected_file_rvsf' facilitydata.geo_video.name %}" target="_blank" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    {% else %}
+      &mdash;
+    {% endif %}
+
+      </td></tr>
+      <tr><th>2. Total Area (m²)</th><td>{{ facilitydata.total_area }}</td>
+          <th>3. Shifts/Day</th><td>{{ facilitydata.shifts_per_day }}</td></tr>
+      <tr><th>4. No. of Employees</th><td>{{ facilitydata.no_of_employees }}</td></tr>
+      <tr><th>4. No. of Sectioned Power</th><td>{{ facilitydata.sectioned_power }}</td></tr>
+    </tbody>
+  </table>
+  <h2 class="text-center mb-4">(6).Unit Capacity Details</h2>
+  <table class="table table-bordered mt-3">
+    <thead class="table-light">
+      <tr>
+        <th>S.No</th>
+        <th>Type of Vehicles</th>
+        
+      </tr>
+      {% for vehicle in VechileType %}
+<tr>
+  <td>{{ forloop.counter }}</td>
+  <td>{{ vehicle.vehicle_type }}{% if vehicle.vehicle_type == "Others" %} ({{ vehicle.Remarks }}){% endif %}</td>
+  
+</tr>
+{% endfor %}
+
+    </thead>
+    <tbody>
+      <!-- Optional: Render saved equipment rows here -->
+     
+    </tbody>
+  </table>
+
+  <h5 class="mt-4">(6).Plant Capacity Details</h5>
+
+     <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Capacity Type</th>
+          <th>No. of Vehicles Scrapped / Annum</th>
+          <th>Quantity of Steel Scrapped / Annum (in MT)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Installed Capacity<br><small>(as per consents/licenses)</small></td>
+          <td>
+            
+                   {{ capacitydata.installed_vehicles }}
+          </td>
+          <td>
+            {{ capacitydata.installed_steel}}
+          </td>
+        </tr>
+    
+        
+        <tr>
+          <td>
+            Operating Capacity<br><small>FY {{ capacitydata.year1 }}</small>
+          
+          </td>
+          <td>
+            {{ capacitydata.operating_vehicles1 }}
+          </td>
+          <td>
+           {{ capacitydata.operating_steel1 }}
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            Operating Capacity<br><small>FY {{ capacitydata.year2 }}</small>
+          
+          </td>
+          <td>
+            {{ capacitydata.operating_vehicles2 }}
+          </td>
+          <td>
+           {{ capacitydata.operating_steel2 }}
+          </td>
+        </tr>
+
+
+        <tr>
+          <td>
+            Operating Capacity<br><small>FY {{ capacitydata.year3 }}</small>
+          
+          </td>
+          <td>
+            {{ capacitydata.operating_vehicles3 }}
+          </td>
+          <td>
+           {{ capacitydata.operating_steel3 }}
+          </td>
+        </tr>
+        
+        
+      </tbody>
+    </table>
+
+    <h4 class="mb-4">(7).Pollution Control Details</h4>
+
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>S.No</th>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Quantity</th>
+          <th>Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pollutiondetails in pollutiondetails  %}
+        <tr>
+          <td>{{ forloop.counter }}</td> <td>{{ pollutiondetails.device_type }}</td> <td>{{ pollutiondetails.name }}</td>
+          <td> {{pollutiondetails.quantity }}</td> 
+          <td>
+            {% if pollutiondetails.device_doc %}
+            <a href="{% url 'protected_file_rvsf' pollutiondetails.device_doc.name %}" target="_blank" target="_blank">View PDF</a>
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
+
+
+        </tr>
+        {% endfor %}
+
+      </tbody>
+            
+    </table>
+    <hr>
+    <h4 class="mb-4">(8).Details of the categories of waste recycled/refurbished in the unit/sent to registered entities or reuse, recycling and refurbishing in last FY</h4>
+    <table class="table table-bordered mb-0">
+      <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+        <tr>
+          <th>#</th>
+          <th>Category of waste</th>
+          <th>Waste Quantity Recovered</th>
+          <th>Quantity of waste recycled/refurbished by authorized recyclers</th>
+          <th>Name(s) of registered recycler(s)/refurbished(s) to whom sent</th>
+          <th>Agreement details between RVSFs and registered recycler(s)/refurbished(s)</th>
+          
+        </tr>
+      </thead>
+      <tbody>
+        {% for w in wasterecycled %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ w.category }}</td>
+          <td>{{ w.qty_recovered }}</td>
+          <td>{{ w.qty_recycled }}</td>
+          <td>{{ w.recycler_name }}</td>
+          <td>
+            {% if w.agreement %}
+              <a href="{% url 'protected_file_rvsf' w.agreement.name %}" target="_blank" target="_blank">View PDF</a>
+            {% else %}
+              &mdash;
+            {% endif %}
+          </td>
+          
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center">No entries.</td>
+        </tr>
+        {% endfor %}
+        
+
+        
+      </tbody>
+    </table>
+
+    
+
+</div>
+
+<div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">RVSF Location</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div id="mapid" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
+
+{% endblock %}
+<!-- Load external JS -->
+<script src="{% static 'js/rvsfappjs/user/submittedapplication.js' %}"></script>

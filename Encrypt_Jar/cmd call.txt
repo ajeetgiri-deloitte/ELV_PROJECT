@@ -1,0 +1,1 @@
+D:\SG_Final_Jar_PHP\SG_Final_Jar_PHP>java -jar Final_ED_Both.jar Encrypt D:\\My_Folder\\Json_Data.txt D:\\My_Folder\\sessionkey.txt D:\\My_Folder\\encrypted_sessionkey.txt D:\\My_Folder\\encrypted_json_data.txt D:\\My_Folder\\encrypted_hashof_json_data.txt D:\\My_Folder\\certificate.cer

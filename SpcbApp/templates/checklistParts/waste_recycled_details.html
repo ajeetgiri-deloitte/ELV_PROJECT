@@ -1,0 +1,179 @@
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<form action="{% url 'SaveWasteRecycleChecklist' %}" method="post" id="recycleForm">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+
+    <table class="checklist-table">
+        <thead>
+            <tr>
+                <th>Checklist Item</th>
+                <th>Yes / No</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>Used Oil - Quantity recovered (MT)/Recycled, recycler details</td>
+                <td>
+                    <select name="used_oil" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if recycle and recycle.used_oil %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if recycle and not recycle.used_oil %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_used_oil" class="form-control remarks-field" value="{{ recycle.remarks_used_oil }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Plastic Waste - Quantity recovered (MT)/Recycled, recycler details</td>
+                <td>
+                    <select name="plastic_waste" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if recycle and recycle.plastic_waste %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if recycle and not recycle.plastic_waste %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_plastic_waste" class="form-control remarks-field" value="{{ recycle.remarks_plastic_waste }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Battery Waste - Quantity recovered (MT)/Recycled, recycler details</td>
+                <td>
+                    <select name="battery_waste" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if recycle and recycle.battery_waste %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if recycle and not recycle.battery_waste %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_battery_waste" class="form-control remarks-field" value="{{ recycle.remarks_battery_waste }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Tyre Waste - Quantity recovered (MT)/Recycled, recycler details</td>
+                <td>
+                    <select name="tyre_waste" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if recycle and recycle.tyre_waste %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if recycle and not recycle.tyre_waste %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_tyre_waste" class="form-control remarks-field" value="{{ recycle.remarks_tyre_waste }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>E-Waste - Quantity recovered (MT)/Recycled, recycler details</td>
+                <td>
+                    <select name="e_waste" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if recycle and recycle.e_waste %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if recycle and not recycle.e_waste %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_e_waste" class="form-control remarks-field" value="{{ recycle.remarks_e_waste }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td>Steel Scrap - Quantity recovered (MT)/Recycled, recycler details</td>
+                <td>
+                    <select name="steel_scrap" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if recycle and recycle.steel_scrap %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if recycle and not recycle.steel_scrap %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_steel_scrap" class="form-control remarks-field" value="{{ recycle.remarks_steel_scrap }}" placeholder="Remarks"></td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</form>
+
+<form action="{% url "ViewWasteRecycleDetails" %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+    <tr>
+        <td colspan="3"> 
+            <button type="submit" class="btn btn-warning">View Submitted Data</button>
+        </td>
+    </tr>
+</form>
+
+<!-- ============================= -->
+<!-- JS VALIDATION (FULL LOGIC)   -->
+<!-- ============================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const selects = document.querySelectorAll('.check-select');
+    const form = document.getElementById('recycleForm');
+
+    function updateRemarks(select, remarks) {
+        const hasValue = remarks.value.trim() !== '';
+
+        if (select.value === 'Yes') {
+            remarks.disabled = false;
+            remarks.removeAttribute('required');
+            remarks.style.backgroundColor = '#f0f0f0';
+            remarks.style.borderColor = '#ccc';
+        }
+        else if (select.value === 'No') {
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        }
+        else {
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        }
+    }
+
+    // Initialize all rows
+    selects.forEach(select => {
+        const row = select.closest('tr');
+        const remarks = row.querySelector('.remarks-field');
+
+        updateRemarks(select, remarks);
+
+        select.addEventListener('change', () => updateRemarks(select, remarks));
+        remarks.addEventListener('input', () => updateRemarks(select, remarks));
+    });
+
+    // Prevent submit if No selected but remarks empty
+    form.addEventListener('submit', function (e) {
+        let valid = true;
+
+        selects.forEach(select => {
+            const row = select.closest('tr');
+            const remarks = row.querySelector('.remarks-field');
+
+            if (select.value === 'No' && remarks.value.trim() === '') {
+                remarks.style.borderColor = 'red';
+                valid = false;
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            alert("❗ Please fill remarks for all fields where 'No' is selected.");
+        }
+    });
+
+});
+</script>

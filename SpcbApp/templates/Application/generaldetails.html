@@ -1,0 +1,193 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">General Details of the RVSF</h5>
+
+      <!-- Edit Button -->
+      
+    </div>
+
+    <div class="card-body">
+      <!-- Address -->
+      <div class="mb-4">
+        <h6 class="fw-bold">1. Address</h6>
+        <div class="form-control bg-light">{{ general.address|default:"—" }}</div>
+      </div>
+
+      <!-- GPS Location -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h6 class="fw-bold">2. GPS Latitude</h6>
+          <div class="form-control bg-light">{{ general.latitude|default:"—" }}</div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold">GPS Longitude</h6>
+          <div class="form-control bg-light">{{ general.longitude|default:"—" }}</div>
+        </div>
+      </div>
+
+      <!-- State, CTO -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <h6 class="fw-bold">3. State</h6>
+          <div class="form-control bg-light">{{ statename }}</div>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-bold">4. CTO Number</h6>
+          <div class="form-control bg-light">{{ general.cto_number|default:"—" }}</div>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-bold">5. Consent Validity</h6>
+          <div class="form-control bg-light">{{ general.consent_validity|date:'d-m-Y' }}</div>
+        </div>
+      </div>
+
+      <!-- CTO PDF -->
+      <div class="mb-4">
+        <h6 class="fw-bold">6. CTO Document</h6>
+        {% if general.cto_pdf %}
+          <a href="{% url 'protected_file_spcb' general.cto_pdf.name %}" class="btn btn-sm btn-outline-primary" target="_blank">View Document</a>
+        {% else %}
+          <span class="badge bg-secondary">Not Uploaded</span>
+        {% endif %}
+      </div>
+
+      <!-- HOWM -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h6 class="fw-bold">7. HOWM Validity</h6>
+          <div class="form-control bg-light">{{ general.howm_validity|date:'d-m-Y' }}</div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold">8. HOWM Authorization</h6>
+          {% if general.howm_pdf %}
+            <a href="{% url 'protected_file_spcb' general.howm_pdf.name %}" class="btn btn-sm btn-outline-primary" target="_blank">View Document</a>
+          {% else %}
+            <span class="badge bg-secondary">Not Uploaded</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- DIC -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h6 class="fw-bold">9. DIC Validity</h6>
+          <div class="form-control bg-light">{{ general.dic_validity|date:'d-m-Y' }}</div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold">10. DIC Registration</h6>
+          {% if general.dic_pdf %}
+            <a href="{% url 'protected_file_spcb' general.dic_pdf.name %}" class="btn btn-sm btn-outline-primary" target="_blank">View Document</a>
+          {% else %}
+            <span class="badge bg-secondary">Not Uploaded</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- RVSF Reg -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h6 class="fw-bold">11. RVSF Registration No</h6>
+          <div class="form-control bg-light">{{ general.rvsf_reg_no }}</div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold">12. RVSF Validity</h6>
+          <div class="form-control bg-light">{{ general.rvsf_validity|date:'d-m-Y' }}</div>
+        </div>
+      </div>
+
+      <!-- RVSF PDF -->
+      <div class="mb-4">
+        <h6 class="fw-bold">13. RVSF Certificate</h6>
+        {% if general.rvsf_pdf %}
+          <a href="{% url 'protected_file_spcb' general.rvsf_pdf.name %}" class="btn btn-sm btn-outline-primary" target="_blank">View Document</a>
+        {% else %}
+          <span class="badge bg-secondary">Not Uploaded</span>
+        {% endif %}
+      </div>
+
+      <!-- Process Flow & Material -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h6 class="fw-bold">14. Process Flow</h6>
+          {% if general.process_flow_pdf %}
+            <a href="{% url 'protected_file_spcb' general.process_flow_pdf.name %}" class="btn btn-sm btn-outline-primary" target="_blank">View Document</a>
+          {% else %}
+            <span class="badge bg-secondary">Not Uploaded</span>
+          {% endif %}
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold">15. Material Balance</h6>
+          {% if general.material_balance_pdf %}
+            <a href="{% url 'protected_file_spcb' general.material_balance_pdf.name %}" class="btn btn-sm btn-outline-primary" target="_blank">View Document</a>
+          {% else %}
+            <span class="badge bg-secondary">Not Uploaded</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Annual Returns -->
+      <div class="mb-4">
+        <h6 class="fw-bold">16. Annual Returns</h6>
+        {% if general.annual_returns_pdf %}
+          <a href="{% url 'protected_file_spcb' general.annual_returns_pdf.name %}" class="btn btn-sm btn-outline-primary" target="_blank">View Document</a>
+        {% else %}
+          <span class="badge bg-secondary">Not Uploaded</span>
+        {% endif %}
+      </div>
+      {% if commentcount > 0 %}
+      <div class="mb-4">
+        <h6 class="fw-bold">17. Comment / Remark</h6>
+        <div class="form-control bg-light" style="min-height: 100px;">
+          {{ comment.SPCBComments|default:"—" }}
+        </div>
+        <small class="text-muted fst-italic">Commented on {{ comment.SPCBCommentDate|date:'d-m-Y H:i' }}</small>
+      </div>
+    {% else %}
+      <!-- Comment Form -->
+      <form method="post" action="{% url 'save_general_trail' %}">
+        {% csrf_token %}
+        <input type="hidden" name="industryid" value="{{ general.userid }}">
+        <input type="hidden" name="stateid" value="{{ statename.state_id }}">
+        <input type="hidden" name="appno" value="{{ fetchapp.appno }}">
+        <input type="hidden" name="editmode" value="1">
+        <input type="hidden" name="editPart" value="general">
+    
+        <div class="mb-4">
+          <h6 class="fw-bold">17. Comment / Remark <span class="text-danger">*</span></h6>
+          <textarea name="SPCBComments" class="form-control" rows="4" placeholder="Reason for reverting this section..." required></textarea>
+        </div>
+    
+        <div class="text-end">
+          <button type="submit" class="btn btn-warning">
+            <i class="bi bi-arrow-counterclockwise"></i> Mark as Incomplete
+          </button>
+        </div>
+      </form>
+    {% endif %}
+
+    {% if comment.UnitCommentDate %}
+    <div class="mb-4">
+      <h6 class="fw-bold text-success">18. Industry Response</h6>
+      <div class="card border-success shadow-sm">
+        <div class="card-body">
+          <p class="mb-2"><strong>Response:</strong> {{ comment.UnitComments|default:"—" }}</p>
+          <hr>
+          <p class="mb-0 text-secondary">
+            <strong>Comment Date:</strong> {{ comment.UnitCommentDate|date:"d M Y, H:i" }}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+     
+    </div>
+  </div>
+</div>
+
+{% endblock %}

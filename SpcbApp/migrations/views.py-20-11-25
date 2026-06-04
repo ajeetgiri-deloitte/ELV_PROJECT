@@ -1,0 +1,1608 @@
+from datetime import timezone
+from functools import wraps
+import random
+import string
+from django.contrib import messages
+from django.db.models import Subquery, OuterRef
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+import pytz
+from RvsfApp.models import *
+from RvsfApp.views import rvsfdetails
+from SpcbApp.models import * 
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import make_password, check_password
+from registration.forms import CaptchaForm, LoginForm
+from registration.models import District, State
+from django.db.models import Q
+from django.core.cache import cache
+from django.utils import timezone
+from datetime import datetime
+
+import os, base64, json, subprocess
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from reportlab.pdfgen import canvas
+from django.shortcuts import render, redirect, get_object_or_404
+
+# Create your views here.
+
+def index(request):
+    if request.method == 'POST':
+         captcha_form = CaptchaForm(request.POST or None)
+         print(captcha_form)
+         if  captcha_form.is_valid():
+            print('errorrrrrrr')
+            username = request.POST.get('username')
+            raw_pwd = request.POST.get('password')
+            disablestatus = StateUsers.objects.filter(username = username).first()
+            disable = disablestatus.DisableStatus
+
+            if disable == 1:
+                messages.error(request, 'Username is Disabled please contact CPCB Admin')
+                return redirect('spcb_home')
+            
+
+            try:
+                user = StateUsers.objects.get(username=username)
+                if check_password(raw_pwd, user.password):
+                    request.session['user_id'] = user.id
+                    request.session['role_id'] = user.RoleAccess
+                    request.session['officername'] = user.OfficerName
+                    request.session['user_role'] = "spcb"
+                    return redirect('dashboard')
+                else:
+                    messages.error(request, 'Invalid credentials')
+                    return redirect('spcb_home')
+            except StateUsers.DoesNotExist:
+                messages.error(request, 'Invalid credentials')
+         else:
+            # If captcha errors
+            print('arjun uprit')
+            messages.error(request, 'Incorrect captcha entered')
+            return redirect('spcb_home')
+    else:
+        request.session.flush()
+        captcha_form = CaptchaForm()
+    request.session.flush()
+    return render(request, 'auth/login.html', {
+        'captcha_form': captcha_form,
+    })
+
+
+
+def login_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get('user_id'):
+            return redirect('spcb_home')
+        return view_func(request, *args, **kwargs)
+    return wrapper        
+
+
+ 
+@login_required
+def Dashboard(request):
+    userid = request.session.get('user_id')
+    print(userid)
+    userdata = StateUsers.objects.filter(id = userid).first()
+    print(userdata)
+    submitted = ConfirmApplication.objects.filter(state_id = userdata.State_id).count()
+    scrutiny = ConfirmApplication.objects.filter(state_id = userdata.State_id , appstatus = '2').count()
+    countapproving = ConfirmApplication.objects.filter(state_id = userdata.State_id , role_id = '1').count()
+    countreporting = ConfirmApplication.objects.filter(state_id = userdata.State_id , role_id = '2').count()
+    countverifying = ConfirmApplication.objects.filter(state_id = userdata.State_id , role_id = '3').count()
+    print(countapproving)
+    application = {}
+
+    submitted_apps = ConfirmApplication.objects.filter(paymentModeStatus='Completed').count()
+    new_application = ConfirmApplication.objects.filter(paymentModeStatus='Completed',appstatus='1').count()
+    scrutiny = ConfirmApplication.objects.filter(paymentModeStatus='Completed',appstatus='2').count()
+    forapproval = ConfirmApplication.objects.filter(paymentModeStatus='Completed',appstatus='8').count()
+    approved = ConfirmApplication.objects.filter(paymentModeStatus='Completed',appstatus='4').count()
+    rejected = ConfirmApplication.objects.filter(paymentModeStatus='Completed',appstatus='7').count()
+    certified = ConfirmApplication.objects.filter(paymentModeStatus='Completed',appstatus='9').count()
+    inspection = ConfirmApplication.objects.filter(paymentModeStatus='Completed',appstatus='6').count()
+    # success_count1 = Payment.objects.filter(status='success').count()
+
+    # print('count', success_count)
+
+    application['completed_application'] = submitted_apps
+    application['newapplications'] = new_application
+    application['undclarification_required'] = scrutiny
+    application['forapproval'] = forapproval
+    application['approved'] = approved
+    application['rejected'] = rejected
+    application['certified'] = certified
+    application['inspection'] = inspection
+
+    print('application dict:', application)
+
+    return render(request , 'dashboard.html' , {'userdata': userdata ,
+                                                'submitted': submitted,
+                                                'scrutiny' : scrutiny,
+                                                'approving' : countapproving,
+                                                'reporting': countreporting,
+                                                'verifying' : countverifying,
+                                                'application':application
+                                                })
+def generate_username_from_email(email):
+    base = email.split('@')[0]
+    while True:
+        suffix = ''.join(random.choices(string.digits, k=4))
+        username = f"{base}{suffix}"
+        if not StateUsers.objects.filter(username=username).exists():
+            return username
+@login_required
+def addspcbuser(request):
+    userid = request.session.get('user_id')
+    userdata = StateUsers.objects.filter(id = userid).first()
+    statename = State.objects.filter(state_id = userdata.State_id).first()
+    districts = District.objects.filter(state_id=userdata.State_id).values('city_id', 'city_name')
+    if request.method == 'POST':
+        userid = request.session.get('user_id')
+        OfficerName = request.POST.get('OfficerName')
+        auth_email = request.POST.get('auth_email')
+        username = generate_username_from_email(auth_email)
+        auth_mobile = request.POST.get('auth_mobile')
+        officerDesignation = request.POST.get('officerDesignation')
+        password = request.POST.get('password')
+        confirmpwd = request.POST.get('confirmpassword')
+
+        user_exists = StateUsers.objects.filter(Q(auth_email=auth_email) | Q(auth_mobile=auth_mobile)).exists()
+        print(user_exists)
+
+        if user_exists:
+            messages.error(request, "User Already Exists")
+            return redirect('addspcbuser')
+
+
+        if not auth_mobile.isdigit() or len(auth_mobile) != 10:
+           messages.error(request, "Invalid mobile number. It must be 10 digits.")
+           return redirect("addspcbuser")
+
+        if password != confirmpwd:
+            messages.error(request, "Password and Confirm Password do not match.")
+            return redirect("addspcbuser")  # reload form
+
+        # ✅ (Optional) Validate password strength
+        if len(password) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return redirect("addspcbuser")
+        
+        hashpwd = make_password(password)
+        
+        State_id = userdata.State_id
+        District_id = request.POST.get('District_id')
+        StateUsers.objects.create(
+            OfficerName = OfficerName,
+            auth_email = auth_email,
+            auth_mobile = auth_mobile,
+            officerDesignation = officerDesignation,
+            State_id = State_id,
+            District_id = District_id,
+            RoleAccess = '0',
+            username = username,
+            password  = hashpwd          
+        )
+
+        return redirect('dashboard')
+    
+    return render(request ,'usermanagement/adduser.html' , {'userdata': userdata , 'districts' : districts , 'statename':statename})
+@login_required   
+def viewusers(request):
+    userdata = StateUsers.objects.exclude(RoleAccess = 1)
+    userid = request.session.get('user_id')
+    masteruser = StateUsers.objects.filter(id = userid).first()
+    district_map = {d.city_id: d.city_name for d in District.objects.all()}
+
+    for user in userdata:
+        user.district_name = district_map.get(user.District_id, 'Unknown')
+    return render(request , 'usermanagement/listusers.html' , {
+        'data': userdata,
+        'userdata': masteruser
+    })
+
+@login_required
+def viewroles(request):
+    userdata = StateUsers.objects.exclude(RoleAccess = 1)
+    userid = request.session.get('user_id')
+    masteruser = StateUsers.objects.filter(id = userid).first()
+    district_map = {d.city_id: d.city_name for d in District.objects.all()}
+
+    for user in userdata:
+        user.district_name = district_map.get(user.District_id, 'Unknown')
+    return render(request , 'usermanagement/AddNewRole.html' , {
+        'data': userdata,
+        'userdata': masteruser
+    })
+
+@login_required
+# def viewapplication(request):
+#     if request.method == 'POST':
+#         userid = request.POST.get('userid')  
+#         print(userid)
+   
+#     entity = RvsfRegistration.objects.filter(id = userid).first()
+#     generaldata = GeneralDetails.objects.filter(userid=userid).first()
+#     statename = State.objects.filter(state_id=entity.state).first()
+#     districtname = District.objects.filter(city_id=entity.district).first()
+    
+#     equipmentdata = EquipmentType.objects.all().order_by('id')
+#     data = EquipmentEntry.objects.filter(userid = userid)
+#     facilitydata = RvsfFacility.objects.filter(user_id = userid).first()
+#     vehicleTypeData = VehicleType.objects.filter(userid=userid)
+#     capacityPlant = PlantCapacity.objects.filter(userid =  userid).first()
+#     pollutiondetails = PollutionDevice.objects.filter(userid = userid)
+#     wasterecycled = WasteRecycled.objects.filter(userid = userid)
+     
+
+#     return render(request,'processing/viewapplication.html', {'entity' : entity ,
+#      'general' : generaldata , 'statename': statename, 'districtname':districtname,
+#       'equipmentdata': equipmentdata, 'data':data, 'facilitydata': facilitydata,
+#       'VechileType': vehicleTypeData, 'capacitydata':capacityPlant,'pollutiondetails':pollutiondetails,'wasterecycled':wasterecycled                                          
+#     })
+
+def viewapplication(request):
+    if request.method == 'POST':
+        userid = request.POST.get('userid')
+    else:
+        userid = request.GET.get('userid') or 'none'
+
+    cache_key = f"viewapp_user_{userid}"
+    cached_context = cache.get(cache_key)
+    if cached_context:
+        return render(request, 'processing/viewapplication.html', cached_context)
+
+    entity = RvsfRegistration.objects.filter(id=userid).first()
+    generaldata = GeneralDetails.objects.filter(userid=userid).first()
+    rvsfdata = RvsfDetails.objects.filter(userid=userid).first()
+    print(rvsfdata,('ffeefefeef'))
+    # ... other queries ...
+
+    context = {
+        'entity': entity,
+        'general': generaldata,
+        'rvsf': rvsfdata,
+        'statename': State.objects.filter(state_id=entity.state).first(),
+        'districtname': District.objects.filter(city_id=entity.district).first(),
+        'equipmentdata': EquipmentType.objects.all().order_by('id'),
+        'data': EquipmentEntry.objects.filter(userid=userid),
+        'facilitydata': RvsfFacility.objects.filter(user_id=userid).first(),
+        'VechileType': VehicleType.objects.filter(userid=userid),
+        'capacitydata': PlantCapacity.objects.filter(userid=userid).first(),
+        'pollutiondetails': PollutionDevice.objects.filter(userid=userid),
+        'wasterecycled': WasteRecycled.objects.filter(userid=userid),
+    }
+
+    cache.set(cache_key, context, 60 * 5)  # cache for 5 minutes
+    return render(request, 'processing/viewapplication.html', context)
+    
+@login_required
+def updateRole(request):
+    if request.method == 'POST':
+        userid = request.POST.get('hidden_id')
+        roletype = request.POST.get('roleassign')
+        spcbuser = StateUsers.objects.filter(id = userid).first()
+        spcbuser.RoleAccess = roletype
+        spcbuser.save()
+        messages.success(request, f"Role updated successfully for {spcbuser.OfficerName}.") 
+        return redirect('viewusers')
+    
+@login_required
+def rvsf_applications(request):
+    session_id = request.session.get('user_id')
+    print(session_id)
+    userinfo = StateUsers.objects.filter(id =session_id).first()
+    print(userinfo.RoleAccess)
+    # print(userinfo.RoleAccess)
+    if userinfo.RoleAccess == '1':
+        Roles = {'2':'Recommending Authority', '3': 'Verification Authority'}
+        fetchappstage = ApplicationStatus.objects.filter(DisableStatus = 0 , RoleAccess__in=[3, 1])
+    elif userinfo.RoleAccess == '2':
+        Roles = {'1':'Approving Authority', '3': 'Verification Authority'}
+        fetchappstage = ApplicationStatus.objects.filter(DisableStatus = 0 , RoleAccess__in=[3,2])
+    elif userinfo.RoleAccess == '3':
+        Roles = {'2': 'Recommending Authority'}
+        fetchappstage = ApplicationStatus.objects.filter(DisableStatus = 0 , RoleAccess__in=[3,2])
+    
+    
+    print(userinfo,session_id)
+    applications = ConfirmApplication.objects.filter(state_id = userinfo.State_id , marked_to_id = session_id , incomplete = 0).annotate(
+    # applications = ConfirmApplication.objects.filter(state_id = userinfo.State_id , role_id = userinfo.RoleAccess , incomplete = 0).annotate(
+        company_name=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('company_name')[:1]
+        ),
+        registered_address=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('registered_address')[:1]
+        ),
+        company_email=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('company_email')[:1]
+        ),
+        unit_pan=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('auth_pan')[:1]
+        ),
+        pin_code=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('pin_code')[:1]
+        )
+    )
+
+
+
+    print(applications)
+    
+    
+    
+    return render(request, 'processing/rvsfapplications.html', {'data': applications , 'userinfo':userinfo , 'fetchappstage':fetchappstage ,
+                                                                'Roles':Roles 
+                            })
+
+@login_required
+def mark_application(request):
+
+    if request.method == 'POST':
+        user_ses_id = request.session.get('user_id')
+        userid = request.POST.get('userid')
+        appno = request.POST.get('appno')
+        marked_to_role = request.POST.get('marked_to_role')   # string
+        comment = request.POST.get('comment')
+        appstatus1 = request.POST.get('appstatus1')
+        marked_to_verifying = request.POST.get('marked_to_verifying')
+
+        if appstatus1 == '5':
+            appstatus = '5'
+        else:
+            appstatus = request.POST.get('appstatus')
+
+        # Convert to int safely
+        marked_to_role_int = int(marked_to_role)
+        print(marked_to_role_int)
+
+        # ---------- CASE 1 : role 1 or 2 ----------
+        if marked_to_role_int == 1 or marked_to_role_int == 2:
+            print('1fwefew')
+            spcbuser = StateUsers.objects.filter(id=user_ses_id).first()
+            marked_by_role = spcbuser.RoleAccess
+
+            fetchmarkedDetails = StateUsers.objects.filter(
+                RoleAccess=marked_to_role_int,
+                State_id=spcbuser.State_id
+            ).first()
+
+            if not fetchmarkedDetails:
+                messages.error(request, "User to mark not found.")
+                return redirect('dashboard')
+
+            marked_to_designation = fetchmarkedDetails.officerDesignation
+            marked_by_designation = spcbuser.officerDesignation
+
+            added_by_userid = spcbuser.id
+            added_by_person = spcbuser.OfficerName
+            added_to_userid = fetchmarkedDetails.id
+            added_to_person = fetchmarkedDetails.OfficerName
+
+            industry_user_id = userid
+            stateid = spcbuser.State_id
+
+            ApplicationTrail.objects.create(
+                AppNo=appno,
+                stateid=stateid,
+                marked_to_designation=marked_to_designation,
+                marked_by_designation=marked_by_designation,
+                marked_to_role=marked_to_role_int,
+                marked_by_role=marked_by_role,
+                comment=comment,
+                added_by_userid=added_by_userid,
+                added_by_person=added_by_person,
+                added_to_person=added_to_person,
+                added_to_userid=added_to_userid,
+                industry_user_id=industry_user_id
+            )
+
+            updateunit = ConfirmApplication.objects.filter(appno=appno).first()
+            updateunit.role_id = marked_to_role_int
+            updateunit.appstatus = appstatus
+            updateunit.marked_to_id = added_to_userid   # fixed
+            updateunit.marked_by_id = added_by_userid
+            updateunit.save()
+
+        # ---------- CASE 2 : role 3 ----------
+        elif marked_to_role_int == 3:
+            print('2dvdv')
+            spcbuser = StateUsers.objects.filter(id=user_ses_id).first()
+            marked_by_role = spcbuser.RoleAccess
+
+            fetchmarkedDetails = StateUsers.objects.filter(
+                RoleAccess=3,
+                State_id=spcbuser.State_id
+            ).first()
+
+            if not fetchmarkedDetails:
+                messages.error(request, "User to mark not found.")
+                return redirect('dashboard')
+
+            marked_to_designation = fetchmarkedDetails.officerDesignation
+            marked_by_designation = spcbuser.officerDesignation
+
+            added_by_userid = spcbuser.id
+            added_by_person = spcbuser.OfficerName
+            added_to_userid = fetchmarkedDetails.id
+            added_to_person = fetchmarkedDetails.OfficerName
+
+            industry_user_id = userid
+            stateid = spcbuser.State_id
+
+            ApplicationTrail.objects.create(
+                AppNo=appno,
+                stateid=stateid,
+                marked_to_designation=marked_to_designation,
+                marked_by_designation=marked_by_designation,
+                marked_to_role=3,
+                marked_by_role=marked_by_role,
+                comment=comment,
+                added_by_userid=added_by_userid,
+                added_by_person=added_by_person,
+                added_to_person=added_to_person,
+                added_to_userid=added_to_userid,
+                industry_user_id=industry_user_id
+            )
+            
+            updateunit = ConfirmApplication.objects.filter(appno=appno).first()
+            updateunit.role_id = 3
+            updateunit.appstatus = appstatus
+            updateunit.marked_to_id = marked_to_verifying  # fixed
+            updateunit.marked_by_id = added_by_userid   # fixed
+            updateunit.save()
+
+        messages.success(request, 'Application successfully marked.')
+
+    return redirect('dashboard')
+
+    
+     
+@login_required
+def get_trails(request):
+    print("entered")
+    appno = request.GET.get('appno')
+    # print(appno)
+    # trails1 = ApplicationTrail.objects.filter(id=56).order_by('-created_at')
+    # for trail in trails1:
+    #     print(vars(trail))
+    try:
+        trails = ApplicationTrail.objects.filter(AppNo=appno).order_by('-created_at')
+        print(trails)
+        trail_data = [{
+            'user': trail.added_by_person,
+            'designation': trail.marked_by_designation,
+            'date': trail.created_at.strftime("%d-%m-%Y %H:%M"),
+            'comment': trail.comment,
+            'marked_to_role': trail.marked_to_role,
+        } for trail in trails]
+
+
+        print(trail_data)
+        return JsonResponse({'trails': trail_data})
+    
+    except Exception as e:
+        print("Error:", str(e))
+        return JsonResponse({'error': str(e)}, status=500)
+
+       
+
+def list_rvsf(request):
+    applications = []
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status == '-1':
+            print(status)
+            applications = ConfirmApplication.objects.all().annotate(
+        company_name=Subquery(
+            RvsfRegistration.objects.values('company_name')[:1]
+        ),
+        registered_address=Subquery(
+            RvsfRegistration.objects.values('registered_address')[:1]
+        ),
+        company_email=Subquery(
+            RvsfRegistration.objects.values('company_email')[:1]
+        ),
+        unit_pan=Subquery(
+            RvsfRegistration.objects.values('auth_pan')[:1]
+        ),
+        pin_code=Subquery(
+            RvsfRegistration.objects.values('pin_code')[:1]
+        )
+    )
+        else:
+             applications = ConfirmApplication.objects.filter(appstatus = status).annotate(
+        company_name=Subquery(
+            RvsfRegistration.objects.values('company_name')[:1]
+        ),
+        registered_address=Subquery(
+            RvsfRegistration.objects.values('registered_address')[:1]
+        ),
+        company_email=Subquery(
+            RvsfRegistration.objects.values('company_email')[:1]
+        ),
+        unit_pan=Subquery(
+            RvsfRegistration.objects.values('auth_pan')[:1]
+        ),
+        pin_code=Subquery(
+            RvsfRegistration.objects.values('pin_code')[:1]
+        )
+    )    
+    
+    return render(request, 'processing/listapplications.html', {'data': applications})
+
+        
+# @login_required
+# def checklist(request):
+#     appno = request.POST.get('appno')
+#     industryid = int(request.POST.get('userid', 0))
+#     fectchsignup = SignupChecklist.objects.filter(industryid = industryid).first()
+#     fetchgeneral = GeneralChecklist.objects.filter(Industryid = industryid).first()
+#     fetchequipment = EquipmentChecklist.objects.filter(industryid = industryid).first()
+#     fetchfacility = FacilityChecklist.objects.filter(industryid = industryid).first()
+#     fetchcapacity = CapacityChecklist.objects.filter(industryid = industryid).first()
+#     fetchpollution = PollutionChecklist.objects.filter(industryid = industryid).first()
+#     fetchwasterec = WasteRecycleChecklist.objects.filter(industryid = industryid).first()
+#     fetchpayment = PaymentChecklist.objects.filter(industryid = industryid).first()
+#     confirmapp = ConfirmApplication.objects.filter(userid = industryid).first()     
+
+#     return render(request , 'processing/checklist.html' , {'AppNo': appno , 'IndustryId': industryid , 'signup': fectchsignup , 'general' : fetchgeneral , 'equipment': fetchequipment ,
+#                                                            'facility':fetchfacility , 'capacity': fetchcapacity , 'pollution': fetchpollution, 'recycle': fetchwasterec, 'payment': fetchpayment ,
+#                                                            'confirmapp': confirmapp
+#                                                            })   
+
+@login_required
+def checklist(request):
+    session_id = request.session.get('user_id')
+    postuser={}
+    if request.method == "POST":
+        postuser['id'] = request.POST.get('userid')
+        # print("POSTED userid:", postuserid)
+    # print(session_id,postuserid,'hvjhdv')
+    userinfo = StateUsers.objects.filter(id=session_id).first()
+    if not userinfo:
+        messages.error(request, "Invalid session or user not found.")
+        return redirect('login')
+
+    if userinfo.RoleAccess == '1':
+        # Roles = {'2': 'Recommending Authority', '3': 'Verification Authority'}
+        Roles = {'2': 'Recommending officer'}
+        # Roles = {'2': 'Recommending officer','4':'Sent Back to User'}
+        fetchappstage = ApplicationStatus.objects.filter(DisableStatus=0, RoleAccess__in=[3, 1])
+    elif userinfo.RoleAccess == '2':
+        Roles = {'1': 'Approving officer', '3': 'Reviewing officer','4':'Sent Back to User'}
+        fetchappstage = ApplicationStatus.objects.filter(DisableStatus=0, RoleAccess__in=[3, 2])
+    else:
+        Roles = {'1': 'Approving officer', '2': 'Recommending officer'}
+        fetchappstage = ApplicationStatus.objects.filter(DisableStatus=0, RoleAccess__in=[3, 2])
+
+
+  
+    
+    print(userinfo,session_id)
+    applications = ConfirmApplication.objects.filter(state_id = userinfo.State_id , role_id = userinfo.RoleAccess , incomplete = 0).annotate(
+        company_name=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('company_name')[:1]
+        ),
+        registered_address=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('registered_address')[:1]
+        ),
+        company_email=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('company_email')[:1]
+        ),
+        unit_pan=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('auth_pan')[:1]
+        ),
+        pin_code=Subquery(
+            RvsfRegistration.objects.filter(id=OuterRef('userid')).values('pin_code')[:1]
+        )
+    )
+
+    application = ConfirmApplication.objects.filter(
+        state_id=userinfo.State_id, role_id=userinfo.RoleAccess, incomplete=0
+    ).annotate(
+        company_name=Subquery(RvsfRegistration.objects.filter(id=OuterRef('userid')).values('company_name')[:1]),
+        registered_address=Subquery(RvsfRegistration.objects.filter(id=OuterRef('userid')).values('registered_address')[:1]),
+        company_email=Subquery(RvsfRegistration.objects.filter(id=OuterRef('userid')).values('company_email')[:1]),
+        unit_pan=Subquery(RvsfRegistration.objects.filter(id=OuterRef('userid')).values('auth_pan')[:1]),
+        pin_code=Subquery(RvsfRegistration.objects.filter(id=OuterRef('userid')).values('pin_code')[:1])
+    ).first()
+
+    appno = application.appno if application else None
+    industryid = application.userid if application else None
+
+    # print(appno)
+    # print(industryid)
+
+    fectchsignup = SignupChecklist.objects.filter(industryid=industryid).first()
+    fetchgeneral = GeneralChecklist.objects.filter(Industryid=industryid).first()
+    fetchequipment = EquipmentChecklist.objects.filter(industryid=industryid).first()
+    fetchfacility = FacilityChecklist.objects.filter(industryid=industryid).first()
+    fetchcapacity = CapacityChecklist.objects.filter(industryid=industryid).first()
+    fetchpollution = PollutionChecklist.objects.filter(industryid=industryid).first()
+    fetchwasterec = WasteRecycleChecklist.objects.filter(industryid=industryid).first()
+    fetchpayment = PaymentChecklist.objects.filter(industryid=industryid).first()
+    confirmapp = ConfirmApplication.objects.filter(userid=industryid).first()
+    verifyingofficers=StateUsers.objects.filter(RoleAccess=3)
+
+    return render(request, 'processing/checklist.html', {
+        'AppNo': appno,
+        'data': applications,
+        'IndustryId': industryid,
+        'userinfo':userinfo , 
+        'Roles':Roles,
+        'fetchappstage':fetchappstage ,
+        'signup': fectchsignup,
+        'general': fetchgeneral,
+        'equipment': fetchequipment,
+        'facility': fetchfacility,
+        'capacity': fetchcapacity,
+        'pollution': fetchpollution,
+        'recycle': fetchwasterec,
+        'payment': fetchpayment,
+        'confirmapp': confirmapp,
+        'verifyingofficers':verifyingofficers,
+        'postuser':postuser,
+    })
+    
+@login_required
+def signupchecklist(request):
+    print('casghcas')
+    if request.method == 'POST':
+        userid = request.session.get('user_id')
+        industryid = request.POST.get('industryid')
+        AppNo = request.POST.get('appno')
+        name_address = request.POST.get('name_address')
+        remarks_name_address = request.POST.get('remarks_name_address')
+        company_email = request.POST.get('company_email')
+        remarks_company_email = request.POST.get('remarks_company_email')
+        gst_certificate = request.POST.get('gst_certificate')
+        remarks_gst_certificate = request.POST.get('remarks_gst_certificate')
+        company_pan_card = request.POST.get('company_pan_card')
+        remarks_company_pan_card = request.POST.get('remarks_company_pan_card')
+        company_tin = request.POST.get('company_tin')
+        remarks_company_tin = request.POST.get('remarks_company_tin')
+        company_cin = request.POST.get('company_cin')
+        remarks_company_cin = request.POST.get('remarks_company_cin')
+        company_iec = request.POST.get('company_iec')
+        remarks_company_iec = request.POST.get('remarks_company_iec')
+        auth_person_details = request.POST.get('auth_person_details')
+        remarks_auth_person_details = request.POST.get('remarks_auth_person_details')
+
+        checkSignupData = SignupChecklist.objects.filter(AppNo = AppNo).first()
+        if checkSignupData:
+            checkSignupData.name_address = name_address
+            checkSignupData.remarks_name_address = remarks_name_address
+            checkSignupData.company_email = company_email
+            checkSignupData.remarks_company_email = remarks_company_email
+            checkSignupData.gst_certificate = gst_certificate
+            checkSignupData.remarks_gst_certificate = remarks_gst_certificate
+            checkSignupData.company_pan_card = company_pan_card
+            checkSignupData.remarks_company_pan_card = remarks_company_pan_card
+            checkSignupData.company_tin = company_tin
+            checkSignupData.remarks_company_tin = remarks_company_tin
+            checkSignupData.company_cin = company_cin
+            checkSignupData.remarks_company_cin = remarks_company_cin
+            checkSignupData.company_iec = company_iec
+            checkSignupData.remarks_company_iec = remarks_company_iec
+            checkSignupData.auth_person_details = auth_person_details
+            checkSignupData.remarks_auth_person_details = remarks_auth_person_details
+            checkSignupData.added_by = userid
+            checkSignupData.save()
+
+            messages.success(request, "Signup Checklist updated successfully.")
+            
+        else:
+            SignupChecklist.objects.create(
+                AppNo=AppNo,
+                industryid= industryid,
+                name_address=name_address,
+                remarks_name_address=remarks_name_address,
+                company_email=company_email,
+                remarks_company_email=remarks_company_email,
+                gst_certificate=gst_certificate,
+                remarks_gst_certificate=remarks_gst_certificate,
+                company_pan_card=company_pan_card,
+                remarks_company_pan_card=remarks_company_pan_card,
+                company_tin=company_tin,
+                remarks_company_tin=remarks_company_tin,
+                company_cin=company_cin,
+                remarks_company_cin=remarks_company_cin,
+                company_iec=company_iec,
+                remarks_company_iec=remarks_company_iec,
+                auth_person_details=auth_person_details,
+                remarks_auth_person_details=remarks_auth_person_details,
+                added_by=userid
+            )
+
+        return redirect('rvsf_applications')
+    
+@login_required
+def insert_or_update_general_checklist(request):
+    if request.method == 'POST':
+        appno = request.POST.get('appno')
+
+        if not appno:
+            return HttpResponse("AppNo is required", status=400)
+
+        # Fetch or create the checklist entry
+        checklist, created = GeneralChecklist.objects.get_or_create(AppNo=appno)
+
+        checklist.Industryid = request.POST.get('industryid')
+        checklist.rvsf_address = request.POST.get('rvsf_address')
+        checklist.remarks_rvsf_address = request.POST.get('remarks_rvsf_address')
+        checklist.gps_location = request.POST.get('gps_location')
+        checklist.remarks_gps_location = request.POST.get('remarks_gps_location')
+        checklist.rvsf_state = request.POST.get('rvsf_state')
+        checklist.remarks_rvsf_state = request.POST.get('remarks_rvsf_state')
+        checklist.cto_certificate = request.POST.get('cto_certificate')
+        checklist.remarks_cto_certificate = request.POST.get('remarks_cto_certificate')
+        checklist.cto_validity = request.POST.get('cto_validity')
+        checklist.remarks_cto_validity = request.POST.get('remarks_cto_validity')
+        checklist.howm_certificate = request.POST.get('howm_certificate')
+        checklist.remarks_howm_certificate = request.POST.get('remarks_howm_certificate')
+        checklist.dic_certificate = request.POST.get('dic_certificate')
+        checklist.remarks_dic_certificate = request.POST.get('remarks_dic_certificate')
+        checklist.rvsf_certificate = request.POST.get('rvsf_certificate')
+        checklist.remarks_rvsf_certificate = request.POST.get('remarks_rvsf_certificate')
+        checklist.rvsf_certificate_validity = request.POST.get('rvsf_certificate_validity')
+        checklist.remarks_rvsf_certificate_validity = request.POST.get('remarks_rvsf_certificate_validity')
+        checklist.process_flow = request.POST.get('process_flow')
+        checklist.remarks_process_flow = request.POST.get('remarks_process_flow')
+        checklist.material_balance_sheet = request.POST.get('material_balance_sheet')
+        checklist.remarks_material_balance_sheet = request.POST.get('remarks_material_balance_sheet')
+        checklist.annual_return = request.POST.get('annual_return')
+        checklist.remarks_annual_return = request.POST.get('remarks_annual_return')
+        checklist.added_by = request.session.get('user_id')
+
+        checklist.save()
+
+        messages.success(request, f"Checklist {'created' if created else 'updated'} successfully.")
+        return redirect('rvsf_applications')
+
+    return HttpResponse("Invalid request method", status=405)
+
+@login_required
+def save_equipment_checklist(request):
+    if request.method == 'POST':
+        app_no = request.POST.get('appno')
+        industry_id = request.POST.get('industryid')
+
+        print("Industry ID received:", industry_id)  # Debug
+
+        if not industry_id:
+            messages.error(request, "Industry ID is missing. Please contact admin.")
+            return redirect('rvsf_applications')
+
+        # Ensure industry_id is saved as an integer
+        try:
+            industry_id = int(industry_id)
+        except ValueError:
+            messages.error(request, "Invalid Industry ID format.")
+            return redirect('rvsf_applications')
+
+        checklist, created = EquipmentChecklist.objects.get_or_create(AppNo=app_no)
+        checklist.industryid = industry_id
+
+        checklist.dismantling_equipment = request.POST.get('dismantling_equipment') == 'Yes'
+        checklist.remarks_dismantling_equipment = request.POST.get('remarks_dismantling_equipment')
+
+        checklist.depollution_equipment = request.POST.get('depollution_equipment') == 'Yes'
+        checklist.remarks_depollution_equipment = request.POST.get('remarks_depollution_equipment')
+
+        checklist.bailing_equipment = request.POST.get('bailing_equipment') == 'Yes'
+        checklist.remarks_bailing_equipment = request.POST.get('remarks_bailing_equipment')
+
+        checklist.shredding_equipment = request.POST.get('shredding_equipment') == 'Yes'
+        checklist.remarks_shredding_equipment = request.POST.get('remarks_shredding_equipment')
+
+        checklist.storage_equipment = request.POST.get('storage_equipment') == 'Yes'
+        checklist.remarks_storage_equipment = request.POST.get('remarks_storage_equipment')
+
+        checklist.classifier_equipment = request.POST.get('classifier_equipment') == 'Yes'
+        checklist.remarks_classifier_equipment = request.POST.get('remarks_classifier_equipment')
+
+        checklist.other_equipment = request.POST.get('other_equipment') == 'Yes'
+        checklist.remarks_other_equipment = request.POST.get('remarks_other_equipment')
+
+        # Ensure session user ID is valid
+        user_id = request.session.get('user_id')
+        if user_id:
+            checklist.added_by_id = user_id
+
+        checklist.save()
+
+        messages.success(request, f"Checklist {'created' if created else 'updated'} successfully.")
+        return redirect('rvsf_applications')
+
+    return HttpResponse("Invalid request")
+
+@login_required
+def PostFacilityCheckList(request):
+    if request.method == 'POST':
+        appno = request.POST.get("appno")
+        industryid = request.POST.get("industryid")
+        added_by = request.session.get("user_id")
+
+        # Either get the existing checklist or create a new one
+        checklist, created = FacilityChecklist.objects.get_or_create(AppNo=appno)
+
+        checklist.industryid = industryid or 0
+        checklist.geo_tagged_video = request.POST.get("geo_tagged_video") == "Yes"
+        checklist.remarks_geo_tagged_video = request.POST.get("remarks_geo_tagged_video")
+
+        checklist.total_rvsf_area = request.POST.get("total_rvsf_area") == "Yes"
+        checklist.remarks_total_rvsf_area = request.POST.get("remarks_total_rvsf_area")
+
+        checklist.shift_number = request.POST.get("shift_number") == "Yes"
+        checklist.remarks_shift_number = request.POST.get("remarks_shift_number")
+
+        checklist.shift_number = request.POST.get("sectioned_power") == "Yes"
+        checklist.remarks_shift_number = request.POST.get("remarks_sectioned_power")
+
+        checklist.employees_number = request.POST.get("employees_number") == "Yes"
+        checklist.remarks_employees_number = request.POST.get("remarks_employees_number")
+
+        checklist.added_by = added_by
+
+        checklist.save()
+
+        messages.success(request, f"Checklist {'created' if created else 'updated'} successfully.")
+        return redirect('rvsf_applications')  # Replace with your desired URL
+
+    else:
+        messages.error(request, "Invalid request method.")
+        return redirect('rvsf_applications')  # Redirect even on GET (or customize as needed)
+        
+            
+            
+@login_required
+def CapacityChecklistView(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        appno = request.POST.get('appno')
+
+        # Convert Yes/No to Boolean
+        def to_bool(value):
+            return True if value == 'Yes' else False
+
+        data = {
+            'vehicle_category': to_bool(request.POST.get('vehicle_category')),
+            'remarks_vehicle_category': request.POST.get('remarks_vehicle_category'),
+
+            'vehicle_installed_capacity': to_bool(request.POST.get('vehicle_installed_capacity')),
+            'remarks_vehicle_installed_capacity': request.POST.get('remarks_vehicle_installed_capacity'),
+
+            'steel_installed_capacity': to_bool(request.POST.get('steel_installed_capacity')),
+            'remarks_steel_installed_capacity': request.POST.get('remarks_steel_installed_capacity'),
+
+            'vehicle_operating_capacity': to_bool(request.POST.get('vehicle_operating_capacity')),
+            'remarks_vehicle_operating_capacity': request.POST.get('remarks_vehicle_operating_capacity'),
+
+            'steel_operating_capacity': to_bool(request.POST.get('steel_operating_capacity')),
+            'remarks_steel_operating_capacity': request.POST.get('remarks_steel_operating_capacity'),
+
+            'industryid': industryid,
+            'AppNo': appno,
+            'added_by': request.session.get('user_id') or 0
+        }
+
+        checklist, created = CapacityChecklist.objects.update_or_create(
+            AppNo=appno,
+            defaults=data
+        )
+        messages.success(request, f"Checklist {'created' if created else 'updated'} successfully.")
+
+        return redirect('rvsf_applications')
+
+    return redirect('rvsf_applications')
+
+@login_required
+def SavePollutionChecklist(request):
+     if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        appno = request.POST.get('appno')
+        added_by = request.session.get('user_id')  # Adjust as needed
+
+        # Convert "Yes"/"No" to boolean
+        def to_bool(val):
+            return val == "Yes"
+
+        # Retrieve existing or create new
+        checklist, created = PollutionChecklist.objects.get_or_create(AppNo=appno)
+
+        checklist.industryid = industryid
+        checklist.air_pollution = to_bool(request.POST.get('air_pollution'))
+        checklist.remarks_air_pollution = request.POST.get('remarks_air_pollution')
+        checklist.water_pollution = to_bool(request.POST.get('water_pollution'))
+        checklist.remarks_water_pollution = request.POST.get('remarks_water_pollution')
+        checklist.noise_pollution = to_bool(request.POST.get('noise_pollution'))
+        checklist.remarks_noise_pollution = request.POST.get('remarks_noise_pollution')
+        checklist.added_by = added_by
+
+        checklist.save()
+
+        messages.success(request, "Pollution Checklist saved successfully.")
+        return redirect('rvsf_applications')  # Replace with your actual redirect
+
+     return redirect('rvsf_applications')  # If handling GET
+
+
+
+def SaveWasteRecycleChecklist(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        appno = request.POST.get('appno')
+        added_by = request.session.get('user_id')
+        used_oil = request.POST.get('used_oil') == 'Yes'
+        remarks_used_oil = request.POST.get('remarks_used_oil')
+
+        plastic_waste = request.POST.get('plastic_waste') == 'Yes'
+        remarks_plastic_waste = request.POST.get('remarks_plastic_waste')
+
+        battery_waste = request.POST.get('battery_waste') == 'Yes'
+        remarks_battery_waste = request.POST.get('remarks_battery_waste')
+
+        tyre_waste = request.POST.get('tyre_waste') == 'Yes'
+        remarks_tyre_waste = request.POST.get('remarks_tyre_waste')
+
+        e_waste = request.POST.get('e_waste') == 'Yes'
+        remarks_e_waste = request.POST.get('remarks_e_waste')
+
+        steel_scrap = request.POST.get('steel_scrap') == 'Yes'
+        remarks_steel_scrap = request.POST.get('remarks_steel_scrap')
+
+
+        obj, created = WasteRecycleChecklist.objects.update_or_create(
+            AppNo=appno,
+            defaults={
+                'industryid': industryid,
+                'used_oil': used_oil,
+                'remarks_used_oil': remarks_used_oil,
+                'plastic_waste': plastic_waste,
+                'remarks_plastic_waste': remarks_plastic_waste,
+                'battery_waste': battery_waste,
+                'remarks_battery_waste': remarks_battery_waste,
+                'tyre_waste': tyre_waste,
+                'remarks_tyre_waste': remarks_tyre_waste,
+                'e_waste': e_waste,
+                'remarks_e_waste': remarks_e_waste,
+                'steel_scrap': steel_scrap,
+                'remarks_steel_scrap': remarks_steel_scrap,
+                'added_by': added_by,
+            }
+        )
+
+        if created:
+            messages.success(request, 'Waste Recycle Checklist created successfully.')
+        else:
+            messages.success(request, 'Waste Recycle Checklist updated successfully.')
+
+        return redirect('rvsf_applications')  # Replace with your actual URL name
+
+    messages.error(request, 'Invalid request method.')
+    return redirect('rvsf_applications')
+
+@login_required
+def SaveDeclarationChecklist(request):
+    if request.method == 'POST':
+        appno = request.POST.get('appno')
+        industryid = request.POST.get('industryid')
+        added_by = request.session.get('user_id')
+        declaration = request.POST.get('declaration') == 'Yes'
+        remarks_declaration = request.POST.get('remarks_declaration', '').strip()
+        registration_fee_details = request.POST.get('registration_fee_details') == 'Yes'
+        remarks_registration_fee_details = request.POST.get('remarks_registration_fee_details', '').strip()
+
+        try:
+            checklist, created = PaymentChecklist.objects.update_or_create(
+                AppNo=appno,
+                defaults={
+                    'industryid': industryid,
+                    'declaration': declaration,
+                    'remarks_declaration': remarks_declaration,
+                    'registration_fee_details': registration_fee_details,
+                    'remarks_registration_fee_details': remarks_registration_fee_details,
+                    'added_by': added_by,
+                }
+            )
+            if created:
+                messages.success(request, "Declaration checklist saved successfully.")
+                return redirect('rvsf_applications')  # Replace with your actual URL name
+            else:
+                messages.success(request, "Declaration checklist updated successfully.")
+                return redirect('rvsf_applications')  # Replace with your actual URL name
+        except Exception as e:
+            print(e)
+            messages.error(request, "Something went wrong while saving declaration checklist.")
+
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    else:
+        messages.warning(request, "Invalid request method.")
+        return redirect('/')    
+@login_required
+def mark_back_to_applicant(request):
+    if request.method == 'POST':
+        pass
+def ViewGeneralDetails(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        AppNo = request.POST.get('appno')
+        data = RvsfRegistration.objects.filter(id=industryid).first()
+        generaldata = GeneralDetails.objects.filter(userid=industryid).first()
+        statename =  State.objects.filter(state_id=data.state).first()
+        districtname = District.objects.filter(city_id=data.district).first()
+        FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+        commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 1).first()
+        commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 1).count()  
+        print(commentcount)
+        return render(request, 'Application/generaldetails.html', {
+        'statename': statename,
+        'districtname': districtname,
+        'general': generaldata,
+        'fetchapp' : FetchApp,
+        'comment':commentgiven,
+        'commentcount': commentcount
+    })
+        
+def ViewEquipmentDetails(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        AppNo = request.POST.get('appno')
+        data = RvsfRegistration.objects.filter(id=industryid).first()
+        equipmentdata = EquipmentEntry.objects.filter(userid=industryid).first()
+        statename =  State.objects.filter(state_id=data.state).first()
+        districtname = District.objects.filter(city_id=data.district).first()
+        FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+        commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 2).first()
+        commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 2).count()  
+        print(commentcount)
+        return render(request, 'Application/equipmentdetails.html', {
+        'statename': statename,
+        'districtname': districtname,
+        'equipmentdata': equipmentdata,
+        'fetchapp' : FetchApp,
+        'comment':commentgiven,
+        'commentcount': commentcount
+
+    })
+        
+def ViewFacilityDetails(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        AppNo = request.POST.get('appno')
+        data = RvsfRegistration.objects.filter(id=industryid).first()
+        facilitydata = RvsfFacility.objects.filter(user_id=industryid)
+        statename =  State.objects.filter(state_id=data.state).first()
+        districtname = District.objects.filter(city_id=data.district).first()
+        FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+        commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 3).first()
+        commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 3).count()  
+        print(commentcount)
+        return render(request, 'Application/facilitydetails.html', {
+        'statename': statename,
+        'districtname': districtname,
+        'facilitydata': facilitydata,
+        'fetchapp' : FetchApp,
+        'comment':commentgiven,
+        'commentcount': commentcount
+    })
+        
+def ViewRvsfCapacityDetails(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        AppNo = request.POST.get('appno')
+        data = RvsfRegistration.objects.filter(id=industryid).first()
+        rvsfCapacitydata = PlantCapacity.objects.filter(userid=industryid).first()
+        statename =  State.objects.filter(state_id=data.state).first()
+        districtname = District.objects.filter(city_id=data.district).first()
+        FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+        commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 4).first()
+        commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 4).count()  
+        print(commentcount)
+        return render(request, 'Application/rvsfcapacitydetails.html', {
+        'statename': statename,
+        'districtname': districtname,
+        'rvsfCapacitydata': rvsfCapacitydata,
+        'fetchapp' : FetchApp,
+        'comment':commentgiven,
+        'commentcount': commentcount
+    })
+        
+def ViewPollutionDetails(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        
+        AppNo = request.POST.get('appno')
+        data = RvsfRegistration.objects.filter(id=industryid).first()
+        pollutiondata = PollutionDevice.objects.filter(userid=industryid)
+        statename =  State.objects.filter(state_id=data.state).first()
+        districtname = District.objects.filter(city_id=data.district).first()
+        FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+        commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 5).first()
+        commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 5).count()  
+        print(commentcount)
+        return render(request, 'Application/pollutiondetails.html', {
+        'statename': statename,
+        'districtname': districtname,
+        'pollutiondata': pollutiondata,
+        'fetchapp' : FetchApp,
+        'comment':commentgiven,
+        'commentcount': commentcount
+    })
+        
+def ViewWasteRecycleDetails(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        AppNo = request.POST.get('appno')
+        data = RvsfRegistration.objects.filter(id=industryid).first()
+        wasteRecycledata = WasteRecycled.objects.filter(userid=industryid)
+        statename =  State.objects.filter(state_id=data.state).first()
+        districtname = District.objects.filter(city_id=data.district).first()
+        FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+        commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 6).first()
+        commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 6).count()  
+        print(commentcount)
+        return render(request, 'Application/wasterecycledetails.html', {
+        'statename': statename,
+        'districtname': districtname,
+        'wasteRecycledata': wasteRecycledata,
+        'fetchapp' : FetchApp,
+        'comment':commentgiven,
+        'commentcount': commentcount
+    })
+        
+def ViewDeclarationDetails(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        AppNo = request.POST.get('appno')
+        data = RvsfRegistration.objects.filter(id=industryid).first()
+        generaldata = GeneralDetails.objects.filter(userid=industryid).first()
+        statename =  State.objects.filter(state_id=data.state).first()
+        districtname = District.objects.filter(city_id=data.district).first()
+        FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+        commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 7).first()
+        commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 7).count()  
+        print(commentcount)
+        return render(request, 'Application/declarationdetails.html', {
+        'statename': statename,
+        'districtname': districtname,
+        'general': generaldata,
+        'fetchapp' : FetchApp,
+        'comment':commentgiven,
+        'commentcount': commentcount
+    })
+
+
+def save_general_trail(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        print(industryid)
+        AppNo = request.POST.get('appno')
+        stateid = request.POST.get('stateid', 0)
+        officerid = request.session.get('user_id')
+        EditMode = request.POST.get('editmode')
+        SPCBComments = request.POST.get('SPCBComments', '').strip()
+
+        india_timezone = pytz.timezone('Asia/Kolkata')
+        india_time = timezone.now().astimezone(india_timezone)
+        
+        # Prevent duplicate AppNo entry
+        if UntTrails.objects.filter(AppNo=AppNo , EditMode = EditMode).exists():
+            return HttpResponse("Error: Record with this AppNo already exists.", status=400)
+
+        # Create new record
+        trail = UntTrails(
+            industryid=industryid,
+            AppNo=AppNo,
+            stateid=stateid,
+            officerid=officerid,
+            SPCBComments=SPCBComments,
+            SPCBCommentDate = india_time if SPCBComments else None,
+            EditMode=EditMode
+        )
+
+        trail.save()
+        if EditMode == '1':
+             industryid = industryid
+             AppNo = AppNo
+             data = RvsfRegistration.objects.filter(id=industryid).first()
+             generaldata = GeneralDetails.objects.filter(userid=industryid).first()
+             statename =  State.objects.filter(state_id=data.state).first()
+             districtname = District.objects.filter(city_id=data.district).first()
+             FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+             commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 1).first()
+             commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 1).count()  
+             print(commentcount)
+    
+             return render(request, 'Application/generaldetails.html', {
+            'statename': statename,
+            'districtname': districtname,
+            'general': generaldata,
+            'fetchapp' : FetchApp,
+            'comment':commentgiven,
+            'commentcount': commentcount
+             })
+        elif EditMode == '2':
+            industryid = industryid
+            AppNo = AppNo
+            data = RvsfRegistration.objects.filter(id=industryid).first()
+            equipmentdata = EquipmentEntry.objects.filter(userid=industryid).first()
+            statename =  State.objects.filter(state_id=data.state).first()
+            districtname = District.objects.filter(city_id=data.district).first()
+            FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+            commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 2).first()
+            commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 2).count()  
+            print(commentcount)
+            return render(request, 'Application/equipmentdetails.html', {
+            'statename': statename,
+            'districtname': districtname,
+            'equipmentdata': equipmentdata,
+            'fetchapp' : FetchApp,
+            'comment':commentgiven,
+            'commentcount': commentcount
+            })
+        elif EditMode == '3':
+            industryid = industryid
+            AppNo = AppNo
+            data = RvsfRegistration.objects.filter(id=industryid).first()
+            facilitydata = RvsfFacility.objects.filter(user_id=industryid)
+            statename =  State.objects.filter(state_id=data.state).first()
+            districtname = District.objects.filter(city_id=data.district).first()
+            FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+            commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 3).first()
+            commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 3).count()  
+            print(commentcount)
+            return render(request, 'Application/facilitydetails.html', {
+            'statename': statename,
+            'districtname': districtname,
+            'facilitydata': facilitydata,
+            'fetchapp' : FetchApp,
+            'comment':commentgiven,
+            'commentcount': commentcount
+            })
+        elif EditMode == '4':
+            industryid = industryid
+            AppNo = AppNo
+            data = RvsfRegistration.objects.filter(id=industryid).first()
+            rvsfCapacitydata = PlantCapacity.objects.filter(userid=industryid).first()
+            statename =  State.objects.filter(state_id=data.state).first()
+            districtname = District.objects.filter(city_id=data.district).first()
+            FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+            commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 4).first()
+            commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 4).count()  
+            print(commentcount)
+            return render(request, 'Application/rvsfcapacitydetails.html', {
+            'statename': statename,
+            'districtname': districtname,
+            'rvsfCapacitydata': rvsfCapacitydata,
+            'fetchapp' : FetchApp,
+            'comment':commentgiven,
+            'commentcount': commentcount
+            })
+        elif EditMode == '5':
+            industryid = industryid
+            AppNo = AppNo
+            data = RvsfRegistration.objects.filter(id=industryid).first()
+            pollutiondata = PollutionDevice.objects.filter(userid=industryid)
+            statename =  State.objects.filter(state_id=data.state).first()
+            districtname = District.objects.filter(city_id=data.district).first()
+            FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+            commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 5).first()
+            commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 5).count()  
+            print(commentcount)
+            return render(request, 'Application/pollutiondetails.html', {
+            'statename': statename,
+            'districtname': districtname,
+            'pollutiondata': pollutiondata,
+            'fetchapp' : FetchApp,
+            'comment':commentgiven,
+            'commentcount': commentcount
+           })
+        elif EditMode == '6':
+            industryid = industryid
+            AppNo = AppNo
+            data = RvsfRegistration.objects.filter(id=industryid).first()
+            wasteRecycledata = WasteRecycled.objects.filter(userid=industryid)
+            statename =  State.objects.filter(state_id=data.state).first()
+            districtname = District.objects.filter(city_id=data.district).first()
+            FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+            commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 6).first()
+            commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 6).count()  
+            print(commentcount)
+            return render(request, 'Application/wasterecycledetails.html', {
+            'statename': statename,
+            'districtname': districtname,
+            'wasteRecycledata': wasteRecycledata,
+            'fetchapp' : FetchApp,
+            'comment':commentgiven,
+            'commentcount': commentcount
+            })
+        elif EditMode == '7':
+            industryid = industryid
+            AppNo = AppNo
+            data = RvsfRegistration.objects.filter(id=industryid).first()
+            generaldata = GeneralDetails.objects.filter(userid=industryid).first()
+            statename =  State.objects.filter(state_id=data.state).first()
+            districtname = District.objects.filter(city_id=data.district).first()
+            FetchApp = ConfirmApplication.objects.filter(userid = industryid).first()
+            commentgiven = UntTrails.objects.filter(industryid = industryid , EditMode = 7).first()
+            commentcount = UntTrails.objects.filter(industryid = industryid , EditMode = 7).count()  
+            print(commentcount)
+            return render(request, 'Application/declarationdetails.html', {
+            'statename': statename,
+            'districtname': districtname,
+            'general': generaldata,
+            'fetchapp' : FetchApp,
+            'comment':commentgiven,
+            'commentcount': commentcount
+            })
+
+
+
+
+           
+    else:
+        return HttpResponse("Invalid request method.", status=405)
+
+
+
+def MarkIncomplete(request):
+    if request.method == 'POST':
+        industryid = request.POST.get('industryid')
+        finalremark = request.POST.get('final_remark')
+        print(finalremark,'scscsc')
+        print(industryid,'scscsc')
+        checklistcount = UntTrails.objects.filter(industryid = industryid).count()
+        if checklistcount >= 0 :
+            updateunitapp = ConfirmApplication.objects.filter(userid = industryid).first()
+            updateunitapp.incomplete = 1
+            updateunitapp.incompleteRemark = finalremark
+            updateunitapp.save()
+        messages.success(request, "Application Send to Industry.")
+        return redirect('rvsf_applications')  # Replace with your actual URL name
+
+
+def generate_rvsf_reg_no(gst_number):
+    # 1. Fixed prefix
+    prefix = ""
+
+    # 2. Year - Full 4-digit year
+    year = datetime.now().strftime("%Y")
+
+    # 3. Last 2 characters of GST number
+    gst_suffix = gst_number[-2:] if gst_number else "XX"
+
+    # 4. Build base for filtering existing records
+    base_code = f"{prefix}{year}{gst_suffix}"
+
+
+    new_seq = "0001"
+
+    # 7. Final registration number
+    return f"{base_code}{new_seq}"
+
+@login_required
+def GenerateCertificate(request):
+
+    # Generate a registration number
+    # registration_no = generate_rvsf_reg_no(user.gst_no)
+    certificate_status = 9
+    # if certificate_status == 9:
+    industryid = request.POST.get('industryid')
+    appstatus = ConfirmApplication.objects.filter(userid = industryid).first()
+    appstatus.appstatus = 9
+    appstatus.save()
+
+    appdata = ConfirmApplication.objects.filter(userid = industryid).first()
+    profiledata = RvsfRegistration.objects.filter(id = industryid).first()
+    vecType = VehicleType.objects.filter(userid = industryid).values()
+    capacityPlant = PlantCapacity.objects.filter(userid =  industryid).first()
+    stateurl = State.objects.filter(state_id = appdata.state_id).first()
+    
+
+    context = {
+        "issue_date": datetime.now().strftime("%d-%m-%Y"),
+        'data':appdata,
+        'profile':profiledata,
+        'vecType':vecType,
+        'capacitydata':capacityPlant,
+        'statelogo':stateurl
+        # "registration_number": registration_no,
+    }
+    return render(request, 'processing/rvsf_certificate.html', context)
+
+
+@login_required
+def create_pdf(request, user_id):
+    try:
+        
+        html_content = GenerateCertificate(request, user_id)
+
+        
+        cert_dir = os.path.join(settings.BASE_DIR, 'certificates')
+        os.makedirs(cert_dir, exist_ok=True)
+        cert_no = f"CERT-{user_id}"
+        pdf_path = os.path.join(cert_dir, f"{cert_no}.pdf")
+        
+
+        # 4. Convert HTML to PDF using pdfkit
+        # config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
+        # pdfkit.from_string(html_content, pdf_path, configuration=config)
+
+        # 5. Now read the PDF, encode and proceed with eSigner as before
+        with open(pdf_path, "rb") as f:
+            b64_pdf = base64.b64encode(f.read()).decode()
+
+        user_id = request.user.id
+        reference_no = f"{cert_no}-{user_id}"
+        redirect_url = request.build_absolute_uri('/elv/admin/view-certs/')
+
+        json_data = {
+            "Name": "Deepti Kapil",
+            "FileType": "PDF",
+            "SignatureType": 1,
+            "SelectPage": "ALL",
+            "SignaturePosition": "Bottom-Right",
+            "AuthToken": "33b71185-f46d-4fcd-b8ed-fafb6644e31c",  # Replace in prod
+            "File": b64_pdf,
+            "PageNumber": "",
+            "Noofpages": 0,
+            "PreviewRequired": True,
+            "SUrl": redirect_url,
+            "FUrl": "/Error",
+            "CUrl": "/Cancel",
+            "ReferenceNumber": reference_no,
+            "IsCompressed": False,
+            "IsCosign": False,
+            "IsCustomized": False
+        }
+
+        encrypt_dir = os.path.join(settings.BASE_DIR, 'Encrypt_Jar')
+        os.makedirs(encrypt_dir, exist_ok=True)
+        json_path = os.path.join(encrypt_dir, 'Json_Data.txt')
+        with open(json_path, 'w') as f:
+            json.dump(json_data, f)
+
+        jar_path = os.path.join(settings.BASE_DIR, "SG_Final_Jar_PHP", "Final_ED_Both.jar")
+        java_path = r"C:\Program Files\Java\jdk-24\bin\java.exe"
+
+        args = [
+            java_path, "-jar", jar_path,
+            "Encrypt",
+            json_path,
+            os.path.join(encrypt_dir, "session_key.txt"),
+            os.path.join(encrypt_dir, "encrypted_sessionkey.txt"),
+            os.path.join(encrypt_dir, "encrypted_json_data.txt"),
+            os.path.join(encrypt_dir, "encrypted_hashof_json_data.txt"),
+            os.path.join(encrypt_dir, "certificate.cer")
+        ]
+
+        subprocess.run(args, check=True)
+
+        with open(os.path.join(encrypt_dir, "encrypted_sessionkey.txt")) as f:
+            encsession = f.read()
+        with open(os.path.join(encrypt_dir, "encrypted_json_data.txt")) as f:
+            encjson = f.read()
+        with open(os.path.join(encrypt_dir, "encrypted_hashof_json_data.txt")) as f:
+            enchashof = f.read()
+
+
+        return render(request, "processing/esign/call_gateway.html",{
+            "encsession": encsession,
+            "encjson": encjson,
+            "enchashof": enchashof,
+        })
+
+    except subprocess.CalledProcessError as e:
+        return HttpResponse(f"Java execution failed: {e}")
+    except FileNotFoundError as e:
+        return HttpResponse(f"File not found: {e}")
+    except Exception as e:
+        return HttpResponse(f"Unexpected error: {e}")
+
+    
+def view_certs(request):
+    reference = request.GET.get("Referencenumber")
+    status = request.GET.get("ReturnStatus")
+    return_value = request.GET.get("Returnvalue")
+
+    if not reference:
+        return HttpResponse("Missing reference number")
+
+    cert_no, user_id = reference.split("-")
+
+    if status == "Success" and return_value:
+        enc_path = os.path.join(settings.BASE_DIR, "Encrypt_Jar/decrypt/Encrypted_Signed_Data.txt")
+        dec_path = os.path.join(settings.BASE_DIR, "Encrypt_Jar/decrypt/Decrypted_Signed_Data.txt")
+
+        with open(enc_path, "w") as f:
+            f.write(return_value)
+
+        subprocess.run([
+            "java", "-jar", os.path.join(settings.BASE_DIR, "SG_Final_Jar_PHP", "Final_ED_Both.jar"),
+            "Decrypt",
+            enc_path,
+            os.path.join(settings.BASE_DIR, "Encrypt_Jar/session_key.txt"),
+            dec_path
+        ])
+
+        with open(dec_path) as f:
+            b64_signed = f.read()
+        binary_pdf = base64.b64decode(b64_signed)
+
+        output_pdf_path = os.path.join(settings.BASE_DIR, f"certificates/signed_files/{cert_no}.pdf")
+        with open(output_pdf_path, "wb") as f:
+            f.write(binary_pdf)
+
+        return HttpResponse("Certificate signed and saved.")
+    else:
+        return HttpResponse(f"Error: {request.GET.get('ErrorMessage', 'Unknown')}")
+
+
+
+@login_required
+def ViewIndustryTrails(request):
+    pass
+
+def logoutspcb(request):
+    request.session.flush()  # Clears all session data
+    return redirect('spcb_home')
+
+
+# --------------------------------------- Logics from Producer ----------------------------------#
+
+
+def rvsf_detail(request):
+    # rvsfId = request.POST.get('rvsf_id')
+    # rvsfid = request.POST.get('rvsf_id')
+    sessionuserid = request.session.get('user_id')
+    # user = StateUsers.objects.filter(id=sessionuserid).first()
+    # print("showing this", sessionuserid)
+    # if user:
+    #     print(user.RoleAccess)
+    # else:
+    #     print("No user found with id", sessionuserid)
+    # print(userid.RoleAccess)
+    rvsfid = 48
+    
+
+    entity = RvsfRegistration.objects.filter(id=rvsfid).first()
+    generaldata = GeneralDetails.objects.filter(userid=rvsfid).first()
+    rvsfdata = RvsfDetails.objects.filter(userid=rvsfid).first()
+    payments = Payment.objects.filter(owner_id=rvsfid, status='success')
+    for p in payments:
+        print(p.order_id)
+    print(payments)
+    print(rvsfid,('ffeefefeef'))
+    # ... other queries ...
+
+    context = {
+        'entity': entity,
+        'general': generaldata,
+        'rvsf': rvsfdata,
+        'statename': State.objects.filter(state_id=entity.state).first(),
+        'districtname': District.objects.filter(city_id=entity.district).first(),
+        'equipmentdata': EquipmentType.objects.all().order_by('id'),
+        'data': EquipmentEntry.objects.filter(userid=rvsfid),
+        'facilitydata': RvsfFacility.objects.filter(user_id=rvsfid).first(),
+        'VechileType': VehicleType.objects.filter(userid=rvsfid),
+        'capacitydata': PlantCapacity.objects.filter(userid=rvsfid).first(),
+        'pollutiondetails': PollutionDevice.objects.filter(userid=rvsfid),
+        'wasterecycled': WasteRecycled.objects.filter(userid=rvsfid),
+        'payment': Payment.objects.filter(owner_id=rvsfid, status='success'),
+        'rvsfuser': StateUsers.objects.filter(id=sessionuserid).first(),
+    }
+    # rvsf_details = get_object_or_404(rvsfdetails, id=rvsfId)
+    return render(
+        request,
+        'spcb/spcb_rvsf.html',
+        {
+            'rvsf_details': context
+        }
+    )

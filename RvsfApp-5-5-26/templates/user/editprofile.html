@@ -1,0 +1,366 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/editprofile.css' %}">
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+        {% if 'error' in message.tags %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {% elif 'success' in message.tags %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {% elif 'warning' in message.tags %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {% else %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+        {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- OTP Modal -->
+<div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="otpModalLabel">Verify OTP</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="otpMessage">An OTP has been sent to your <span id="verificationType"></span>.</p>
+                <div class="mb-3">
+                    <label for="otpInput" class="form-label">Enter OTP</label>
+                    <input type="text" class="form-control" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+                    <div class="invalid-feedback" id="otpError"></div>
+                </div>
+                <p class="text-muted small">OTP will expire in 5 minutes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="verifyOtpBtn">Verify OTP</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="maincard">
+    <div class="card1 mb-4 form-card maincard">
+        <h1 class="mt-4 section-title">Edit Profile</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"> <a href="{% url 'rvsf_dashboard' %}" class="breadcrumb-icon text-decoration-none text-reset">
+                                <i class="fas fa-home"></i>
+                            </a></li>
+            <li class="breadcrumb-item active ">Edit Profile</li>
+        </ol>
+
+        <div class="shadow-sm">
+            <div class="card-body">
+                <form method="POST" action="{% url 'edit_profile' %}" enctype="multipart/form-data" id="profileForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="emailVerified" name="email_verified" value="false">
+                    <input type="hidden" id="mobileVerified" name="mobile_verified" value="false">
+                    <input type="hidden" id="originalEmail" value="{{ data.auth_email }}">
+                    <input type="hidden" id="originalMobile" value="{{ data.auth_mobile }}">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" name="company_name" id="company_name" value="{{ data.company_name }}" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="company_email" class="form-label"> Authorized Person Email</label>
+                            <div class="input-group">
+                                <input type="email" class="form-control" name="auth_email" id="auth_email" value="{{ data.auth_email }}" required>
+                                <button type="button" class="btn btn-outline-primary verify-btn" id="verifyEmailBtn" data-type="email" data-original="{{ data.auth_email }}">
+                                    Verify
+                                </button>
+                            </div>
+                            <div id="emailStatus" class="mt-1"></div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="auth_mobile" class="form-label">Mobile</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="auth_mobile" id="auth_mobile" value="{{ data.auth_mobile }}" required>
+                                <button type="button" class="btn btn-outline-primary verify-btn" id="verifyMobileBtn" data-type="mobile" data-original="{{ data.auth_mobile }}">
+                                    Verify
+                                </button>
+                            </div>
+                            <div id="mobileStatus" class="mt-1"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="auth_pan" class="form-label">Authorized PAN</label>
+                            <input type="text" class="form-control" name="company_pan" id="company_pan" value="{{ data.company_pan }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="state" class="form-label">State</label>
+                            <input type="text" class="form-control" name="state" id="state" value="{{ statename.state_name }}" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="district" class="form-label">District</label>
+                            <input type="text" class="form-control" name="district" id="district" value="{{ districtname }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="state" class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" id="username" value="{{ data.username }}" required pattern="\d+" title="Only numeric values are allowed" disabled>
+                            <small class="text-danger" id="username-error"></small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Website</label>
+                        <input type="url" class="form-control" name="website" id="website" value="{{ data.website }}" disabled>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div id="captchaContainer">
+                          {{ form.captcha }}
+                        </div>
+                        <button type="button" id="refreshCaptcha" class="btn btn-outline-secondary mt-2">
+                          ↻ Refresh Captcha
+                        </button>
+                    </div>
+                    
+                    <div class="text-end">
+                        <a href="{% url 'rvsf_dashboard' %}" class="btn btn-primary">Cancel</a>
+                        <button type="submit" class="btn btn-success" id="submitBtn" disabled>Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/rvsfappjs/user/editprofile.js' %}"></script>
+<script>
+    document.getElementById('refreshCaptcha').addEventListener('click', function() {
+      fetch("{% url 'refresh_captcha' %}")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('captchaContainer').innerHTML = data.captcha_html;
+        })
+        .catch(error => console.error('Error refreshing captcha:', error));
+    });
+
+    // Verification functionality
+    let currentVerificationType = '';
+    let otpData = null;
+    
+    // Check if fields have been modified
+    function checkFieldsModified() {
+        const originalEmail = document.getElementById('originalEmail').value;
+        const originalMobile = document.getElementById('originalMobile').value;
+        const currentEmail = document.getElementById('auth_email').value;
+        const currentMobile = document.getElementById('auth_mobile').value;
+        const emailVerified = document.getElementById('emailVerified').value === 'true';
+        const mobileVerified = document.getElementById('mobileVerified').value === 'true';
+        
+        // Reset verification status if fields are changed back to original
+        if (currentEmail === originalEmail && emailVerified) {
+            document.getElementById('emailVerified').value = 'true';
+            showVerificationStatus('email', 'verified', 'Email verified');
+        } else if (currentEmail !== originalEmail && emailVerified) {
+            document.getElementById('emailVerified').value = 'false';
+            showVerificationStatus('email', 'pending', 'Email changed, verification required');
+        }
+        
+        if (currentMobile === originalMobile && mobileVerified) {
+            document.getElementById('mobileVerified').value = 'true';
+            showVerificationStatus('mobile', 'verified', 'Mobile verified');
+        } else if (currentMobile !== originalMobile && mobileVerified) {
+            document.getElementById('mobileVerified').value = 'false';
+            showVerificationStatus('mobile', 'pending', 'Mobile changed, verification required');
+        }
+        
+        updateSubmitButton();
+    }
+    
+    // Show verification status
+    function showVerificationStatus(type, status, message) {
+        const statusDiv = document.getElementById(`${type}Status`);
+        let icon = '';
+        let color = '';
+        
+        if (status === 'verified') {
+            icon = '✓';
+            color = 'text-success';
+        } else if (status === 'pending') {
+            icon = '⚠';
+            color = 'text-warning';
+        } else if (status === 'error') {
+            icon = '✗';
+            color = 'text-danger';
+        } else {
+            icon = '';
+            color = '';
+        }
+        
+        statusDiv.innerHTML = `<small class="${color}">${icon} ${message}</small>`;
+    }
+    
+    // Update submit button state
+    function updateSubmitButton() {
+        const emailVerified = document.getElementById('emailVerified').value === 'true';
+        const mobileVerified = document.getElementById('mobileVerified').value === 'true';
+        const originalEmail = document.getElementById('originalEmail').value;
+        const originalMobile = document.getElementById('originalMobile').value;
+        const currentEmail = document.getElementById('auth_email').value;
+        const currentMobile = document.getElementById('auth_mobile').value;
+        
+        // Only require verification if the field has been changed
+        const emailVerificationRequired = currentEmail !== originalEmail;
+        const mobileVerificationRequired = currentMobile !== originalMobile;
+        
+        const canSubmit = 
+            (!emailVerificationRequired || emailVerified) &&
+            (!mobileVerificationRequired || mobileVerified);
+        
+        document.getElementById('submitBtn').disabled = !canSubmit;
+    }
+    
+    // Send OTP
+    document.querySelectorAll('.verify-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const value = document.getElementById(`auth_${type}`).value;
+            const originalValue = this.dataset.original;
+            
+            if (value === originalValue) {
+                // If value is same as original, auto-verify
+                document.getElementById(`${type}Verified`).value = 'true';
+                showVerificationStatus(type, 'verified', `${type.charAt(0).toUpperCase() + type.slice(1)} verified (unchanged)`);
+                updateSubmitButton();
+                return;
+            }
+            
+            // Validate format
+            if (type === 'email') {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(value)) {
+                    showVerificationStatus(type, 'error', 'Invalid email format');
+                    return;
+                }
+            } else if (type === 'mobile') {
+                const mobilePattern = /^\d{10}$/;
+                if (!mobilePattern.test(value)) {
+                    showVerificationStatus(type, 'error', 'Mobile must be 10 digits');
+                    return;
+                }
+            }
+            
+            currentVerificationType = type;
+            document.getElementById('verificationType').textContent = type;
+            
+            // Send OTP request
+            fetch("{% url 'send_verification_otp11' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    type: type,
+                    value: value,
+                    user_id: '{{ userid }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    otpData = data;
+                    const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
+                    otpModal.show();
+                    showVerificationStatus(type, 'pending', `OTP sent to ${type}`);
+                } else {
+                    showVerificationStatus(type, 'error', data.message || 'Failed to send OTP');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showVerificationStatus(type, 'error', 'Failed to send OTP');
+            });
+        });
+    });
+    
+    // Verify OTP
+    document.getElementById('verifyOtpBtn').addEventListener('click', function() {
+        const otp = document.getElementById('otpInput').value;
+        const otpError = document.getElementById('otpError');
+        
+        if (!otp || otp.length !== 6 || !/^\d+$/.test(otp)) {
+            otpError.textContent = 'Please enter a valid 6-digit OTP';
+            document.getElementById('otpInput').classList.add('is-invalid');
+            return;
+        }
+        
+        fetch("{% url 'verify_otp11' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                type: currentVerificationType,
+                otp: otp,
+                session_id: otpData?.session_id
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mark as verified
+                document.getElementById(`${currentVerificationType}Verified`).value = 'true';
+                showVerificationStatus(currentVerificationType, 'verified', `${currentVerificationType.charAt(0).toUpperCase() + currentVerificationType.slice(1)} verified successfully`);
+                
+                // Close modal
+                const otpModal = bootstrap.Modal.getInstance(document.getElementById('otpModal'));
+                otpModal.hide();
+                
+                // Clear OTP input
+                document.getElementById('otpInput').value = '';
+                document.getElementById('otpInput').classList.remove('is-invalid');
+                
+                updateSubmitButton();
+            } else {
+                otpError.textContent = data.message || 'Invalid OTP';
+                document.getElementById('otpInput').classList.add('is-invalid');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            otpError.textContent = 'Verification failed';
+            document.getElementById('otpInput').classList.add('is-invalid');
+        });
+    });
+    
+    // Clear OTP error when typing
+    document.getElementById('otpInput').addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+    
+    // Check for field changes
+    document.getElementById('auth_email').addEventListener('change', checkFieldsModified);
+    document.getElementById('auth_mobile').addEventListener('change', checkFieldsModified);
+    
+    // Initialize verification status
+    document.addEventListener('DOMContentLoaded', function() {
+        showVerificationStatus('email', 'pending', 'Email verification required');
+        showVerificationStatus('mobile', 'pending', 'Mobile verification required');
+        checkFieldsModified();
+    });
+</script>
+
+{% endblock %}

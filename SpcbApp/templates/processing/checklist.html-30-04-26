@@ -1,0 +1,2279 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .accordion-button:not(.collapsed) {
+        color: black;
+        width: -webkit-fill-available;
+        text-align: left;
+    }
+
+    .checklist-item {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #0b5e70;
+    }
+
+    .checklist-item label {
+        flex: 1 1 100%;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #2c3e50;
+    }
+
+    .checklist-item select,
+    .checklist-item textarea {
+        flex: 1 1 300px;
+        max-width: 300px;
+        padding: 0.75rem;
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #dcdfe6;
+        transition: border-color 0.3s ease;
+    }
+
+    .checklist-item select:focus,
+    .checklist-item textarea:focus {
+        outline: none;
+        border-color: #0b5e70;
+        box-shadow: 0 0 0 2px rgba(11, 94, 112, 0.1);
+    }
+
+    .checklist-item textarea {
+        flex: 2 1 400px;
+        max-width: 100%;
+        min-height: 100px;
+    }
+
+    .checklist-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .checklist-table th,
+    .checklist-table td {
+        padding: 14px 16px;
+        border: 1px solid #e0e0e0;
+        vertical-align: top;
+        color: #2c3e50;
+    }
+
+    .checklist-table th {
+        background-color: #0b5e70;
+        color: white;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .checklist-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .checklist-table tr:hover {
+        background-color: #e8f4f8;
+    }
+
+    .checklist-table select,
+    .checklist-table textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 4px;
+        border: 1px solid #dcdfe6;
+        resize: vertical;
+        transition: border-color 0.3s ease;
+    }
+
+    .checklist-table select:focus,
+    .checklist-table textarea:focus {
+        outline: none;
+        border-color: #0b5e70;
+        box-shadow: 0 0 0 2px rgba(11, 94, 112, 0.1);
+    }
+
+    .checklist-table textarea {
+        min-height: 80px;
+    }
+
+    #headingRevert .accordion-button:not(.collapsed) {
+        background-color: #0b5e70;
+        color: #fff;
+    }
+
+    #headingRevert .accordion-button.collapsed {
+        background-color: #e74c3c;
+        color: #fff;
+    }
+
+    .accordion-item {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .accordion-button {
+        font-weight: 600;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .accordion-body {
+        padding: 2rem;
+        background-color: #fff;
+    }
+
+    .container-fluid {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    h1.mt-4 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #0b5e70;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+        padding: 1.25rem 1.5rem;
+    }
+
+    button.accordion-button.collapsed {
+        border: 1;
+        width: -webkit-fill-available;
+        text-align: justify;
+    }
+    
+    .hidden {
+        display: none;
+    }
+    
+    .form-section {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+    
+    .disabled-section {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    /* Validation styles */
+    .is-valid {
+        border-color: #198754 !important;
+    }
+    .is-invalid {
+        border-color: #dc3545 !important;
+        background-color: #fff8f8 !important;
+    }
+    .alert-error {
+   
+    color: red !important;
+}
+</style>
+
+<div class="container-fluid px-4">
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Target ALL alerts, not just those with .auto-close-alert class
+    document.querySelectorAll('.alert').forEach(alert => {
+        setTimeout(() => {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 500);
+        }, 5000);
+    });
+});
+</script>
+    <h1 class="mt-4 mb-4">Application Checklist</h1>
+
+    <div class="accordion" id="checklistAccordion">
+
+        <!-- Signup Details Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionOne" aria-expanded="false" aria-controls="sectionOne">
+                    Signup Details
+                </button>
+            </h2>
+            <div id="sectionOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    <form id="equipmentForm" action="{% url 'signupchecklist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                        <input type="hidden" name="appno" value="{{ AppNo }}">
+                        <!-- <h4 class="mb-4">(1).Entity Details Confirmation</h4> -->
+  
+  <table class="table mb-5">
+    <tbody>
+      <tr><th>GST No.</th><td>{{ context.entity.gst_no }}</td>
+        <th>GST Certificate</th><td>
+        {% if context.general.gst_pdf %}<a href="{% url 'protected_file_spcb' context.general.gst_pdf.name %}" target="_blank" class="btn btn-primary btn-sm ml-5">View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>Trade Name</th><td>{{ context.entity.company_name }}</td><th>Legal Name</th><td>{{ context.entity.legal_name }}</td></tr>
+      <tr><th>Company Email</th><td>{{ context.entity.company_email }}</td><th>Business Category</th><td>{{ context.entity.business_category }}</td></tr>
+      <tr><th>Registered Address</th><td colspan="3">{{ context.entity.registered_address }}</td></tr>
+      <tr><th>State/UT</th><td>{{ context.statename }}</td><th>District</th><td>{{ context.districtname }}</td></tr>
+      <tr><th>Pincode</th><td>{{ context.entity.pin_code }}</td><th>Website</th><td>{{ context.entity.website }}</td></tr>
+      <tr><th>Tax Identification Number (TIN)</th><td>{{ context.entity.tin_no }}
+        {% if context.general.tin_pdf %}<a href="{% url 'protected_file_spcb' context.general.tin_pdf.name %}" target="_blank" class="btn btn-primary btn-sm ml-5">View PDF</a>{% else %}&mdash;{% endif %}
+      </td><th>Corporate Identification Number (CIN)</th><td>{{ context.entity.cin }}
+        {% if context.general.cin_pdf %}<a href="{% url 'protected_file_spcb' context.general.cin_pdf.name %}" target="_blank" class="btn btn-primary btn-sm ml-5">View PDF</a>{% else %}&mdash;{% endif %}
+      </td></tr>
+      <tr><th>Import Export Code (IEC)</th><td>{{ context.entity.iec }}
+        {% if context.general.iec_pdf %}<a href="{% url 'protected_file_spcb' context.general.iec_pdf.name %}" target="_blank" class="btn btn-primary btn-sm ml-5">View PDF</a>{% else %}&mdash;{% endif %}
+      </td>
+      <th>Company PAN</th><td>{{ context.entity.company_pan }}</td><td class="border-0"></td><td class="border-0"></td></tr>
+    </tbody>
+  </table>
+  <div class="border p-2 mb-5">
+  <span style="font-weight: bold;">Authorized Person Details</span>
+  <table class="table mb-5">
+    <tbody>
+      <tr><th>Name</th><td>{{ context.entity.authorized_person_name }}</td><th>Designation</th><td>{{ context.entity.auth_designation }}</td></tr>
+      <tr><th>Email ID</th><td>{{ context.entity.auth_email }}</td><th>Mobile Number</th><td>{{ context.entity.auth_mobile }}</td></tr>
+      <tr><th>Authorized Person PAN</th><td>{{ context.entity.auth_pan }}</td><td class="border-0"></td><td class="border-0"></td></tr>
+    </tbody>
+  </table>
+  </div>
+                    
+                        <table class="checklist-table">
+                            <thead>
+                                <tr>
+                                    <th>Checklist Item</th>
+                                    <th>Yes / No</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    
+                                <tr>
+                                    <td>Rvsf Name and Address </td>
+                                    <td>
+                                        <select name="name_address" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.name_address == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.name_address == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_name_address" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_name_address }}"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Company Email </td>
+                                    <td>
+                                        <select name="company_email" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.company_email == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.company_email == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_company_email" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_company_email }}"></td>
+                                </tr>
+                    
+                                <!-- Row 3 -->
+                                <tr>
+                                    <td>Upload GST Certificate </td>
+                                    <td>
+                                        <select name="gst_certificate" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.gst_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.gst_certificate == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_gst_certificate" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_gst_certificate }}"></td>
+                                </tr>
+                    
+                                <!-- Row 4 -->
+                                <tr>
+                                    <td>Provided and Uploaded PAN Card of Company </td>
+                                    <td>
+                                        <select name="company_pan_card" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.company_pan_card == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.company_pan_card == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_company_pan_card" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_company_pan_card }}"></td>
+                                </tr>
+                    
+                                <!-- Row 5 -->
+                                <tr>
+                                    <td>Provided and Uploaded TIN of Company </td>
+                                    <td>
+                                        <select name="company_tin" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.company_tin == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.company_tin == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_company_tin" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_company_tin }}"></td>
+                                </tr>
+                    
+                                <!-- Row 6 -->
+                                <tr>
+                                    <td>Provided and Uploaded CIN of Company</td>
+                                    <td>
+                                        <select name="company_cin" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.company_cin == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.company_cin == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_company_cin" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_company_cin }}"></td>
+                                </tr>
+                    
+                                <!-- Row 7 -->
+                                <tr>
+                                    <td>Provided and Uploaded IEC of Company</td>
+                                    <td>
+                                        <select name="company_iec" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.company_iec == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.company_iec == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_company_iec" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_company_iec }}"></td>
+                                </tr>
+                    
+                                <!-- Row 8 -->
+                                <tr>
+                                    <td>Authorized Person Details (Name, Email ID, Mobile No, PAN card)</td>
+                                    <td>
+                                        <select name="auth_person_details" class="check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if signup.auth_person_details == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if signup.auth_person_details == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_auth_person_details" placeholder="Remarks" class="form-control remarks-field is-invalid" value="{{ signup.remarks_auth_person_details }}"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- General Details of RVSF Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionTwo" aria-expanded="false" aria-controls="sectionTwo">
+                    General Details of the RVSF
+                </button>
+            </h2>
+            <div id="sectionTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    <form id="equipmentForm" action="{% url 'save_general_checklist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                        <input type="hidden" name="appno" value="{{ AppNo }}">
+                        <table class="table mb-5">
+                            <tbody>
+                              <tr>
+    <th>1. GPS Location</th>
+    <td colspan="3">
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Latitude:</strong> {{ context.rvsf.latitude }}
+            </div>
+            <div class="col-md-4">
+                <strong>Longitude:</strong> {{ context.rvsf.longitude }}
+            </div>
+        </div>
+    </td>
+</tr>
+<tr><th>1.(a)Address</th><td colspan="3">{{ context.rvsf.address }}</td></tr>
+                              <tr><th>2. State</th><td>{{ context.statename.state_name }}</td>
+                                <th>District</th><td>{{ context.districtname.city_name }}</td></tr>
+                            <tr><th>4. Incorporation Year.</th><td>{{ context.rvsf.encorp_year }}</td><th>5. Year of Commencement of Unit Operation.</th><td>{{ context.rvsf.unit_commencement_year }}</td>
+                    </tr>
+                              <tr><th>3. Consent Application Number (CTO)</th><td>{{ context.rvsf.cto_number }}</td>
+                                <th>4. CTO Validity</th><td>{{ context.rvsf.consent_validity }}</td><th>5. CTO Document</th><td>
+                                {% if context.rvsf.cto_pdf %}<a href="{% url 'protected_file_spcb' context.rvsf.cto_pdf.name %}" target="_blank" class="btn btn-primary btn-sm">View PDF</a>{% else %}&mdash;{% endif %}
+                              </td></tr>
+                              <tr><th>6. Validity of Authorization under Hazardous and Other Wastes (Management and Transboundary Movement), Rules, 2016</th><td colspan="3">{{ context.rvsf.howm_validity }}</td></tr>
+                              <tr><th>7. Authorization (HOWM) Doc</th><td colspan="3">
+                                {% if context.rvsf.howm_pdf %}<a href="{% url 'protected_file_spcb' context.rvsf.howm_pdf.name %}" target="_blank" class="btn btn-primary btn-sm">View PDF</a>{% else %}&mdash;{% endif %}
+                              </td></tr>
+                              <tr><th>8. Validity of certification of registration with District Industries Centre (DIC)/MSME/UDYAM Registration Certificate</th><td colspan="3">{{ context.rvsf.dic_validity }}</td></tr>
+                              <tr><th>9. DIC Registration Doc</th><td colspan="3">
+                                {% if context.rvsf.dic_pdf %}<a href="{% url 'protected_file_spcb' context.rvsf.dic_pdf.name %}" target="_blank" class="btn btn-primary btn-sm">View PDF</a>{% else %}&mdash;{% endif %}
+                              </td></tr>
+                              <tr><th>10. Registration No. for setting up of RVSF (Form 1A Under Motor Vehicles (Registration and Functions of Vehicles Scraping Facility) Rules,2021)</th><td>{{ context.rvsf.rvsf_reg_no }}</td>
+                                </tr><tr></tr><th>11. Validity of RVSF Certificate</th><td>{{ context.rvsf.rvsf_validity }}</td></tr>
+                              <tr><th>12. RVSF Registration Certificate</th><td colspan="3">
+                                {% if context.rvsf.rvsf_pdf %}<a href="{% url 'protected_file_spcb' context.rvsf.rvsf_pdf.name %}" target="_blank" class="btn btn-primary btn-sm">View PDF</a>{% else %}&mdash;{% endif %}
+                              </td></tr>
+                              <tr><th>13. Process Flow Diagram</th><td colspan="3">
+                                {% if context.rvsf.process_flow_pdf %}<a href="{% url 'protected_file_spcb' context.rvsf.process_flow_pdf.name %}" target="_blank" class="btn btn-primary btn-sm">View PDF</a>{% else %}&mdash;{% endif %}
+                              </td></tr>
+                              <tr><th>14. Material Balance Sheet</th><td colspan="3">
+                                {% if context.rvsf.material_balance_pdf %}<a href="{% url 'protected_file_spcb' context.rvsf.material_balance_pdf.name %}" target="_blank" class="btn btn-primary btn-sm">View PDF</a>{% else %}&mdash;{% endif %}
+                              </td></tr>
+                              <tr><th>15. Annual Returns (Form 4) for FY 22–23</th><td colspan="3">
+                                {% if context.rvsf.annual_returns_pdf %}<a href="{% url 'protected_file_spcb' context.rvsf.annual_returns_pdf.name %}" target="_blank" class="btn btn-primary btn-sm">View pdf</a>{% else %}&mdash;{% endif %}
+                                     </td></tr>
+                                     <tr><th>16. Annual Returns (Form 4) for FY 23–24</th><td colspan="3">
+                                {% if context.rvsf.annual_returns_pdf1 %}<a href="{% url 'protected_file_spcb' context.rvsf.annual_returns_pdf1.name %}" target="_blank" class="btn btn-primary btn-sm">View pdf</a>{% else %}&mdash;{% endif %}
+                                     </td></tr>
+                                     <tr><th>17. Annual Returns (Form 4) for FY 24–25</th><td colspan="3">
+                                {% if context.rvsf.annual_returns_pdf2 %}<a href="{% url 'protected_file_spcb' context.rvsf.annual_returns_pdf2.name %}" target="_blank"class="btn btn-primary btn-sm">View pdf</a>{% else %}&mdash;{% endif %}
+                                     </td></tr>
+                            </tbody>
+                          </table>
+                    
+                        <table class="checklist-table">
+                            <thead>
+                                <tr>
+                                    <th>Checklist Item</th>
+                                    <th>Yes / No</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    
+                                <tr>
+                                    <td>Provided Address</td>
+                                    <td>
+                                        <select name="rvsf_address" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.rvsf_address == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.rvsf_address == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_rvsf_address"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_rvsf_address }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided GPS location (Latitude, Longitude)</td>
+                                    <td>
+                                        <select name="gps_location" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.gps_location == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.gps_location == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_gps_location"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_gps_location }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided State</td>
+                                    <td>
+                                        <select name="rvsf_state" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.rvsf_state == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.rvsf_state == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_rvsf_state"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_rvsf_state }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided and Uploaded CTO Certificate</td>
+                                    <td>
+                                        <select name="cto_certificate" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.cto_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.cto_certificate == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_cto_certificate"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_cto_certificate }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Validity of CTO</td>
+                                    <td>
+                                        <select name="cto_validity" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.cto_validity == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.cto_validity == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_cto_validity"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_cto_validity }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided and Uploaded HOWM Authorization Certificate</td>
+                                    <td>
+                                        <select name="howm_certificate" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.howm_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.howm_certificate == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_howm_certificate"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_howm_certificate }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided and Uploaded DIC registration certificate</td>
+                                    <td>
+                                        <select name="dic_certificate" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.dic_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.dic_certificate == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_dic_certificate"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_dic_certificate }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided and Uploaded RVSF Certificate</td>
+                                    <td>
+                                        <select name="rvsf_certificate" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.rvsf_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.rvsf_certificate == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_rvsf_certificate"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_rvsf_certificate }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Validity of RVSF certificate</td>
+                                    <td>
+                                        <select name="rvsf_certificate_validity" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.rvsf_certificate_validity == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.rvsf_certificate_validity == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_rvsf_certificate_validity"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_rvsf_certificate_validity }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Upload Process Flow Diagram</td>
+                                    <td>
+                                        <select name="process_flow" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.process_flow == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.process_flow == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_process_flow"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_process_flow }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Upload Material Balance Sheet</td>
+                                    <td>
+                                        <select name="material_balance_sheet" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.material_balance_sheet == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.material_balance_sheet == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_material_balance_sheet"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_material_balance_sheet }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Uploaded Annual Return (last 3 FY)</td>
+                                    <td>
+                                        <select name="annual_return" class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if general.annual_return == 'Yes' %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if general.annual_return == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="remarks_annual_return"
+                                            class="form-control remarks-field is-invalid"
+                                            value="{{ general.remarks_annual_return }}"
+                                            placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Installed Equipment Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionThree" aria-expanded="false" aria-controls="sectionThree">
+                    Details of Installed Equipment at RVSF
+                </button>
+            </h2>
+            <div id="sectionThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    <form id="equipmentForm" action="{% url 'save_equipment_checklist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                        <input type="hidden" name="appno" value="{{ AppNo }}">
+                        <table class="table table-bordered mt-3">
+                            <thead class="table-light"> 
+                              <tr>
+                                <th>S.No</th>
+                                <th>Name of Equipment</th>
+                                <th>No. of Equipment</th>
+                                <th>Power Rating(kWh)</th>
+                                <th>Operating Hours</th>
+                                <th>Capacity of the Equipment(Tones/Day)</th>
+                                <th>Geo-tagged Photo</th>
+                                <th>Equipment Description</th>
+                                
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <!-- Optional: Render saved equipment rows here -->
+                              {% for eq in context.data %}
+                              <tr>
+                                  <td>{{ forloop.counter}}</td>
+                                <td>{{ eq.equipment_type }}</td>
+                                <td>{{ eq.quantity }}</td>
+                                <td>{{ eq.power_rating }}</td>
+                                <td>{{ eq.operating_hours }}</td>
+                                <td>{{ eq.capacity_equipment_perton }}</td>
+                                <td>
+                                  {% if eq.geo_tagged_pdf %}
+                                  <a href="{% url 'protected_file_spcb' eq.geo_tagged_pdf.name %}" target="_blank" target="_blank" class="btn btn-primary btn-sm">View PDF</a>
+                                  {% else %}
+                                  N/A
+                                  {% endif %}
+                                </td>
+                               <td>{{ eq.equipment_description }}</td>
+                          
+                              </tr>
+                              {% endfor %}
+                            </tbody>
+                          </table>
+                        <table class="checklist-table">
+                            <thead>
+                                <tr>
+                                    <th>Checklist Item</th>
+                                    <th>Yes / No</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    
+                                <tr>
+                                    <td>Provided Dismantling Equipment details and corresponding Geo-tagged photos</td>
+                                    <td>
+                                        <select name="dismantling_equipment" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if equipment.dismantling_equipment %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if equipment and not equipment.dismantling_equipment %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_dismantling_equipment" class="form-control remarks-field" value="{{ equipment.remarks_dismantling_equipment|default:'' }}" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided De-pollution Equipment details and corresponding Geo-tagged photo</td>
+                                    <td>
+                                        <select name="depollution_equipment" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if equipment.depollution_equipment %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if equipment and not equipment.depollution_equipment %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_depollution_equipment" class="form-control remarks-field" value="{{ equipment.remarks_depollution_equipment }}" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Bailing Equipment details and corresponding Geo-tagged photo</td>
+                                    <td>
+                                        <select name="bailing_equipment" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if equipment.bailing_equipment %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if equipment and not equipment.bailing_equipment %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_bailing_equipment" class="form-control remarks-field" value="{{ equipment.remarks_bailing_equipment }}" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Shredding Equipment details and corresponding Geo-tagged photo</td>
+                                    <td>
+                                        <select name="shredding_equipment" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if equipment.shredding_equipment %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if equipment and not equipment.shredding_equipment %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_shredding_equipment" class="form-control remarks-field" value="{{ equipment.remarks_shredding_equipment }}" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Storage Equipment details and corresponding Geo-tagged photo</td>
+                                    <td>
+                                        <select name="storage_equipment" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if equipment.storage_equipment %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if equipment and not equipment.storage_equipment %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_storage_equipment" class="form-control remarks-field" value="{{ equipment.remarks_storage_equipment }}" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Classifiers/Separators Equipment details and corresponding Geo-tagged photo</td>
+                                    <td>
+                                        <select name="classifier_equipment" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if equipment.classifier_equipment %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if equipment and not equipment.classifier_equipment %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_classifier_equipment" class="form-control remarks-field" value="{{ equipment.remarks_classifier_equipment }}" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided all other the Equipment's available at facility</td>
+                                    <td>
+                                        <select name="other_equipment" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if equipment.other_equipment %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if equipment and not equipment.other_equipment %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_other_equipment" class="form-control remarks-field" value="{{ equipment.remarks_other_equipment }}" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facility Details Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionFour" aria-expanded="false" aria-controls="sectionFour">
+                    Facility Details
+                </button>
+            </h2>
+            <div id="sectionFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    <form id="facilityForm" action="{% url 'PostFacilityCheckList' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                        <input type="hidden" name="appno" value="{{ AppNo }}">
+                        <table class="table mb-5">
+    <tbody>
+        <tr>
+            <th>1. Geo-tagged Video of RVSF</th>
+            <td colspan="3">
+                {% if context.facilitydata.geo_video %}
+                    <video width="320" height="180" controls>
+                        <source src="{% url 'protected_file_spcb' context.facilitydata.geo_video.name %}" target="_blank" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% else %}
+                    &mdash;
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>2. Total Area of the RVSF (in sq. meters)</th>
+            <td>{{ context.facilitydata.total_area }}</td>
+            <th>3. Sectioned Power Load(kWh)</th>
+            <td>{{ context.facilitydata.sectioned_power }}</td>
+        </tr>
+        <tr>
+            <th>4. Number of Shifts Operated Per Day</th>
+            <td>{{ context.facilitydata.shifts_per_day }}</td>
+            <th>5. Total Number of Employees Working</th>
+            <td>{{ context.facilitydata.no_of_employees }}</td>
+        </tr>
+        <tr>
+            <th>6. Storage Area for Depolluted Fluids </th>
+            <td>{{ context.facilitydata.storage_depolluted_fluids }}</td>
+            <th>7. Storage Area for Other automotive hazardous waste</th>
+            <td>{{ context.facilitydata.storage_hazardous_waste }}</td>
+        </tr>
+        <tr>
+            <th>8. Storage area for safe parking of waste vehicles</th>
+            <td>{{ context.facilitydata.storage_parking_area }}</td>
+            <th>9. Storage area for processed scrap and usable parts</th>
+            <td>{{ context.facilitydata.storage_processed_scrap }}</td>
+        </tr>
+        <tr>
+            <th>10. Storage Area for segregated spares</th>
+            <td>{{ context.facilitydata.storage_segregated_spares }}</td>
+            <th>11. {{ context.facilitydata.storage_others_description }} Waste</th>
+            <td>{{ context.facilitydata.storage_others }}</td>
+        </tr>
+    </tbody>
+</table>
+                        <table class="checklist-table">
+                            <thead>
+                                <tr>
+                                    <th>Checklist Item</th>
+                                    <th>Yes / No</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                    
+                            <tbody>
+                    
+                                <tr>
+                                    <td>Provided Geo-tagged video of RVSF</td>
+                                    <td>
+                                        <select name="geo_tagged_video" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if facility.geo_tagged_video %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if facility and not facility.geo_tagged_video %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_geo_tagged_video" value="{{ facility.remarks_geo_tagged_video }}"
+                                        class="form-control remarks-field" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Total area of the RVSF (in sq meter)</td>
+                                    <td>
+                                        <select name="total_rvsf_area" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if facility.total_rvsf_area %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if facility and not facility.total_rvsf_area %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_total_rvsf_area" value="{{ facility.remarks_total_rvsf_area }}"
+                                        class="form-control remarks-field" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided No. of shifts operated per day</td>
+                                    <td>
+                                        <select name="shift_number" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if facility.shift_number %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if facility and not facility.shift_number %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_shift_number" value="{{ facility.remarks_shift_number }}"
+                                        class="form-control remarks-field" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Sanctioned Power Load (kWh)</td>
+                                    <td>
+                                        <select name="sectioned_power" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if facility.sectioned_power %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if facility and not facility.sectioned_power %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_sectioned_power" value="{{ facility.remarks_sectioned_power }}"
+                                        class="form-control remarks-field" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided No. of employees working</td>
+                                    <td>
+                                        <select name="employees_number" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if facility.employees_number %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if facility and not facility.employees_number %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" name="remarks_employees_number" value="{{ facility.remarks_employees_number }}"
+                                        class="form-control remarks-field" placeholder="Remarks"></td>
+                                </tr>
+                    
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- RVSF Capacity Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFive">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionFive" aria-expanded="false" aria-controls="sectionFive">
+                    RVSF Capacity
+                </button>
+            </h2>
+            <div id="sectionFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    <form id="capacityForm" action="{% url 'CapacityChecklist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                        <input type="hidden" name="appno" value="{{ AppNo }}">
+                        <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Type of Vehicles</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in context.VechileType %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ vehicle.vehicle_type }}{% if vehicle.vehicle_type == "Others" %} ({{ vehicle.Remarks }}){% endif %}</td>
+                                           </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                              <tr>
+                                <th>Capacity Type</th>
+                                <th>No. of Vehicles Scrapped / Annum</th>
+                                <th>Quantity of Steel Recovered / Annum (in MT)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Installed Capacity<br><small>(as per consents/licenses)</small></td>
+                                <td>
+                                  
+                                         {{ context.capacitydata.installed_vehicles }}
+                                </td>
+                                <td>
+                                  {{ context.capacitydata.installed_steel}}
+                                </td>
+                              </tr>
+                          
+                              
+                              <tr>
+                                <td>
+                                  Operating Capacity<br><small>FY {{ context.capacitydata.year1 }}</small>
+                                
+                                </td>
+                                <td>
+                                  {{ context.capacitydata.operating_vehicles1 }}
+                                </td>
+                                <td>
+                                 {{ context.capacitydata.operating_steel1 }}
+                                </td>
+                              </tr>
+                      
+                              <tr>
+                                <td>
+                                  Operating Capacity<br><small>FY {{ context.capacitydata.year2 }}</small>
+                                
+                                </td>
+                                <td>
+                                  {{ context.capacitydata.operating_vehicles2 }}
+                                </td>
+                                <td>
+                                 {{ context.capacitydata.operating_steel2 }}
+                                </td>
+                              </tr>
+                      
+                      
+                              <tr>
+                                <td>
+                                  Operating Capacity<br><small>FY {{ context.capacitydata.year3 }}</small>
+                                
+                                </td>
+                                <td>
+                                  {{ context.capacitydata.operating_vehicles3 }}
+                                </td>
+                                <td>
+                                 {{ context.capacitydata.operating_steel3 }}
+                                </td>
+                              </tr>
+                              
+                              
+                            </tbody>
+                          </table>
+                        <table class="checklist-table">
+                            <thead>
+                                <tr>
+                                    <th>Checklist Item</th>
+                                    <th>Yes / No</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    
+                                <tr>
+                                    <td>Provided Category of vehicle</td>
+                                    <td>
+                                        <select name="vehicle_category" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if capacity and capacity.vehicle_category == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if capacity and capacity.vehicle_category == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_vehicle_category" value="{{ capacity.remarks_vehicle_category }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Installed capacity (vehicle per annum)</td>
+                                    <td>
+                                        <select name="vehicle_installed_capacity" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if capacity and capacity.vehicle_installed_capacity == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if capacity and capacity.vehicle_installed_capacity == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_vehicle_installed_capacity" value="{{ capacity.remarks_vehicle_installed_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Installed capacity (total steel scrap recovered MT per annum)</td>
+                                    <td>
+                                        <select name="steel_installed_capacity" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if capacity and capacity.steel_installed_capacity == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if capacity and capacity.steel_installed_capacity == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_steel_installed_capacity" value="{{ capacity.remarks_steel_installed_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Operating capacity for FY 2022-2023, FY 2023-2024, FY 2024-2025 (vehicle per annum)</td>
+                                    <td>
+                                        <select name="vehicle_operating_capacity" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if capacity and capacity.vehicle_operating_capacity == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if capacity and capacity.vehicle_operating_capacity == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_vehicle_operating_capacity" value="{{ capacity.remarks_vehicle_operating_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Operating capacity for FY 2022-2023, FY 2023-2024, FY 2024-2025 (total steel scrap recovered MT per annum)</td>
+                                    <td>
+                                        <select name="steel_operating_capacity" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if capacity and capacity.steel_operating_capacity == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if capacity and capacity.steel_operating_capacity == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_steel_operating_capacity" value="{{ capacity.remarks_steel_operating_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pollution Control Devices Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSix">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionSix" aria-expanded="false" aria-controls="sectionSix">
+                    Pollution Control Devices
+                </button>
+            </h2>
+            <div id="sectionSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    <form id="pollutionForm" action="{% url 'SavePollutionChecklist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                        <input type="hidden" name="appno" value="{{ AppNo }}">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                              <tr>
+                                <th>S.No</th>
+                                <th>Type</th>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Image</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for pollutiondetails in context.pollutiondetails  %}
+                              <tr>
+                                <td>{{ forloop.counter }}</td> <td>{{ pollutiondetails.device_type }}</td> <td>{{ pollutiondetails.name }}</td>
+                                <td> {{pollutiondetails.quantity }}</td> 
+                                <td>
+                                  {% if pollutiondetails.device_doc %}
+                                  <a href="{% url 'protected_file_spcb' pollutiondetails.device_doc.name %}" target="_blank" target="_blank" class="btn btn-primary btn-sm">View PDF</a>
+                                  {% else %}
+                                  N/A
+                                  {% endif %}
+                                </td>
+                      
+                      
+                              </tr>
+                              {% endfor %}
+                      
+                            </tbody>
+                                  
+                          </table>
+                        <table class="checklist-table">
+                            <thead>
+                                <tr>
+                                    <th>Checklist Item</th>
+                                    <th>Yes / No</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    
+                                <tr>
+                                    <td>Provided Air pollution control devices – Name, Number, Image</td>
+                                    <td>
+                                        <select name="air_pollution" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if pollution and pollution.air_pollution == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if pollution and pollution.air_pollution == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_air_pollution" value="{{ pollution.remarks_air_pollution }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Water pollution control devices – Name, Number, Image</td>
+                                    <td>
+                                        <select name="water_pollution" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if pollution and pollution.water_pollution == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if pollution and pollution.water_pollution == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_water_pollution" value="{{ pollution.remarks_water_pollution }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td>Provided Noise pollution control devices – Name, Number, Image</td>
+                                    <td>
+                                        <select name="noise_pollution" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if pollution and pollution.noise_pollution == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if pollution and pollution.noise_pollution == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_noise_pollution" value="{{ pollution.remarks_noise_pollution }}" class="form-control remarks-field" placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waste Recycled/Refurbished Details in last FY Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSeven">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionSeven" aria-expanded="false" aria-controls="sectionSeven">
+                    Waste Recycled/Refurbished Details in last FY
+                </button>
+            </h2>
+            <div id="sectionSeven" class="accordion-collapse collapse" aria-labelledby="headingSeven" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                  
+                  <form id="recycleForm" action="{% url 'SaveWasteRecycleChecklist' %}" method="post">
+                      {% csrf_token %}
+                      <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                      <input type="hidden" name="appno" value="{{ AppNo }}">
+                      <table class="table table-bordered mb-0">
+                        <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                          <tr>
+                            <th>#</th>
+                            <th>Category of waste</th>
+                            <th>Waste Quantity Recovered</th>
+                            <th>Quantity of waste recycled/refurbished by authorized Rvsf</th>
+                            <th>Name(s) of registered Rvsf(s)/refurbished(s) to whom sent</th>
+                            <th>Agreement details between RVSF and registered Rvsf(s)/refurbished(s)</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for w in context.wasterecycled %}
+                          <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ w.category }}</td>
+                            <td>{{ w.qty_recovered }}</td>
+                            <td>{{ w.qty_recycled }}</td>
+                            <td>{{ w.Rvsf_name }}</td>
+                            <td>
+                              {% if w.agreement %}
+                                <a href="{% url 'protected_file_spcb' w.agreement.name %}" target="_blank" target="_blank" class="btn btn-primary btn-sm">View PDF</a>
+                              {% else %}
+                                &mdash;
+                              {% endif %}
+                            </td>
+                            
+                          </tr>
+                          {% empty %}
+                          <tr>
+                            <td colspan="7" class="text-center">No entries.</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                      <table class="checklist-table">
+                          <thead>
+                              <tr>
+                                  <th>Checklist Item</th>
+                                  <th>Yes / No</th>
+                                  <th>Remarks</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                  
+                              <tr>
+                                  <td>Used Oil - Quantity recovered (MT)/Recycled, Rvsf details</td>
+                                  <td>
+                                      <select name="used_oil" class="form-control check-select">
+                                          <option value="">--Select--</option>
+                                          <option value="Yes" {% if recycle and recycle.used_oil %}selected{% endif %}>Yes</option>
+                                          <option value="No" {% if recycle and not recycle.used_oil %}selected{% endif %}>No</option>
+                                      </select>
+                                  </td>
+                                  <td><input type="text" name="remarks_used_oil" class="form-control remarks-field" value="{{ recycle.remarks_used_oil }}" placeholder="Remarks"></td>
+                              </tr>
+                  
+                              <tr>
+                                  <td>Plastic Waste - Quantity recovered (MT)/Recycled, Rvsf details</td>
+                                  <td>
+                                      <select name="plastic_waste" class="form-control check-select">
+                                          <option value="">--Select--</option>
+                                          <option value="Yes" {% if recycle and recycle.plastic_waste %}selected{% endif %}>Yes</option>
+                                          <option value="No" {% if recycle and not recycle.plastic_waste %}selected{% endif %}>No</option>
+                                      </select>
+                                  </td>
+                                  <td><input type="text" name="remarks_plastic_waste" class="form-control remarks-field" value="{{ recycle.remarks_plastic_waste }}" placeholder="Remarks"></td>
+                              </tr>
+                  
+                              <tr>
+                                  <td>Battery Waste - Quantity recovered (MT)/Recycled, Rvsf details</td>
+                                  <td>
+                                      <select name="battery_waste" class="form-control check-select">
+                                          <option value="">--Select--</option>
+                                          <option value="Yes" {% if recycle and recycle.battery_waste %}selected{% endif %}>Yes</option>
+                                          <option value="No" {% if recycle and not recycle.battery_waste %}selected{% endif %}>No</option>
+                                      </select>
+                                  </td>
+                                  <td><input type="text" name="remarks_battery_waste" class="form-control remarks-field" value="{{ recycle.remarks_battery_waste }}" placeholder="Remarks"></td>
+                              </tr>
+                  
+                              <tr>
+                                  <td>Tyre Waste - Quantity recovered (MT)/Recycled, Rvsf details</td>
+                                  <td>
+                                      <select name="tyre_waste" class="form-control check-select">
+                                          <option value="">--Select--</option>
+                                          <option value="Yes" {% if recycle and recycle.tyre_waste %}selected{% endif %}>Yes</option>
+                                          <option value="No" {% if recycle and not recycle.tyre_waste %}selected{% endif %}>No</option>
+                                      </select>
+                                  </td>
+                                  <td><input type="text" name="remarks_tyre_waste" class="form-control remarks-field" value="{{ recycle.remarks_tyre_waste }}" placeholder="Remarks"></td>
+                              </tr>
+                  
+                              <tr>
+                                  <td>E-Waste - Quantity recovered (MT)/Recycled, Rvsf details</td>
+                                  <td>
+                                      <select name="e_waste" class="form-control check-select">
+                                          <option value="">--Select--</option>
+                                          <option value="Yes" {% if recycle and recycle.e_waste %}selected{% endif %}>Yes</option>
+                                          <option value="No" {% if recycle and not recycle.e_waste %}selected{% endif %}>No</option>
+                                      </select>
+                                  </td>
+                                  <td><input type="text" name="remarks_e_waste" class="form-control remarks-field" value="{{ recycle.remarks_e_waste }}" placeholder="Remarks"></td>
+                              </tr>
+                  
+                              <tr>
+                                  <td>Steel Scrap - Quantity recovered (MT)/Recycled, Rvsf details</td>
+                                  <td>
+                                      <select name="steel_scrap" class="form-control check-select">
+                                          <option value="">--Select--</option>
+                                          <option value="Yes" {% if recycle and recycle.steel_scrap %}selected{% endif %}>Yes</option>
+                                          <option value="No" {% if recycle and not recycle.steel_scrap %}selected{% endif %}>No</option>
+                                      </select>
+                                  </td>
+                                  <td><input type="text" name="remarks_steel_scrap" class="form-control remarks-field" value="{{ recycle.remarks_steel_scrap }}" placeholder="Remarks"></td>
+                              </tr>
+                  
+                              <tr>
+                                  <td colspan="3" class="text-center">
+                                      <button type="submit" class="btn btn-primary">Save</button>
+                                  </td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Fee & Undertaking Details Section -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingEight">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sectionEight" aria-expanded="false" aria-controls="sectionEight">
+                    Registration Fee & Undertaking Details
+                </button>
+            </h2>
+            <div id="sectionEight" class="accordion-collapse collapse" aria-labelledby="headingEight" data-bs-parent="#checklistAccordion">
+                <div class="accordion-body">
+                    <form id="equipmentForm" action="{% url 'SaveDeclarationChecklist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                        <input type="hidden" name="appno" value="{{ AppNo }}">
+                        <div class="border p-2">
+                            <b style="font-weight: bold; padding-left: 10px;">Undertaking</b>
+                            {% if context.entity.undertaking %}<a href="{% url 'protected_file_spcb' context.entity.undertaking.name %}" target="_blank" class="btn btn-primary btn-sm ml-5 ">View PDF</a>{% else %}&mdash;{% endif %}
+                        </div>
+                            <table class="table table-bordered mb-0">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                              <tr>
+                                <th>#</th>
+                                <th>Amount</th>
+                                <th>TXN ID</th>
+                                <th>TXN Date</th>
+                                <th>Payment Status</th>
+                                
+                                
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for w in context.paymentinfo %}
+                              <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ w.amount_initiated }}</td>                               
+                                <td>{{ w.txn_id }}</td>
+                                <td>{{ w.txn_date}}</td>
+                                <td>{{ w.status}}</td>
+                 
+                              </tr>
+                              
+                              {% empty %}
+                              <tr>
+                                <td colspan="7" class="text-center">No entries.</td>
+                              </tr>
+                              {% endfor %}
+                              {% if context.paymentinfo %}
+    <!-- TOTAL ROW -->
+    <tr class="fw-bold bg-light">
+      <td colspan="1" class="text-end">Total</td>
+      <td>{{ context.total_amount }}</td>
+      <td colspan="2"></td>
+    </tr>
+    {% endif %}
+                            </tbody>
+                          </table>
+                        <table class="checklist-table">
+                            <thead>
+                                <tr>
+                                    <th>Checklist Item</th>
+                                    <th>Yes / No</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    
+                                <tr>
+                                    <td>Undertaking</td>
+                                    <td>
+                                        <select name="declaration" id="declaration" class="form-control check-select">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if payment and payment.declaration == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if payment and payment.declaration == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" 
+                                               name="remarks_declaration"
+                                               value="{{ payment.remarks_declaration }}"
+                                               class="form-control remarks-field"
+                                               placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <!-- Registration Fee -->
+                                <tr>
+                                    <td>Registration fee payment done</td>
+                                    <td>
+                                        <select name="registration_fee_details"
+                                                id="registration_fee_details"
+                                                class="form-control check-select is-valid">
+                                            <option value="">--Select--</option>
+                                            <option value="Yes" {% if payment and payment.registration_fee_details == 1 %}selected{% endif %}>Yes</option>
+                                            <option value="No" {% if payment and payment.registration_fee_details == 0 %}selected{% endif %}>No</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                               name="remarks_registration_fee_details"
+                                               value="{{ payment.remarks_registration_fee_details }}"
+                                               class="form-control remarks-field is-invalid"
+                                               placeholder="Remarks">
+                                    </td>
+                                </tr>
+                    
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                        <!-- </tbody>
+                    </table> -->
+                </div>
+            </div>
+            <!-- Mark Application Form -->
+<div class="form-section">
+    <form id="markFormInternal" method="POST" action="{% url 'mark_application' %}">
+        {% csrf_token %}
+        <input type="hidden" name="userid" value="{{IndustryId}}">
+        <input type="hidden" name="appno" value="{{confirmapp.appno}}">
+        <!-- Hidden field for static status value 2 -->
+        <input type="hidden" name="appstatus" value="2">
+        
+        <p><strong>Application No:</strong> {{context.entity.username}} <span id="appNoText"></span></p>
+
+        <!-- Authority Section - Now starts here, not disabled -->
+        <div class="mb-3" id="authoritySection">
+            <label class="form-label">Select Authority:</label>
+            <select class="form-select" id="authorityDropdown" name="marked_to_role" required>
+                <option value="" selected disabled>-- Choose --</option>
+                {% for key, label in Roles.items %}
+                    <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="mb-3 hidden" id="verifyinguser">
+            <label class="form-label">User Select</label>
+            <select class="form-select" id="userDropdown" name="marked_to_verifying" required disabled aria-required="true">
+                <option value="" selected disabled>Please Select</option>
+                {% for officer in verifyingofficers %}
+                    <option value="{{ officer.id }}">{{ officer.OfficerName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    
+        <div class="mb-3" id="commentSection">
+            <textarea class="form-control" id="commentTextarea" name="comment" rows="4" placeholder="Add remarks" required></textarea>
+        </div>
+    
+        <div class="text-end" id="buttonSection">
+            <button type="submit" class="btn btn-success" id="markInternallyBtn">Mark Internally</button>
+        </div>
+    </form>
+    
+    <!-- Revert Form (Initially Hidden) -->
+    <form method="POST" action="{% url 'MarkIncomplete' %}" id="revertForm" class="hidden" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="industryid" value="{{ IndustryId }}">
+        <input type="hidden" name="appno" value="{{ AppNo }}">
+        <div class="mb-3">
+          <label for="finalRemark" class="form-label">Final Remark <span class="text-danger"</span></label>
+          <textarea class="form-control" id="finalRemark" name="final_remark" rows="4" required
+            placeholder="Add Remark"></textarea>
+          <div class="invalid-feedback">
+            Please provide a remark before submitting.
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success">Mark as Incomplete</button>
+    </form>
+</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ==============================================
+// UNIFIED CHECKLIST VALIDATION SCRIPT
+// ==============================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable browser's native validation for all checklist forms
+    document.querySelectorAll('form').forEach(form => {
+        form.setAttribute('novalidate', 'novalidate');
+    });
+    
+    // Initialize all checklist forms
+    initializeAllChecklistForms();
+    
+    // Track which forms have unsaved changes
+    const unsavedForms = new Set();
+    
+    // Function to update remarks field state
+    function updateRemarksState(select, remarks) {
+        const hasValue = remarks.value.trim() !== '';
+        
+        if (select.value === 'Yes') {
+            // Remove ALL required attributes and properties
+            remarks.removeAttribute('required');
+            remarks.required = false;
+            remarks.disabled = false;
+            remarks.style.backgroundColor = '#f0f0f0';
+            remarks.style.borderColor = '#198754';
+            remarks.placeholder = 'Remarks (optional)';
+            
+            // Update validation classes
+            remarks.classList.remove('is-invalid');
+            remarks.classList.add('is-valid');
+        } 
+        else if (select.value === 'No') {
+            // Make remarks required
+            remarks.setAttribute('required', 'required');
+            remarks.required = true;
+            remarks.disabled = false;
+            remarks.style.backgroundColor = '#ffffff';
+            remarks.placeholder = 'Remarks (required when No is selected)';
+            
+            // Update validation classes
+            if (hasValue) {
+                remarks.style.borderColor = '#198754';
+                remarks.classList.remove('is-invalid');
+                remarks.classList.add('is-valid');
+            } else {
+                remarks.style.borderColor = '#dc3545';
+                remarks.classList.add('is-invalid');
+                remarks.classList.remove('is-valid');
+            }
+        } 
+        else {
+            // Default state (nothing selected)
+            remarks.setAttribute('required', 'required');
+            remarks.required = true;
+            remarks.disabled = false;
+            remarks.style.backgroundColor = '#ffffff';
+            remarks.style.borderColor = hasValue ? '#ced4da' : '#dc3545';
+            remarks.placeholder = 'Select Yes/No first';
+            
+            if (hasValue) {
+                remarks.classList.remove('is-invalid');
+                remarks.classList.add('is-valid');
+            } else {
+                remarks.classList.add('is-invalid');
+                remarks.classList.remove('is-valid');
+            }
+        }
+        
+        // Also update the select validation state
+        if (select.value === 'Yes' || select.value === 'No') {
+            select.classList.remove('is-invalid');
+            select.classList.add('is-valid');
+            select.style.borderColor = '#198754';
+        } else {
+            select.classList.add('is-invalid');
+            select.classList.remove('is-valid');
+            select.style.borderColor = '#dc3545';
+        }
+    }
+    
+    // Initialize a single checklist form
+    function initializeChecklistForm(form) {
+        const selects = form.querySelectorAll('.check-select');
+        
+        // Initialize each select on load
+        selects.forEach(select => {
+            const row = select.closest('tr');
+            const remarks = row.querySelector('.remarks-field');
+            
+            if (remarks) {
+                // Initial state
+                updateRemarksState(select, remarks);
+                
+                // Handle dropdown change
+                select.addEventListener('change', () => {
+                    updateRemarksState(select, remarks);
+                    // Mark this form as having unsaved changes
+                    unsavedForms.add(form);
+                });
+                
+                // Handle typing in remarks
+                remarks.addEventListener('input', () => {
+                    updateRemarksState(select, remarks);
+                    // Mark this form as having unsaved changes
+                    unsavedForms.add(form);
+                });
+            }
+        });
+        
+        // Add form submission handler
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const errorMessages = [];
+            
+            // Check all selects in this form
+            const formSelects = this.querySelectorAll('.check-select');
+            
+            formSelects.forEach(select => {
+                const row = select.closest('tr');
+                const remarks = row.querySelector('.remarks-field');
+                const itemName = row.querySelector('td:first-child').textContent.trim();
+                
+                // Check 1: Must select Yes or No
+                if (select.value === '' || select.value === '--Select--') {
+                    isValid = false;
+                    select.classList.add('is-invalid');
+                    select.style.borderColor = '#dc3545';
+                    errorMessages.push(`"${itemName}" must be selected as Yes or No`);
+                } else {
+                    select.classList.remove('is-invalid');
+                    select.style.borderColor = '#198754';
+                }
+                
+                // Check 2: If No selected, remarks must be filled
+                if (select.value === 'No') {
+                    if (!remarks || remarks.value.trim() === '') {
+                        isValid = false;
+                        if (remarks) {
+                            remarks.classList.add('is-invalid');
+                            remarks.style.borderColor = '#dc3545';
+                        }
+                        errorMessages.push(`"${itemName}" requires remarks when "No" is selected`);
+                    } else {
+                        if (remarks) {
+                            remarks.classList.remove('is-invalid');
+                            remarks.style.borderColor = '#198754';
+                        }
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Show single alert with all errors
+                let alertMsg = "Please fix the following issues:\n\n";
+                errorMessages.forEach((msg, index) => {
+                    alertMsg += `${index + 1}. ${msg}\n`;
+                });
+                
+                // Use a single alert
+                //alert(alertMsg);
+                alert("Remarks is Mandatory to fill If Selected the NO in the Checklists");
+                
+                // Scroll to first error
+                const firstError = this.querySelector('.check-select.is-invalid') || 
+                                 this.querySelector('.remarks-field.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                
+                return false;
+            }
+            
+            // Form is valid, remove from unsaved forms
+            unsavedForms.delete(form);
+            return true;
+        });
+    }
+    
+    // Initialize all checklist forms
+    function initializeAllChecklistForms() {
+        // Get ALL checklist forms (including those without IDs)
+        const checklistForms = document.querySelectorAll('form');
+        
+        // Filter out the mark application and revert forms
+        checklistForms.forEach(form => {
+            if (form.id !== 'markFormInternal' && form.id !== 'revertForm') {
+                initializeChecklistForm(form);
+            }
+        });
+    }
+    
+    // ==============================================
+    // MARK APPLICATION FORM VALIDATION
+    // ==============================================
+    // ==============================================
+// MARK APPLICATION FORM VALIDATION
+// ==============================================
+const authorityDropdown = document.getElementById('authorityDropdown');
+const authoritySection = document.getElementById('authoritySection');
+const verifyingUserDiv = document.getElementById('verifyinguser');
+const userDropdown = document.getElementById('userDropdown');
+const commentSection = document.getElementById('commentSection');
+const commentTextarea = document.getElementById('commentTextarea');
+const buttonSection = document.getElementById('buttonSection');
+const markInternallyBtn = document.getElementById('markInternallyBtn');
+const revertForm = document.getElementById('revertForm');
+const markFormInternal = document.getElementById('markFormInternal');
+
+// Status is now static value 2
+const SCRUTINY_STATUS = '2';
+const VERIFYING_AUTHORITY = '3';
+const RECOMMENDING_AUTHORITY = '2';
+const SENT_BACK_TO_USER = '4';
+
+// Store current user role from Django template
+const currentUserRole = {{ request.session.role_id|default:"null" }};
+
+// Initial setup
+verifyingUserDiv.classList.add('hidden');
+revertForm.classList.add('hidden');
+
+// Handle authority dropdown change
+authorityDropdown.addEventListener('change', function() {
+    const selectedAuthority = this.value;
+    
+    // Reset visibility
+    verifyingUserDiv.classList.add('hidden');
+    userDropdown.disabled = true;
+    userDropdown.required = false;
+    userDropdown.value = '';
+    revertForm.classList.add('hidden');
+    commentSection.classList.remove('hidden');
+    commentTextarea.disabled = false;
+    commentTextarea.required = true;
+    buttonSection.classList.remove('hidden');
+    markInternallyBtn.disabled = false;
+    
+    // Enable user dropdown only when authority is selected
+    if (selectedAuthority) {
+        userDropdown.disabled = false;
+    } else {
+        userDropdown.disabled = true;
+    }
+    
+    // If Verifying Authority is selected
+    if (selectedAuthority === VERIFYING_AUTHORITY) {
+        verifyingUserDiv.classList.remove('hidden');
+        userDropdown.required = true;
+        userDropdown.disabled = false;
+    }
+    
+    // If Sent Back to User is selected
+    if (selectedAuthority === SENT_BACK_TO_USER) {
+        commentSection.classList.add('hidden');
+        buttonSection.classList.add('hidden');
+        revertForm.classList.remove('hidden');
+    }
+    
+    // If Recommending Authority is selected (switch back from Sent Back to User)
+    if (selectedAuthority === RECOMMENDING_AUTHORITY) {
+        commentSection.classList.remove('hidden');
+        buttonSection.classList.remove('hidden');
+        revertForm.classList.add('hidden');
+    }
+});
+
+// Handle revert form validation
+const finalRemark = document.getElementById('finalRemark');
+revertForm.addEventListener('submit', function(e) {
+    // Check for unsaved changes first
+    if (unsavedForms.size > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        showUnsavedChangesWarning();
+        return false;
+    }
+    
+    if (!finalRemark.value.trim()) {
+        finalRemark.classList.add('is-invalid');
+        e.preventDefault();
+    } else {
+        finalRemark.classList.remove('is-invalid');
+    }
+});
+
+finalRemark.addEventListener('input', function() {
+    if (this.value.trim()) {
+        this.classList.remove('is-invalid');
+    }
+});
+
+// ==============================================
+// ENHANCED CHECKLIST COMPLETENESS VALIDATION
+// ==============================================
+markFormInternal.addEventListener('submit', function(e) {
+    const selectedAuthority = authorityDropdown.value;
+    
+    // Check for unsaved changes first
+    if (unsavedForms.size > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        showUnsavedChangesWarning();
+        return false;
+    }
+    
+    // Check if this is an upstream transition that requires complete checklist
+    const isUpstreamTransition = 
+        (currentUserRole == 3 && selectedAuthority == 2) || // Reviewing → Recommending
+        (currentUserRole == 2 && selectedAuthority == 1);  // Recommending → Approving
+    
+    if (isUpstreamTransition) {
+        // Check if all checklist sections are complete
+        if (!isAllChecklistsComplete()) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show warning modal
+            showChecklistWarningModal();
+            return false;
+        }
+    }
+    
+    // If checklist is complete or not required for this transition, proceed
+    return true;
+});
+
+// Add validation for Reviewing Officer selection
+authorityDropdown.addEventListener("change", function() {
+    if (authorityDropdown.value === "3") {
+        userDropdown.setAttribute("required", "required");
+    } else {
+        userDropdown.removeAttribute("required");
+    }
+});
+    
+    // Function to check if all checklists are complete
+    function isAllChecklistsComplete() {
+        const allSelects = document.querySelectorAll('.check-select');
+        let incompleteCount = 0;
+        
+        allSelects.forEach(select => {
+            const value = select.value;
+            const row = select.closest('tr');
+            const remarks = row ? row.querySelector('.remarks-field') : null;
+            
+            // Check if dropdown is not selected
+            if (value === '' || value === '--Select--') {
+                incompleteCount++;
+            }
+            // Check if "No" selected but remarks empty
+            else if (value === 'No') {
+                const remarkValue = remarks ? remarks.value.trim() : '';
+                if (remarkValue === '') {
+                    incompleteCount++;
+                }
+            }
+        });
+        
+        return incompleteCount === 0;
+    }
+    
+    // Function to show unsaved changes warning
+    function showUnsavedChangesWarning() {
+        // Create modal if it doesn't exist
+        let unsavedModal = document.getElementById('unsavedChangesModal');
+        let modalInstance = null;
+
+        if (!unsavedModal) {
+            unsavedModal = document.createElement('div');
+            unsavedModal.id = 'unsavedChangesModal';
+            unsavedModal.className = 'modal fade';
+            unsavedModal.tabIndex = '-1';
+            unsavedModal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Unsaved Changes Detected</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Warning:</strong> You have unsaved changes in checklist sections. Please save the changes before marking the application.
+                            </div>
+                            <div class="mt-3">
+                                <h6>Unsaved changes in the following sections:</h6>
+                                <ul id="unsavedSectionsList" class="list-group">
+                                    <!-- Will be populated dynamically -->
+                                </ul>
+                                <p class="text-muted mt-3">Please click the <strong>Save</strong> button in each section with unsaved changes before proceeding.</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" id="unsavedCancelBtn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(unsavedModal);
+
+            // Initialize modal instance after appending to DOM
+            modalInstance = new bootstrap.Modal(unsavedModal);
+
+            // Add event listener for Cancel button to properly close the modal
+            unsavedModal.querySelector('#unsavedCancelBtn').addEventListener('click', function() {
+                modalInstance.hide();
+            });
+
+            // Add event listener for "Go to Unsaved Sections" button if present
+            if (document.getElementById('gotoUnsavedSectionsBtn')) {
+                document.getElementById('gotoUnsavedSectionsBtn').addEventListener('click', function() {
+                    modalInstance.hide();
+
+                    // Get all unsaved forms and expand their accordion sections
+                    unsavedForms.forEach(form => {
+                        // Find the accordion section containing this form
+                        const accordionSection = form.closest('.accordion-collapse');
+                        if (accordionSection) {
+                            // Expand the accordion
+                            const accordionButton = document.querySelector(`[data-bs-target="#${accordionSection.id}"]`);
+                            if (accordionButton && accordionButton.classList.contains('collapsed')) {
+                                accordionButton.click();
+                            }
+
+                            // Scroll to the form
+                            setTimeout(() => {
+                                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                                // Highlight the form
+                                form.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.5)';
+                                form.style.transition = 'box-shadow 0.3s ease';
+                                setTimeout(() => {
+                                    form.style.boxShadow = 'none';
+                                }, 3000);
+                            }, 500);
+                        }
+                    });
+                });
+            }
+        } else {
+            // If already exists, just reuse instance
+            modalInstance = bootstrap.Modal.getOrCreateInstance(unsavedModal);
+        }
+
+        // Populate the list of unsaved sections
+        const unsavedSectionsList = document.getElementById('unsavedSectionsList');
+        if (unsavedSectionsList) {
+            unsavedSectionsList.innerHTML = '';
+
+            unsavedForms.forEach(form => {
+                // Find the accordion header text
+                const accordionHeader = form.closest('.accordion-item')?.querySelector('.accordion-button');
+                const sectionName = accordionHeader ? accordionHeader.textContent.trim() : 'Unknown Section';
+
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                listItem.innerHTML = `
+                    <span>${sectionName}</span>
+                    <span class="badge bg-danger rounded-pill">Unsaved</span>
+                `;
+                unsavedSectionsList.appendChild(listItem);
+            });
+        }
+
+        // Show modal
+        modalInstance.show();
+    }
+    // <button type="button" class="btn btn-primary" id="gotoUnsavedSectionsBtn">
+    //                             <i class="fas fa-external-link-alt me-1"></i> Go to Unsaved Sections
+    //                         </button>
+    
+    // Function to show checklist warning modal
+    function showChecklistWarningModal() {
+        // Create modal if it doesn't exist
+        let warningModal = document.getElementById('checklistWarningModal');
+        let modalInstance = null;
+    
+        if (!warningModal) {
+            warningModal = document.createElement('div');
+            warningModal.id = 'checklistWarningModal';
+            warningModal.className = 'modal fade';
+            warningModal.tabIndex = '-1';
+            warningModal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-white">
+                            <h5 class="modal-title">Checklist Incomplete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Warning:</strong> Please ensure fill the Checklists Yes or No ,before Assigning to higher Aurthority.
+                            </div>
+                            <div class="mt-3">
+                                <h6>Please complete all checklist items before proceeding.</h6>
+                                <p class="text-muted">All checklist sections must have "Yes" or "No" selected for each item. If "No" is selected, remarks are required.</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary close-warning" id="cancelWarningBtn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(warningModal);
+
+            // Initialize modal instance after appending to DOM
+            modalInstance = new bootstrap.Modal(warningModal);
+
+            // Add event listener for Cancel button to close modal
+            warningModal.querySelector('#cancelWarningBtn').addEventListener('click', function() {
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            });
+
+            // If there is a "Go to Checklist" button, add handler as before
+            // Uncomment or adjust if you add this feature in your modal HTML
+            // warningModal.querySelector('#gotoChecklistBtn')?.addEventListener('click', function() {
+            //     modalInstance.hide();
+            //     // Expand all accordion sections
+            //     const accordionButtons = document.querySelectorAll('.accordion-button.collapsed');
+            //     accordionButtons.forEach(btn => {
+            //         btn.click();
+            //     });
+            //     // Scroll to first incomplete item
+            //     const firstIncomplete = document.querySelector('.check-select[value=""]');
+            //     if (firstIncomplete) {
+            //         firstIncomplete.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            //         firstIncomplete.focus();
+            //     }
+            // });
+        } else {
+            modalInstance = new bootstrap.Modal(warningModal);
+        }
+    
+        // Show modal
+        modalInstance.show();
+    }
+    });
+// ==============================================
+// TRAIL FETCHING SCRIPT
+// ==============================================
+const getTrailsUrl = "{% url 'get_trails' %}";
+const roleId = {{ request.session.role_id }};
+
+$(document).ready(function(){
+    // Search filter
+    $("#searchInput").on("keyup", function() {
+        const value = $(this).val().toLowerCase();
+        $("table tbody tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    // Modal open logic
+    $('.mark-btn').click(function(){
+        const userid = $(this).data('userid');
+        const appno = $(this).data('appno');
+        const appstatus = $(this).data('appstatus');
+
+        $('#useridField, #useridFieldExternal').val(userid);
+        $('#fetchappno, #fetchappnoExternal').val(appno);
+        $('#appNoText, #appNoTextExternal').text(appno);
+        $('#appstatusField').val(appstatus);
+
+        if (appstatus == 5 && roleId == 1) {
+            $('#appstatusDiv').hide();
+            $('#appstatusField1').val(5);
+            $('#appstatusField').prop('required', false);
+        } else {
+            $('#appstatusDiv').show();
+            
+            $('#appstatusField').prop('required', true);
+        }
+
+        fetchtrails(appno);  
+    });
+
+    $('#markModal').on('hidden.bs.modal', function () {
+        $('#appstatusDiv').show();
+        $('#appstatusField').prop('required', true);
+    });
+});
+
+function fetchtrails(appno) {
+    $.ajax({
+        url: getTrailsUrl,
+        data: { appno: appno },
+        success: function(response) {
+            const trails = response.trails;
+            let trailHtml = '';
+            if (trails.length > 0) {
+                trails.forEach(item => {
+                    trailHtml += `
+                        <div style="background:#d4edda; border-left:5px solid #28a745; padding:10px; margin-bottom:8px; border-radius:5px;">
+                            <strong>${item.user}</strong> 
+                            <span style="color:#6c757d; font-size:12px;">(${item.designation}) – ${item.date}</span><br>
+                            <em>${item.comment}</em>
+                        </div>`;
+                });
+            } else {
+                trailHtml = '<p class="text-muted">No previous actions found.</p>';
+            }
+            $('#trailBox').html(trailHtml);
+        },
+        error: function() {
+            $('#trailBox').html('<p class="text-danger">Error loading previous actions.</p>');
+        }
+    });
+}
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const statusDropdown = document.getElementById("statusDropdown");
+        const authorityDropdown = document.getElementById("authorityDropdown");
+        const userDropdown = document.getElementById("userDropdown");
+        const form = document.getElementById("markFormInternal");
+    
+        form.addEventListener("submit", function (e) {
+            const selectedAuthority = authorityDropdown.value;
+    
+            // If "Reviewing officer" (value 3) is selected
+            if (selectedAuthority === "3") {
+                if (!userDropdown.value) {
+                    e.preventDefault();
+                    alert("Please select the Reviewing Officer");
+                    userDropdown.focus();
+                    return false;
+                }
+            }
+        });
+    
+        // When authority changes
+        authorityDropdown.addEventListener("change", function () {
+            if (authorityDropdown.value === "3") {
+                userDropdown.setAttribute("required", "required");
+            } else {
+                userDropdown.removeAttribute("required");
+            }
+        });
+    });
+    
+    </script>
+    
+    
+{% endblock %}

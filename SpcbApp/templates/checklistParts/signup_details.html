@@ -1,0 +1,190 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/spcbapp/Checklistparts/signupdetails.css' %}">
+
+<table class="checklist-table table table-bordered">
+    <thead>
+        <tr>
+            <th>Checklist Item</th>
+            <th>Yes / No</th>
+            <th>Remarks</th>
+        </tr>
+    </thead>
+    <tbody>
+        <form id="signupForm" action="{% url 'signupchecklist' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="industryid" value="{{ IndustryId }}">
+            <input type="hidden" name="appno" value="{{ AppNo }}">
+
+            <!-- Row 1 -->
+            <tr>
+                <td>Recyclers Name and Address *</td>
+                <td>
+                    <select name="name_address" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.name_address == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.name_address == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_name_address" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_name_address }}" required></td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr>
+                <td>Company Email *</td>
+                <td>
+                    <select name="company_email" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.company_email == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.company_email == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_company_email" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_company_email }}" required></td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr>
+                <td>Upload GST Certificate *</td>
+                <td>
+                    <select name="gst_certificate" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.gst_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.gst_certificate == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_gst_certificate" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_gst_certificate }}" required></td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr>
+                <td>Provided and Uploaded PAN Card of Company *</td>
+                <td>
+                    <select name="company_pan_card" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.company_pan_card == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.company_pan_card == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_company_pan_card" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_company_pan_card }}" required></td>
+            </tr>
+
+            <!-- Row 5 -->
+            <tr>
+                <td>Provided and Uploaded TIN of Company *</td>
+                <td>
+                    <select name="company_tin" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.company_tin == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.company_tin == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_company_tin" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_company_tin }}" required></td>
+            </tr>
+
+            <!-- Row 6 -->
+            <tr>
+                <td>Provided and Uploaded CIN of Company *</td>
+                <td>
+                    <select name="company_cin" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.company_cin == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.company_cin == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_company_cin" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_company_cin }}" required></td>
+            </tr>
+
+            <!-- Row 7 -->
+            <tr>
+                <td>Provided and Uploaded IEC of Company *</td>
+                <td>
+                    <select name="company_iec" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.company_iec == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.company_iec == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_company_iec" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_company_iec }}" required></td>
+            </tr>
+
+            <!-- Row 8 -->
+            <tr>
+                <td>Authorized Person Details (Name, Email ID, Mobile No, PAN card) *</td>
+                <td>
+                    <select name="auth_person_details" class="check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if signup.auth_person_details == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if signup.auth_person_details == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td><input type="text" name="remarks_auth_person_details" placeholder="Remarks" class="form-control remarks-field" value="{{ signup.remarks_auth_person_details }}" required></td>
+            </tr>
+
+            <tr>
+                <td colspan="3" class="text-center">
+                    <button type="submit" class="btn btn-primary">Save Data</button>
+                </td>
+            </tr>
+        </form>
+
+        <form action="" method="post">
+            {% csrf_token %}
+            <tr>
+                <td colspan="3" class="text-center">
+                    <button type="submit" class="btn btn-warning">View Submitted Data</button>
+                </td>
+            </tr>
+        </form>
+    </tbody>
+</table>
+
+<!-- ✅ JavaScript Validation and State Handling -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('.check-select');
+
+    // Function to update remark field state
+    function updateRemarksState(select, remarks) {
+        const hasValue = remarks.value.trim() !== '';
+
+        if (select.value === 'Yes') {
+            // ✅ Keep DB value visible but disable editing
+            remarks.disabled = false;
+            remarks.removeAttribute('required');
+            remarks.style.backgroundColor = '#f0f0f0';
+            remarks.style.borderColor = '#ccc';
+        } 
+        else if (select.value === 'No') {
+            // ✅ Required only if "No" selected
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        } 
+        else {
+            // ✅ Default state when not selected
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        }
+    }
+
+    // Initialize all selects on load
+    selects.forEach(select => {
+        const row = select.closest('tr');
+        const remarks = row.querySelector('.remarks-field');
+
+        // Run once on load (preserve DB data)
+        updateRemarksState(select, remarks);
+
+        // Handle dropdown change
+        select.addEventListener('change', () => updateRemarksState(select, remarks));
+
+        // Handle typing inside remark (live border update)
+        remarks.addEventListener('input', () => updateRemarksState(select, remarks));
+    });
+});
+</script>
+
+

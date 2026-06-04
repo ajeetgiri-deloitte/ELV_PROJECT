@@ -1,0 +1,87 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-4">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">{{ message }}</div>
+        
+    {% endfor %}
+{% endif %}
+
+    <hr>
+    <h2>Add New User</h2>
+    <hr>
+    <form method="post" id = "addUserForm" action="{% url 'addspcbuser' %}">
+        {% csrf_token %}
+        <div class="row">
+            <div class="form-group col">
+                <label for="OfficerName">Officer Name</label>
+                <input type="text" class="form-control" name="OfficerName" required>
+            </div>
+            
+            <div class="form-group col">
+                <label for="auth_email">Email</label>
+                <input type="email" class="form-control" name="auth_email" required>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="form-group col">
+                <label for="OfficerName">Mobile Number</label>
+                <input 
+    type="tel" 
+    class="form-control" 
+    name="auth_mobile" 
+    pattern="[0-9]{10}" 
+    maxlength="10" 
+    minlength="10" 
+    title="Please enter a 10-digit mobile number" 
+    required
+    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+>
+
+            </div>
+            <div class="form-group col">
+                <label for="OfficerName">State</label>
+                <input type="text" class="form-control" name="StateName" value="{{ statename }}" disabled>
+            </div>
+        </div>
+        <!-- <div class="row mt-2">
+            <div class="form-group col">
+                <label for="OfficerName">Password</label>
+                <input type="password" class="form-control" name="password" required>
+            </div>
+            <div class="form-group col">
+                <label for="auth_email">Confirm Password</label>
+                <input type="password" class="form-control" name="confirmpassword" required>
+            </div>
+        </div> -->
+        <div class="row mt-2">
+            
+            <div class="form-group col">
+                <label for="auth_email">District</label>
+                <select name="District_id" class="form-control" id="">
+
+                    <option value="">Please Select District</option>
+                    {% for districts in districts  %}
+                     <option value="{{ districts.city_id}}">{{ districts.city_name }}</option>
+                    {% endfor %}
+
+
+                </select>
+            </div>
+            <div class="form-group col">
+                
+            </div>
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+
+
+    
+    <script src="{% static 'js/spcbapp/usermanagement/adduser.js' %}"></script>
+{% endblock %}

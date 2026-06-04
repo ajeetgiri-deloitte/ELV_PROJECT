@@ -1,0 +1,818 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/generaldetails.css' %}">
+    
+    {% if messages %}
+<div class="container-fluid px-4">
+    {% for message in messages %}
+    <div class="alert alert-dismissible fade show mt-3 message-alert" 
+         role="alert"
+         data-message-type="{{ message.tags }}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+    
+    <style>
+        .custborder{
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .validation-msg {
+            display: block;
+            margin-top: 3px;
+            font-size: 0.9em;
+        }
+        .validation-msg.success {
+            color: green;
+        }
+        .validation-msg.error {
+            color: red;
+        }
+        .document-link {
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+
+    <!-- Hidden field to track consent verification status -->
+    <input type="hidden" id="initial_consent_number" value="{{ general.cto_number|default:'' }}">
+    <input type="hidden" id="initial_state" value="{{ general.state|default:'' }}">
+
+    <div class="container-fluid px-4 page-container">
+        <div class="breadcrumb-container">
+            <div class="page-inner">
+                <div class="page-header">
+                    <!-- Breadcrumb removed for brevity -->
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 form-card">
+            <div class="card-body">
+                <div class="section-header">
+                    <h5 class="section-title">(B). RVSF Details</h5>
+                </div>
+
+                <form method="post" action="{% url 'rvsfdetails' %}" enctype="multipart/form-data" id="rvsfForm">
+                    {% csrf_token %}
+
+                    <div class="row form-row">
+                        <div class="col-md-6 mb-4">
+                            <label for="id_address" class="form-label">Address <span class="text-danger">*</span></label>
+                            <textarea id="id_address" name="address" class="form-control" placeholder="Address" required rows="4" maxlength="150">{{ general.address }}</textarea>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">GPS Location of facility <span class="text-danger">*</span></label>
+                            <div class="gps-container">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <input type="text" id="id_latitude" maxlength="8" name="latitude" class="form-control"
+                                            value="{{ general.latitude }}" placeholder="Latitude (e.g., 23.4567)" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" id="id_longitude" maxlength="8" name="longitude" class="form-control"
+                                            value="{{ general.longitude }}" placeholder="Longitude (e.g., 78.1234)" required>
+                                    </div>
+                                </div>
+                                <!-- <div class="row">
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-outline-info location-btn" onclick="fillLocation()">
+                                            <i class="fas fa-location-arrow me-2"></i>Use My Location
+                                        </button>
+                                    </div>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row form-row">
+                        <div class="col-md-4 mb-4">
+                            <label for="state" class="form-label required">State/UT <span class="text-danger">*</span></label>
+                            <select class="form-select" id="state" name="state" required>
+                                <option value="" selected disabled>Select State</option>
+                                {% for state in states %}
+                                <option value="{{ state.state_id }}" 
+                                    {% if general.state == state.state_id|stringformat:"s" %}selected{% endif %}>
+                                    {{ state.state_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <label for="district" class="form-label required">District <span class="text-danger">*</span></label>
+                            <select id="district" name="district" class="form-select" required>
+                                <option value="" selected disabled>Select District</option>
+                                {% if general.district and districtname %}
+                                <option value="{{ general.district }}" selected>{{ districtname.city_name }}</option>
+                                {% endif %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select district.
+                            </div>
+                        </div>
+                        
+                        <!-- GPCB ID Container (only for Gujarat) -->
+                        <div class="col-md-4 mb-4 position-relative" id="gpcbid-container" style="display:none;">
+                            <label class="form-label">Gujarat Pollution Control Board ID <span class="text-danger">*</span></label>
+                            <input type="text" name="gpcbid" id="gpcbid-field" pattern="[0-9]+" inputmode="numeric" class="form-control" value="{{ general.gpcbid|default:'' }}">
+                            <span id="gpcbid-tick" style="display:none; color: green;">✔</span>
+                            <span id="gpcbid-cross" style="display:none; color: red;">✖</span>
+                            <small id="gpcbid-msg" class="validation-msg"></small>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            
+                            <label for="id_encorp_year" class="form-label">Year of Incorporation <span class="text-danger">*</span></label>
+                            <select id="id_encorp_year" name="encorp_year" class="form-select" required>
+                                <option value="" disabled>Select Year</option>
+                                {% if general.encorp_year %}
+                                <option value="{{ general.encorp_year }}" selected style="display:none;">{{ general.encorp_year }}</option>
+                                {% endif %}
+                            </select>
+                            <small class="text-muted">Select the year your company was incorporated</small>
+                        </div>
+                    </div>
+
+                    <!-- <div class="row form-row custborder">
+                        
+                    </div> -->
+                    
+                    
+
+                    <div class="row form-row custborder">
+                        <div class="col-md-4 mb-4" style="position: relative;">
+                            <label for="id_cto_number" class="form-label">Consent Application Number (CTO) <span class="text-danger">*</span></label>
+                            <input id="id_cto_number" type="text" name="cto_number" value="{{ general.cto_number }}" 
+                                placeholder="CTO Number" class="form-control" required>
+                            <span id="consent-tick" style="display:none; position: absolute; right: 20px; top: 40px; color: green;">✔</span>
+                            <span id="consent-cross" style="display:none; position: absolute; right: 20px; top: 40px; color: red;">✖</span>
+                            <small id="consent-msg" class="validation-msg"></small>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <label for="id_consent_validity" class="form-label">Consent Validity <span class="text-danger">*</span></label>
+                            <input id="id_consent_validity" type="date" name="consent_validity"
+                                value="{{ general.consent_validity|date:'Y-m-d' }}" class="form-control" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <label for="id_cto_pdf" class="form-label">Upload CTO (Only PDF max file size 2Mb)</label>
+                            {% if general.cto_pdf %}
+                            <a href="{% url 'protected_file_rvsf' general.cto_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            
+                            {% endif %}
+                            <input id="id_cto_pdf" type="file" name="cto_pdf" class="form-control"
+                                accept="application/pdf">
+                        </div>
+                    </div>
+
+                    <div class="row form-row custborder">
+                        <div class="col-md-8 mb-4">
+                            <label for="id_howm_validity" class="form-label">Validity of Authorization under Hazardous and Other Wastes (Management and Transboundary Movement), Rules, 2016 <span class="text-danger">*</span></label>
+                            <input id="id_howm_validity" type="date" name="howm_validity"
+                                value="{{ general.howm_validity|date:'Y-m-d' }}" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <label for="id_howm_pdf" class="form-label">Upload Authorization (Only PDF max file size 2Mb)</label>
+                            {% if general.howm_pdf %}
+                            <a href="{% url 'protected_file_rvsf' general.howm_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            
+                            {% endif %}
+                            <input id="id_howm_pdf" type="file" name="howm_pdf" class="form-control"
+                                accept="application/pdf">
+                        </div>
+                    </div>
+
+                    <div class="row form-row custborder">
+                        <div class="col-md-8 mb-4">
+                            <label for="id_dic_validity" class="form-label">Validity of certification of registration with District Industries Centre (DIC) <span class="text-danger">*</span></label>
+                            <input id="id_dic_validity" type="date" name="dic_validity"
+                                value="{{ general.dic_validity|date:'Y-m-d' }}" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <label for="id_dic_pdf" class="form-label">Upload Registration with DIC (Only PDF max file size 2Mb)</label>
+                            {% if general.dic_pdf %}
+                            <a href="{% url 'protected_file_rvsf' general.dic_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            
+                            {% endif %}
+                            <input id="id_dic_pdf" type="file" name="dic_pdf" class="form-control"
+                                accept="application/pdf">
+                        </div>
+                    </div>
+
+                    <div class="row form-row custborder">
+                        <div class="col-md-12 mb-4">
+                            <label for="id_rvsf_reg_no" class="form-label">Registration No. for setting up of RVSF (Form 1A Under Motor Vehicles (Registration and Functions of Vehicles Scraping Facility) Rules,2021) <span class="text-danger">*</span></label>
+                            <input id="id_rvsf_reg_no" type="text" name="rvsf_reg_no" value="{{ general.rvsf_reg_no }}" 
+                                class="form-control" placeholder="RVSF Registration No" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row form-row custborder">
+                        <div class="col-md-6 mb-4">
+                            <label for="id_rvsf_validity" class="form-label">RVSF Validity <span class="text-danger">*</span></label>
+                            <input id="id_rvsf_validity" type="date" name="rvsf_validity"
+                                value="{{ general.rvsf_validity|date:'Y-m-d' }}" class="form-control" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="id_rvsf_pdf" class="form-label">Upload RVSF Certificate (Only PDF max file size 2Mb)</label>
+                            {% if general.rvsf_pdf %}
+                            <a href="{% url 'protected_file_rvsf' general.rvsf_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            
+                            {% endif %}
+                            <input id="id_rvsf_pdf" type="file" name="rvsf_pdf" class="form-control"
+                                accept="application/pdf">
+                        </div>
+                    </div>
+
+                    <div class="row form-row">
+                        <div class="col-md-6 mb-4">
+                            <label for="id_process_flow_pdf" class="form-label">Upload Process Flow diagram with brief write up (Only PDF max file size 2Mb)</label>
+                            {% if general.process_flow_pdf %}
+                            <a href="{% url 'protected_file_rvsf' general.process_flow_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            
+                            {% endif %}
+                            <input id="id_process_flow_pdf" type="file" name="process_flow_pdf" class="form-control"
+                                accept="application/pdf">
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="id_material_balance_pdf" class="form-label">Upload Material Balance Sheet (Only PDF max file size 2Mb)</label>
+                            {% if general.material_balance_pdf %}
+                            <a href="{% url 'protected_file_rvsf' general.material_balance_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            
+                            {% endif %}
+                            <input id="id_material_balance_pdf" type="file" name="material_balance_pdf" class="form-control"
+                                accept="application/pdf">
+                        </div>
+                    </div>
+
+                    <div class="row form-row custborder">
+                        <h6>Annual Return Under Form 4 of HOWM Rules,2016</h6>
+                        <div class="col-md-4 mb-4">
+                            <label for="id_annual_returns_pdf" class="form-label">Upload Annual Returns for (FY:2022-23)(Only PDF max file size 2Mb)</label>
+                            {% if general.annual_returns_pdf %}
+                            <a href="{% url 'protected_file_rvsf' general.annual_returns_pdf.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            <input id="id_annual_returns_pdf" type="file" name="annual_returns_pdf" class="form-control"
+                                accept="application/pdf">
+                            {% else %}
+                            <input id="id_annual_returns_pdf" type="file" name="annual_returns_pdf" class="form-control"
+                                accept="application/pdf" required>
+                                {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <label for="id_annual_returns_pdf1" class="form-label">Upload Annual Returns for (FY:2023-24)(Only PDF max file size 2Mb)</label>
+                            {% if general.annual_returns_pdf1 %}
+                            <a href="{% url 'protected_file_rvsf' general.annual_returns_pdf1.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            <input id="id_annual_returns_pdf1" type="file" name="annual_returns_pdf1" class="form-control"
+                                accept="application/pdf">
+                            {% else %}
+                            <input id="id_annual_returns_pdf1" type="file" name="annual_returns_pdf1" class="form-control"
+                                accept="application/pdf" required>
+                                {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <label for="id_annual_returns_pdf2" class="form-label">Upload Annual Returns for (FY:2024-25)(Only PDF max file size 2Mb)</label>
+                            {% if general.annual_returns_pdf2 %}
+                            <a href="{% url 'protected_file_rvsf' general.annual_returns_pdf2.name %}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf me-2"></i>View Document
+                            </a>
+                            <input id="id_annual_returns_pdf2" type="file" name="annual_returns_pdf2" class="form-control"
+                                accept="application/pdf" >
+                            
+                            {% else %}
+                            <input id="id_annual_returns_pdf2" type="file" name="annual_returns_pdf2" class="form-control"
+                                accept="application/pdf" required>
+                                {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="action-buttons mt-4">
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>Save and Next
+                        </button>
+                        <a href="{% url 'rvsf_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="district-url" data-url="{% url 'load_districts' %}"></div>
+
+    <script src="{% static 'js/rvsfappjs/user/generaldetails.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Select all message alerts
+    const messageAlerts = document.querySelectorAll('.message-alert');
+    
+    messageAlerts.forEach(alert => {
+        const messageType = alert.getAttribute('data-message-type');
+        
+        // Map message types to Bootstrap classes
+        const typeMap = {
+            'success': 'alert-success',
+            'error': 'alert-danger',  // Red color for error
+            'warning': 'alert-warning',
+            'info': 'alert-info',
+            'debug': 'alert-secondary'
+        };
+        
+        // Default to 'info' if type not found
+        const alertClass = typeMap[messageType] || 'alert-info';
+        
+        // Add the appropriate class
+        alert.classList.add(alertClass);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSelect = document.getElementById('id_encorp_year');
+            const currentYear = new Date().getFullYear();
+            const startYear = 1900;
+            
+            // Get any pre-selected option
+            const preSelectedOption = yearSelect.querySelector('option[selected]');
+            const selectedYear = preSelectedOption ? preSelectedOption.value : '';
+            
+            // Remove the pre-selected option (we'll add it back properly)
+            if (preSelectedOption) {
+                preSelectedOption.remove();
+            }
+            
+            // Generate years from 1900 to current year
+            for (let year = currentYear; year >= startYear; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                
+                // Select if matches existing value
+                if (selectedYear && year.toString() === selectedYear) {
+                    option.selected = true;
+                }
+                
+                yearSelect.appendChild(option);
+            }
+            
+            // Ensure something is selected
+            if (!yearSelect.value && yearSelect.options.length > 0) {
+                yearSelect.querySelector('option[value=""]').selected = true;
+            }
+        });
+    </script>
+    
+    <script>
+        // Regex for latitude/longitude validation
+        const LAT_REGEX = /^-?(?:[0-8]?\d(?:\.\d{1,6})?|90(?:\.0{1,6})?)$/;
+        const LNG_REGEX = /^-?(?:1?[0-7]?\d(?:\.\d{1,6})?|180(?:\.0{1,6})?)$/;
+        
+        // show ✓ / ✖ messages for coordinates
+        function showStatus(input, isValid) {
+            let id = input.attr("id") + "_status";
+            
+            if ($("#" + id).length === 0) {
+                input.after(`<span id="${id}" style="margin-left:8px;font-weight:bold;"></span>`);
+            }
+            
+            let span = $("#" + id);
+            span.text(isValid ? "✔" : "✖").css("color", isValid ? "green" : "red");
+        }
+        
+        // Latitude validation
+        $("#id_latitude").on("keyup change", function () {
+            let value = $(this).val().trim();
+            showStatus($(this), LAT_REGEX.test(value));
+        });
+        
+        // Longitude validation
+        $("#id_longitude").on("keyup change", function () {
+            let value = $(this).val().trim();
+            showStatus($(this), LNG_REGEX.test(value));
+        });
+        
+        // Prevent form submit if invalid coordinates
+        $("form").on("submit", function (e) {
+            let lat = $("#id_latitude").val().trim();
+            let lng = $("#id_longitude").val().trim();
+            
+            if (!LAT_REGEX.test(lat) || !LNG_REGEX.test(lng)) {
+                e.preventDefault();
+                alert("Please enter valid Latitude and Longitude values!");
+            }
+        });
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stateSelect = document.getElementById('state');
+            const consentInput = document.getElementById('id_cto_number');
+            const gpcbidInput = document.getElementById('gpcbid-field');
+            const gpcbidContainer = document.getElementById('gpcbid-container');
+            
+            const consentTick = document.getElementById('consent-tick');
+            const consentCross = document.getElementById('consent-cross');
+            const consentMsg = document.getElementById('consent-msg');
+            
+            const gpcbidTick = document.getElementById('gpcbid-tick');
+            const gpcbidCross = document.getElementById('gpcbid-cross');
+            const gpcbidMsg = document.getElementById('gpcbid-msg');
+            
+            const form = document.getElementById('rvsfForm');
+            const submitButton = document.getElementById('submitBtn');
+            
+            // Get initial values from hidden fields
+            const initialConsent = document.getElementById('initial_consent_number').value;
+            const initialState = document.getElementById('initial_state').value;
+            
+            const stateMap = {
+                'Karnataka': { code: 'KTK', status: 0 },
+                'Madhya Pradesh': { code: 'MP', status: 0 },
+                'Maharashtra': { code: 'MAH', status: 0 },
+                'Gujarat': { code: 'GUJ', status: 0 },
+                'Rajasthan': { code: 'RJ', status: 0 }
+            };
+            
+            // Track validation states
+            let isConsentValid = false;
+            let isGpcbidValid = false;
+            let consentChanged = false;
+            
+            // Ensure positioning for icons
+            consentInput.parentElement.style.position = 'relative';
+            
+            function toggleGpcbid() {
+                const selectedOption = stateSelect.options[stateSelect.selectedIndex];
+                const text = selectedOption?.textContent?.trim() || '';
+                const show = (text === 'Gujarat');
+                gpcbidContainer.style.display = show ? 'block' : 'none';
+                if (gpcbidInput) gpcbidInput.required = show;
+                
+                // Reset GPCB validation when state changes
+                if (!show) {
+                    isGpcbidValid = true; // Not required for non-Gujarat states
+                } else {
+                    isGpcbidValid = false;
+                }
+            }
+            
+            async function validateConsent() {
+                // Get current values
+                const currentConsent = consentInput.value.trim();
+                const selectedOption = stateSelect.options[stateSelect.selectedIndex];
+                const selectedText = selectedOption?.textContent?.trim() || '';
+                
+                // Check if consent is same as initial and state hasn't changed
+                if (!consentChanged && currentConsent === initialConsent && 
+                    stateSelect.value === initialState && currentConsent !== '') {
+                    // Consent hasn't changed, mark as valid
+                    consentTick.style.display = 'inline';
+                    consentTick.style.color = 'green';
+                    consentMsg.textContent = 'Consent already verified';
+                    consentMsg.classList.add('success');
+                    consentMsg.classList.remove('error');
+                    isConsentValid = true;
+                    
+                    // For Gujarat, also validate GPCB ID if it exists
+                    if (selectedText === 'Gujarat' && gpcbidInput && gpcbidInput.value.trim()) {
+                        gpcbidTick.style.display = 'inline';
+                        gpcbidTick.style.color = 'green';
+                        gpcbidMsg.textContent = 'GPCB ID exists';
+                        gpcbidMsg.classList.add('success');
+                        isGpcbidValid = true;
+                    }
+                    return;
+                }
+                
+                // Reset indicators for new validation
+                [consentTick, consentCross, gpcbidTick, gpcbidCross].forEach(el => el.style.display = 'none');
+                [consentMsg, gpcbidMsg].forEach(el => { 
+                    el.textContent = ''; 
+                    el.className = 'validation-msg'; 
+                });
+                
+                if (!currentConsent) {
+                    isConsentValid = false;
+                    return;
+                }
+                
+                const mapping = stateMap[selectedText] || { code: 'UP', status: 1 };
+                
+                // For Gujarat, both fields required
+                if (mapping.code === 'GUJ' && (!gpcbidInput || !gpcbidInput.value.trim())) {
+                    return;
+                }
+                
+                const payload = {
+                    consent_id: currentConsent,
+                    statecode: mapping.code,
+                    status: mapping.status
+                };
+                if (mapping.code === 'GUJ' && gpcbidInput) {
+                    payload.gpcbid = gpcbidInput.value.trim();
+                }
+                
+                try {
+                    const response = await fetch('/rvsf/consent/details/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.status === 200 && data.status === 200 && 
+                        data.data && data.data.applicationNo) {
+                        // ✅ Valid consent
+                        consentTick.style.display = 'inline';
+                        consentTick.style.color = 'green';
+                        consentMsg.textContent = 'Valid Consent Number';
+                        consentMsg.classList.add('success');
+                        consentMsg.classList.remove('error');
+                        isConsentValid = true;
+                        
+                        if (mapping.code === 'GUJ') {
+                            gpcbidTick.style.display = 'inline';
+                            gpcbidTick.style.color = 'green';
+                            gpcbidMsg.textContent = 'Valid GPCB ID';
+                            gpcbidMsg.classList.add('success');
+                            gpcbidMsg.classList.remove('error');
+                            isGpcbidValid = true;
+                        }
+                    } else {
+                        // ❌ Invalid
+                        consentCross.style.display = 'inline';
+                        consentCross.style.color = 'red';
+                        consentMsg.textContent = 'Invalid Consent Number';
+                        consentMsg.classList.add('error');
+                        consentMsg.classList.remove('success');
+                        isConsentValid = false;
+                        
+                        if (mapping.code === 'GUJ') {
+                            gpcbidCross.style.display = 'inline';
+                            gpcbidCross.style.color = 'red';
+                            gpcbidMsg.textContent = 'Invalid GPCB ID';
+                            gpcbidMsg.classList.add('error');
+                            gpcbidMsg.classList.remove('success');
+                            isGpcbidValid = false;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Network error:', error);
+                    consentCross.style.display = 'inline';
+                    consentMsg.textContent = 'Network error. Please try again.';
+                    consentMsg.classList.add('error');
+                    isConsentValid = false;
+                }
+            }
+            
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let cookie of cookies) {
+                        cookie = cookie.trim();
+                        if (cookie.startsWith(name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            // Handle form submission
+            form.addEventListener('submit', function (e) {
+                const selectedOption = stateSelect.options[stateSelect.selectedIndex];
+                const selectedText = selectedOption?.textContent?.trim() || '';
+                const isGujarat = selectedText === 'Gujarat';
+                
+                // Check if consent is invalid
+                if (!isConsentValid) {
+                    e.preventDefault();
+                    alert('Please confirm the consent details and again try with correct one');
+                    consentInput.focus();
+                    return false;
+                }
+                
+                // For Gujarat, also check GPCB ID
+                if (isGujarat && !isGpcbidValid) {
+                    e.preventDefault();
+                    alert('Please validate your GPCB ID before submitting.');
+                    if (gpcbidInput) gpcbidInput.focus();
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Event listeners for consent tracking
+            consentInput.addEventListener('input', function() {
+                if (this.value.trim() !== initialConsent) {
+                    consentChanged = true;
+                    isConsentValid = false;
+                    consentTick.style.display = 'none';
+                    consentCross.style.display = 'none';
+                    consentMsg.textContent = '';
+                    consentMsg.className = 'validation-msg';
+                }
+            });
+            
+            stateSelect.addEventListener('change', function() {
+                if (this.value !== initialState) {
+                    consentChanged = true;
+                }
+                toggleGpcbid();
+            });
+            
+            if (gpcbidInput) {
+                gpcbidInput.addEventListener('input', function() {
+                    isGpcbidValid = false;
+                    gpcbidTick.style.display = 'none';
+                    gpcbidCross.style.display = 'none';
+                    gpcbidMsg.textContent = '';
+                    gpcbidMsg.className = 'validation-msg';
+                });
+            }
+            
+            // Initialize
+            toggleGpcbid();
+            
+            // Validate consent on page load if it exists
+            if (initialConsent) {
+                validateConsent();
+            }
+            
+            // Validate on blur (when user leaves the field)
+            consentInput.addEventListener('blur', validateConsent);
+            if (gpcbidInput) {
+                gpcbidInput.addEventListener('blur', validateConsent);
+            }
+        });
+    </script>
+    
+    <script>
+        // Function to validate file name for special characters
+        function validateFileName(input) {
+            if (!input || !input.files || input.files.length === 0) {
+                return true;
+            }
+            
+            const fileName = input.files[0].name;
+            // Allow only alphanumeric, spaces, underscores, hyphens, and .pdf extension
+            const validFileNameRegex = /^[a-zA-Z0-9][a-zA-Z0-9_\-\s()\.]*\.pdf$/i;
+            
+            // Check for special characters not allowed
+            const specialCharRegex = /[<>:"/\\|?*]/;
+            
+            if (specialCharRegex.test(fileName)) {
+                alert('Special characters like < > : " / \\ | ? * are not allowed in the file name.');
+                input.value = '';
+                return false;
+            }
+            
+            if (!validFileNameRegex.test(fileName)) {
+                alert('Invalid file name. Special characters are not allowed in the file name.');
+                input.value = '';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Apply onchange validation to all file inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            
+            fileInputs.forEach(function(input) {
+                input.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        validateFileName(this);
+                    }
+                });
+            });
+        });
+    </script>
+    
+    <script>
+        $(document).ready(function () {
+            var selectedState = "{{ general.state|default:'' }}";
+            var selectedDistrict = "{{ general.district|default:'' }}";
+            
+            console.log("Initial - State:", selectedState, "District:", selectedDistrict);
+            
+            // Load districts if state is selected
+            if (selectedState) {
+                loadDistricts(selectedState, selectedDistrict);
+            }
+            
+            // Handle state change
+            $('#state').change(function () {
+                var stateId = $(this).val();
+                if (stateId) {
+                    loadDistricts(stateId, '');
+                } else {
+                    $('#district').empty().append('<option value="" selected disabled>Select District</option>');
+                }
+            });
+            
+            // Function to load districts
+            function loadDistricts(stateId, selectDistrictId) {
+                $.ajax({
+                    url: "{% url 'load_districts' %}",
+                    data: { 'state_id': stateId },
+                    success: function (data) {
+                        console.log("Districts loaded for state", stateId, ":", data);
+                        
+                        $('#district').empty().append('<option value="" selected disabled>Select District</option>');
+                        
+                        $.each(data, function (index, district) {
+                            var selected = '';
+                            if (district.city_id == selectDistrictId) {
+                                selected = 'selected';
+                            }
+                            $('#district').append('<option value="' + district.city_id + '" ' + selected + '>' + district.city_name + '</option>');
+                        });
+                        
+                        // If district ID is provided but not found in options, add it
+                        if (selectDistrictId && $('#district').val() !== selectDistrictId) {
+                            // Try to get district name from the option that was rendered on page load
+                            var districtName = "{{ districtname.city_name|default:'' }}";
+                            if (districtName) {
+                                $('#district').append('<option value="' + selectDistrictId + '" selected>' + districtName + '</option>');
+                            }
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error loading districts:", error);
+                        // If we have a district name from context, use it
+                        var districtName = "{{ districtname.city_name|default:'' }}";
+                        if (selectDistrictId && districtName) {
+                            $('#district').html('<option value="" selected disabled>Select District</option>' +
+                                '<option value="' + selectDistrictId + '" selected>' + districtName + '</option>');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <script>
+        // Get current location
+        function fillLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('id_latitude').value = position.coords.latitude.toFixed(4);
+                        document.getElementById('id_longitude').value = position.coords.longitude.toFixed(4);
+                    },
+                    function(error) {
+                        alert("Error getting location: " + error.message);
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+    </script>
+
+{% endblock %}

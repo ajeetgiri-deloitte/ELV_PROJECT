@@ -1,0 +1,132 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-gear-fill"></i> RVSF Capacity Details</h5>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th>Capacity Type</th>
+              <th>No. of Vehicles Scrapped / Annum</th>
+              <th>Quantity of Steel Scrapped / Annum (in MT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-start fw-semibold">
+                Installed Capacity<br>
+                <small class="text-muted">(as per consents/licenses)</small>
+              </td>
+              <td>
+                <input type="number" class="form-control" name="installed_vehicles" value="{{ rvsfCapacitydata.installed_vehicles|default:'' }}" readonly>
+              </td>
+              <td>
+                <input type="number" class="form-control" name="installed_steel" value="{{ rvsfCapacitydata.installed_steel|default:'' }}" readonly>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="text-start fw-semibold">
+                Operating Capacity<br>
+                <small class="text-muted">FY {{ year1 }}</small>
+                <input type="hidden" name="year1" value="{{ year1 }}">
+              </td>
+              <td>
+                <input type="number" class="form-control" name="operating_vehicles1" value="{{ rvsfCapacitydata.operating_vehicles1 }}" readonly>
+              </td>
+              <td>
+                <input type="number" class="form-control" name="operating_steel1" value="{{ rvsfCapacitydata.operating_steel1 }}" readonly>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="text-start fw-semibold">
+                Operating Capacity<br>
+                <small class="text-muted">FY {{ year2 }}</small>
+                <input type="hidden" name="year2" value="{{ year2 }}">
+              </td>
+              <td>
+                <input type="number" class="form-control" name="operating_vehicles2" value="{{ rvsfCapacitydata.operating_vehicles2 }}" readonly>
+              </td>
+              <td>
+                <input type="number" class="form-control" name="operating_steel2" value="{{ rvsfCapacitydata.operating_steel2 }}" readonly>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="text-start fw-semibold">
+                Operating Capacity<br>
+                <small class="text-muted">FY {{ year3 }}</small>
+                <input type="hidden" name="year3" value="{{ year3 }}">
+              </td>
+              <td>
+                <input type="number" class="form-control" name="operating_vehicles3" value="{{ rvsfCapacitydata.operating_vehicles3 }}" readonly>
+              </td>
+              <td>
+                <input type="number" class="form-control" name="operating_steel3" value="{{ rvsfCapacitydata.operating_steel3 }}" readonly>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr class="my-4">
+
+      <!-- Comment Section -->
+      {% if commentcount > 0 %}
+      <div class="mb-4">
+        <h6 class="fw-bold"> Comment / Remark</h6>
+        <div class="form-control bg-light" style="min-height: 100px;">
+          {{ comment.SPCBComments|default:"—" }}
+        </div>
+        <small class="text-muted fst-italic">Commented on {{ comment.SPCBCommentDate|date:'d-m-Y H:i' }}</small>
+      </div>
+    {% else %}
+      <form method="post" action="{% url 'save_general_trail' %}">
+        {% csrf_token %}
+        <input type="hidden" name="industryid" value="{{ fetchapp.userid }}">
+        <input type="hidden" name="stateid" value="{{ statename.state_id }}">
+        <input type="hidden" name="appno" value="{{ fetchapp.appno }}">
+        <input type="hidden" name="editmode" value="4">
+        <input type="hidden" name="editPart" value="wasteRecycled">
+
+        <div class="mb-3">
+          <label for="SPCBComments" class="form-label fw-bold">
+            <i class="bi bi-chat-left-dots"></i> Comment / Remark
+          </label>
+          <textarea name="SPCBComments" id="SPCBComments" class="form-control" rows="4" placeholder="Reason for reverting this section...">{{ general.remarks }}</textarea>
+        </div>
+
+        <div class="text-end">
+          <button type="submit" class="btn btn-warning">
+            <i class="bi bi-arrow-counterclockwise"></i> Mark as Incomplete
+          </button>
+        </div>
+      </form>
+      {% endif %}
+      {% if comment.UnitCommentDate %}
+    <div class="mb-4">
+      <h6 class="fw-bold text-success">Industry Response</h6>
+      <div class="card border-success shadow-sm">
+        <div class="card-body">
+          <p class="mb-2"><strong>Response:</strong> {{ comment.UnitComments|default:"—" }}</p>
+          <hr>
+          <p class="mb-0 text-secondary">
+            <strong>Comment Date:</strong> {{ comment.UnitCommentDate|date:"d M Y, H:i" }}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

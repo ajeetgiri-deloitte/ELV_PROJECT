@@ -1,0 +1,107 @@
+<table class="checklist-table">
+    <thead>
+        <tr>
+            <th>Checklist Item</th>
+            <th>Yes / No</th>
+            <th>Remarks</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <!-- SAVE FORM -->
+        <form id="checklistForm" action="{% url 'SaveDeclarationChecklist' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="industryid" value="{{ IndustryId }}">
+            <input type="hidden" name="appno" value="{{ AppNo }}">
+
+            <!-- Declaration -->
+            <tr>
+                <td>Declaration</td>
+                <td>
+                    <select name="declaration" id="declaration" class="form-control validate-field" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if payment and payment.declaration == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if payment and payment.declaration == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" 
+                           name="remarks_declaration"
+                           value="{{ payment.remarks_declaration }}"
+                           class="form-control validate-field"
+                           placeholder="Remarks">
+                </td>
+            </tr>
+
+            <!-- Registration Fee -->
+            <tr>
+                <td>Registration fee payment done</td>
+                <td>
+                    <select name="registration_fee_details"
+                            id="registration_fee_details"
+                            class="form-control validate-field" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if payment and payment.registration_fee_details == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if payment and payment.registration_fee_details == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text"
+                           name="remarks_registration_fee_details"
+                           value="{{ payment.remarks_registration_fee_details }}"
+                           class="form-control validate-field"
+                           placeholder="Remarks">
+                </td>
+            </tr>
+
+            <!-- Save Button -->
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </td>
+            </tr>
+
+        </form>
+
+        <!-- VIEW FORM -->
+        <form action="{% url 'ViewDeclarationDetails' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="industryid" value="{{ IndustryId }}">
+            <input type="hidden" name="appno" value="{{ AppNo }}">
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-warning">View Submitted Data</button>
+                </td>
+            </tr>
+        </form>
+
+    </tbody>
+</table>
+
+<!-- VALIDATION SCRIPT -->
+<script>
+    document.getElementById("checklistForm").addEventListener("submit", function (e) {
+        let fields = document.querySelectorAll(".validate-field");
+        let valid = true;
+
+        fields.forEach(field => {
+            if (!field.value.trim()) {
+                field.style.border = "2px solid red";
+                valid = false;
+            } else {
+                field.style.border = "1px solid #ced4da";
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            alert("Please fill all required fields.");
+        }
+    });
+
+    // Remove red border when user selects or types
+    document.querySelectorAll(".validate-field").forEach(field => {
+        field.addEventListener("change", () => field.style.border = "1px solid #ced4da");
+        field.addEventListener("input", () => field.style.border = "1px solid #ced4da");
+    });
+</script>

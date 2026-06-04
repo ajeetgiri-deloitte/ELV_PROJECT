@@ -1,0 +1,1223 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+
+    <style>
+        .table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    text-align: center;
+    font-size: 0.85rem;
+}
+h1,h5 {
+    color: #ffffff !important;
+    text-align: center;
+}   
+        :root {
+            --primary-dark: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #3498db;
+            --success: #27ae60;
+            --border-color: #e1e8ed;
+            --bg-light: #f8f9fb;
+        }
+
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+        .form-card { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+        .form-header { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%); color: white; padding: 1rem; position: relative; overflow: hidden; }
+        .form-header h1 { font-size: 1.45rem; font-weight: 600; margin: 0; }
+        .form-body { padding: 2rem; }
+        .section-title { font-size: 1.1rem; font-weight: 600; color: var(--primary-dark); margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem; }
+        .input-group-modern { background: var(--bg-light); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; transition: all 0.3s ease; }
+        .form-control, .form-select { border: 2px solid var(--border-color); border-radius: 8px; padding: 0.75rem; font-size: 0.95rem; transition: all 0.3s ease; }
+        .flex-row-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .chip { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-dark); color: white; padding: 0.5rem 1rem; border-radius: 20px; margin: 0.25rem; }
+        .chips-container { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem; background: var(--bg-light); border-radius: 12px; margin-top: 1rem; }
+        .btn-primary-custom { background: linear-gradient(135deg, var(--accent) 0%, #2980b9 100%); border: none; color: white; padding: 0.875rem 2.5rem; border-radius: 8px; font-weight: 600; }
+        .readonly-field { background: #f0f0f0; cursor: not-allowed; }
+        .text-danger-small { font-size: 0.85rem; color: #d9534f; }
+        @media (max-width: 768px) { .form-body { padding: 1.5rem; } .flex-row-inputs { grid-template-columns: 1fr; } }
+
+        .enhanced-btn {
+            padding: 10px 26px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: 0.25s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .enhanced-btn i { font-size: 1.1rem; }
+
+        .enhanced-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary-custom {
+            background: #f0f0f0;
+            color: #2c3e50;
+            border: 1px solid #dcdcdc;
+            text-decoration: none;
+        }
+
+        .btn-secondary-custom:hover {
+            background: #e2e2e2;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .btn-add-waste {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-add-waste:hover {
+            background: #229954;
+        }
+
+        .btn-remove-waste {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-remove-waste:hover {
+            background: #c0392b;
+        }
+
+        .dynamic-waste-row {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 0.5rem;
+        }
+
+        .waste-container {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+
+    </style>
+
+    <div class="main-container">
+        <div class="form-card" id="formCard"
+             data-installed-elvs="{{ installed_elvs|default:"" }}"
+             data-procured-elvs="{{ procured_elvs|default:"" }}"
+             data-installed-steel-capacity="{{ installed_steel_capacity_mt|default:"" }}">
+
+            <!-- Hidden inputs -->
+            <input type="hidden" id="installedElvs" value="{{ plantCapacity.installed_vehicles|default:0 }}">
+            <input type="hidden" id="procuredElvs" value="{{ procuredElvs|default:0 }}">
+            <input type="hidden" id="installedSteelCapacity" value="{{ plantCapacity.installed_steel|default:0 }}">
+
+            <!-- Header -->
+            <div class="form-header">
+                <h1><i class="fas fa-recycle me-2"></i>Steel Scrap Generation Form</h1>
+            </div>
+
+            <!-- Form Body -->
+            <div class="form-body">
+                <!-- Date & Category Section -->
+                <div class="flex-row-inputs">
+                    <div class="input-group-modern">
+                        <label><i class="far fa-calendar me-2"></i>Date of Processing</label>
+                        <input type="date" class="form-control" id="dateScrap">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-list me-2"></i>Category</label>
+                        <select id="category" class="form-select">
+                            <option value="">Select Category</option>
+                            {% for cat in category %}
+                            <option value="{{cat.id}}">{{ cat.name }}</option>
+                            {% endfor %}
+                            <!-- <option value="type_of_elv">Type of ELV</option>
+                            <option value="automobile_steel_scrap">Automobile steel scrap</option> -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3" id="globalErrors"></div>
+
+                <hr>
+
+                <!-- Type of ELV Section -->
+                <div id="elvSection" style="display: none;">
+                    <div class="input-group-modern">
+                        <div class="flex-row-inputs">
+                            <div>
+                                <label>Type of ELV</label>
+                                <select id="typeOfElv" class="form-select">
+                                    <option value="">Select Type</option>
+                                    {% for type in elvType %}
+                                        <option value="{{type.vehicle_type}}">{{type.vehicle_type}}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="text-danger-small" id="typeOfElvError" style="display:none;"></div>
+                            </div>
+
+                            <div id="otherElvTypeContainer" style="display:none;">
+                                <label>Specify ELV Type</label>
+                                <input type="text" class="form-control" id="otherElvTypeInput" placeholder="Enter ELV type">
+                            </div>
+
+                            <div>
+                                <label>No. of ELV Scrapped</label>
+                                <input type="number" min="0" class="form-control" id="noElvs" placeholder="Enter number">
+                                <div class="text-danger-small" id="noElvsError" style="display:none;"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex-row-inputs">
+                            <div>
+                                <label>Total weight of the ELV scrapped (Metric Ton)</label>
+                                <input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="totalWeight" placeholder="Enter weight">
+                            </div>
+
+                            <div>
+                                <label>Quantity of Steel Scrap recovered (Metric Ton)</label>
+                                <input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="steelRecovered1" placeholder="Enter quantity">
+                                <div class="text-danger-small" id="steelRecoveredError" style="display:none;"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex-row-inputs">
+                            <div>
+                                <label>Qualified Quantity of Steel Scrap for certificates (Metric Ton)</label>
+                                <input type="number" class="form-control readonly-field mt-quantity" id="qualifiedQty" placeholder="Auto-calculated" readonly>
+                            </div>
+
+                            <div>
+                                <label>Quantity of Other Scraps recovered (Metric Ton)</label>
+                                <input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control readonly-field mt-quantity" id="otherScrap" placeholder="Auto-calculated" readonly>
+                                <div class="text-danger-small" id="otherScrapError" style="display:none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Waste Management (ELV) -->
+                        <div class="waste-container mt-3">
+                            <label class="fw-bold mb-2">Details on management of other wastes recovered</label>
+
+                            <table class="table table-bordered" id="wasteTableElv">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 40%;">Waste Type</th>
+                                        <th style="width: 60%;">Quantity (Metric Ton)</th>
+                                        <!-- <th style="width: 25%;">Have you environmentally sound recycled/refurbished/disposed</th>
+                                        <th style="width: 15%;">Action</th> -->
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr>
+                                        <td>Plastic waste</td>
+                                        <td><input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="plasticWaste" placeholder="Quantity (Metric Ton)"></td>
+                                        <!-- <td><select id="plasticStatus" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td> -->
+                                    </tr>
+
+                                    <tr>
+                                        <td>Used oil</td>
+                                        <td><input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="usedOil" placeholder="Quantity (Metric Ton)"></td>
+                                        <!-- <td><select id="usedOilStatus" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td> -->
+                                    </tr>
+
+                                    <tr>
+                                        <td>Battery waste</td>
+                                        <td><input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="batteryWaste" placeholder="Quantity (Metric Ton)"></td>
+                                        <!-- <td><select id="batteryStatus" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td> -->
+                                    </tr>
+
+                                    <tr>
+                                        <td>Tyre waste</td>
+                                        <td><input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="tyreWaste" placeholder="Quantity (Metric Ton)"></td>
+                                        <!-- <td><select id="tyreStatus" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td> -->
+                                    </tr>
+
+                                    <tr>
+                                        <td>E-waste</td>
+                                        <td><input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="eWaste" placeholder="Quantity (Metric Ton)"></td>
+                                        <!-- <td><select id="tyreStatus" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td> -->
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <button type="button" class="btn-add-waste mt-2" id="addOtherWasteElv">
+                                <i class="fas fa-plus me-1"></i> Add Other Waste Type
+                            </button>
+
+                            <div class="mt-2 text-danger" id="wasteStatusWarning" style="display:none;">
+                                Certificate cannot be generated until all recovered wastes are either refurbished/recycled/disposed.
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label>Qualified Potential for EPR Certificate Generation (Metric Ton)</label>
+                            <input type="number" class="form-control readonly-field mt-quantity" id="eprPotential" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Automobile Steel Scrap Section -->
+                <div id="autoSection" style="display: none;">
+                    <div class="input-group-modern">
+                        <div class="flex-row-inputs">
+                            <div>
+                                <label>Quantity of Automobile steel scrap Processed (Metric Ton)</label>
+                                <input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="autoScrap" placeholder="Enter quantity">
+                            </div>
+
+                            <div>
+                                <label>Quantity of Steel Scrap Recovered (Metric Ton)</label>
+                                <input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="steelRecovered2" placeholder="Enter quantity">
+                            </div>
+
+                            <!-- <div>
+                                <label>Quantity of Other Scraps recovered (Metric Ton)</label>
+                                <input type="text" inputmode="decimal" pattern="^\d+(\.\d{0,3})?$" class="form-control mt-quantity" id="otherScrap2" placeholder="Enter quantity">
+                            </div> -->
+                        </div>
+
+                        <!-- Waste Management (Auto) -->
+                        <!-- <div class="waste-container mt-3">
+                            <label class="fw-bold">Details on management of other wastes recovered</label>
+
+                            <table class="table table-bordered" id="wasteTableAuto">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 20%;">Waste Type</th>
+                                        <th style="width: 20%;">Quantity (Metric Ton)</th>
+                                        <th style="width: 25%;">Have you environmentally sound recycled/refurbished/disposed</th>
+                                        <th style="width: 15%;">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr>
+                                        <td>Plastic waste</td>
+                                        <td><input type="number" min="0" step="0.01" class="form-control" id="plasticWasteAuto" placeholder="Quantity (Metric Ton)"></td>
+                                        <td><select id="plasticStatusAuto" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Used oil</td>
+                                        <td><input type="number" min="0" step="0.01" class="form-control" id="usedOilAuto" placeholder="Quantity (Metric Ton)"></td>
+                                        <td><select id="usedOilStatusAuto" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Battery waste</td>
+                                        <td><input type="number" min="0" step="0.01" class="form-control" id="batteryWasteAuto" placeholder="Quantity (Metric Ton)"></td>
+                                        <td><select id="batteryStatusAuto" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Tyre waste</td>
+                                        <td><input type="number" min="0" step="0.01" class="form-control" id="tyreWasteAuto" placeholder="Quantity (Metric Ton)"></td>
+                                        <td><select id="tyreStatusAuto" class="form-select">
+                                            <option value="">Select status</option>
+                                            <option value="complete">Yes completely done</option>
+                                            <option value="partial">Partially done</option>
+                                            <option value="not">Not done</option>
+                                        </select></td>
+                                        <td>—</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <button type="button" class="btn-add-waste mt-2" id="addOtherWasteAuto">
+                                <i class="fas fa-plus me-1"></i> Add Other Waste Type
+                            </button>
+                        </div> -->
+
+                        <div class="mt-3">
+                            <label>Qualified Potential for EPR Certificate Generation (Metric Ton)</label>
+                            <input type="number" class="form-control readonly-field" id="eprPotential2" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <button type="button" class="btn-primary-custom enhanced-btn me-3" id="previewBtn">
+                        <i class="far fa-eye me-2"></i> Preview & Submit
+                    </button>
+
+                    <a href="{% url 'production_dashboard' %}" class="btn-secondary-custom enhanced-btn">
+                        <i class="fas fa-home me-2"></i> Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));color:#fff;border:none;">
+                    <h5 class="modal-title"><i class="far fa-file-alt me-2"></i>Form Preview</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="previewContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-edit me-2"></i>Edit</button>
+                    <button type="button" class="btn btn-success" id="confirmSubmit"><i class="fas fa-check me-2"></i>Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="main-container mt-4">
+        <h4 class="mb-3">History of Entries</h4>
+
+        <table class="table table-bordered table-striped align-middle" id="historyTable" style="width:100%">
+            <thead class="table-light">
+                <tr>
+                    <th>S.No</th>
+                    <th>Date of Entry</th>
+                    <th>Date of Processing</th>
+                    <th>No. of ELV Scrapped / Quantity of Automobile steel scrap (Metric Ton)</th>
+                    <th>Weight of ELV scrapped (Metric Ton)</th>
+                    <th>Quantity of Steel Scrap recovered (Metric Ton)</th>
+                    <th>Quantity of Other Scraps recovered (Metric Ton)</th>
+                    <th>Qualified Potential for EPR Certificate Generation (Metric Ton)</th>
+                </tr>
+            </thead>
+            <tfoot>
+                
+            </tfoot>
+            <tbody>
+            {% for entry in history %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ entry.created_at|date:"d-m-Y" }}</td>
+                    <td>{{ entry.scrapping_date|date:"d-m-Y" }}</td>
+
+                    <td>
+                        {% if entry.scrapped_qty %}
+                            {{ entry.scrapped_qty }}
+                            {% if entry.elv_type %} ({{ entry.elv_type }}) {% endif %}
+                        {% else %}
+                            {{ entry.automobile_scrap_processed }} Metric Ton
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ entry.scrapped_weight|default:"—" }}
+                    </td>
+
+                    <td>
+                        {{ entry.steel_scrap_recovered }}
+                    </td>
+
+                    <td>
+                        {{ entry.other_scrap_recovered }}
+                    </td>
+
+                    <td>
+                        {{ entry.cert_generating_potential }}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td class="text-center text-muted">—</td>
+                    <td class="text-center text-muted">—</td>
+                    <td class="text-center text-muted">—</td>
+                    <td class="text-center text-muted">—</td>
+                    <td class="text-center text-muted">—</td>
+                    <td class="text-center text-muted">—</td>
+                    <td class="text-center text-muted">—</td>
+                    <td class="text-center text-muted">—</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const totalWeightInput = document.getElementById("totalWeight");
+    const steelInput = document.getElementById("steelRecovered1");
+    const errorDiv = document.getElementById("steelRecoveredError");
+
+    function validateSteelQuantity() {
+        const totalWeight = parseFloat(totalWeightInput.value);
+        const steelQty = parseFloat(steelInput.value);
+
+        // If total weight is not entered or invalid, do nothing
+        if (isNaN(totalWeight) || totalWeight <= 0) {
+            errorDiv.style.display = "none";
+            return;
+        }
+
+        const maxAllowed = totalWeight * 0.65;
+
+        if (!isNaN(steelQty) && steelQty > maxAllowed) {
+            errorDiv.textContent = `Steel scrap cannot exceed 65% (${maxAllowed.toFixed(3)} Metric Ton) of total weight.`;
+            errorDiv.style.display = "block";
+            steelInput.value = maxAllowed.toFixed(3); // auto-correct to max
+        } else {
+            errorDiv.style.display = "none";
+        }
+    }
+
+    totalWeightInput.addEventListener("input", validateSteelQuantity);
+    steelInput.addEventListener("input", validateSteelQuantity);
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const totalWeightInput = document.getElementById("totalWeight");
+    const steelInput = document.getElementById("steelRecovered1");
+
+    // All waste quantity fields (fixed + dynamically added)
+    function getWasteInputs() {
+        return document.querySelectorAll(
+            "#plasticWaste, #usedOil, #batteryWaste, #tyreWaste, #eWaste, #other_waste"
+        );
+    }
+
+    const warningDiv = document.getElementById("wasteStatusWarning");
+
+    function calculateWasteSum() {
+        let sum = 0;
+        getWasteInputs().forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val)) {
+                sum += val;
+            }
+        });
+        return sum;
+    }
+
+    function validateWasteLimit(changedInput = null) {
+
+    const totalWeight = parseFloat(totalWeightInput.value);
+    const steelWeight = parseFloat(steelInput.value);
+
+    if (isNaN(totalWeight) || totalWeight <= 0 || isNaN(steelWeight)) {
+        warningDiv.style.display = "none";
+        return;
+    }
+
+    const remainingWeight = totalWeight - steelWeight;
+
+    if (remainingWeight < 0) {
+        warningDiv.style.display = "none";
+        return;
+    }
+
+    const maxAllowed = remainingWeight;           // ✅ Waste cannot exceed remaining
+    const minAllowed = remainingWeight * 0.80;   // ✅ Must be at least 80% of remaining
+
+    const wasteSum = calculateWasteSum();
+
+    // 🔴 If waste exceeds remaining
+    if (wasteSum > maxAllowed) {
+
+        warningDiv.textContent =
+            `Total waste cannot exceed ${maxAllowed.toFixed(3)} Metric Ton (remaining after steel recovery).`;
+        warningDiv.style.display = "block";
+
+        if (changedInput) {
+            const currentVal = parseFloat(changedInput.value) || 0;
+            const excess = wasteSum - maxAllowed;
+            const correctedVal = Math.max(0, currentVal - excess);
+            changedInput.value = correctedVal.toFixed(3);
+        }
+        return;
+    }
+
+    // 🟡 If waste is less than 80% of remaining
+    if (wasteSum < minAllowed && wasteSum > 0) {
+
+        warningDiv.textContent =
+            `Total waste must be at least 80% (${minAllowed.toFixed(3)} Metric Ton) of remaining weight (${remainingWeight.toFixed(3)}).`;
+        warningDiv.style.display = "block";
+        return;
+    }
+
+    warningDiv.style.display = "none";
+}
+
+    // Attach listeners (works for single or multiple fields)
+    document.addEventListener("input", function (e) {
+        if (e.target.classList.contains("mt-quantity")) {
+            validateWasteLimit(e.target);
+        }
+    });
+
+    totalWeightInput.addEventListener("input", function () {
+        validateWasteLimit();
+    });
+});
+</script>
+
+
+    <script>
+        // Helper: parse float safely
+        function toNum(val){ const n = parseFloat(val); return isNaN(n)?0:n; }
+
+        // Elements
+        const category = document.getElementById('category');
+        const elvSection = document.getElementById('elvSection');
+        const autoSection = document.getElementById('autoSection');
+        const typeOfElv = document.getElementById('typeOfElv');
+        const otherElvTypeContainer = document.getElementById('otherElvTypeContainer');
+
+        // Registration details
+        const installedElvs = toNum(document.getElementById('installedElvs').value);
+        const procuredElvs = toNum(document.getElementById('procuredElvs').value);
+        const installedSteelCapacity = toNum(document.getElementById('installedSteelCapacity').value);
+
+        // Track dynamic waste rows
+        let dynamicWasteRowsElv = [];
+        let dynamicWasteRowsAuto = [];
+
+        // Show/hide sections
+        category.addEventListener('change', function(){
+            elvSection.style.display = 'none';
+            autoSection.style.display = 'none';
+            clearErrors();
+            if(this.value === '1') elvSection.style.display = 'block';
+            if(this.value === '2') autoSection.style.display = 'block';
+            recalcAll();
+        });
+
+        // Toggle Other ELV Type input
+        typeOfElv.addEventListener('change', function(){
+            otherElvTypeContainer.style.display = this.value === 'Others' ? 'block' : 'none';
+            if(this.value !== 'Others') document.getElementById('otherElvTypeInput').value = '';
+        });
+
+        // Field refs
+        const typeOfElvError = document.getElementById('typeOfElvError');
+        const noElvs = document.getElementById('noElvs');
+        const noElvsError = document.getElementById('noElvsError');
+        const totalWeight = document.getElementById('totalWeight');
+        const steelRecovered1 = document.getElementById('steelRecovered1');
+        const steelRecoveredError = document.getElementById('steelRecoveredError');
+        const qualifiedQty = document.getElementById('qualifiedQty');
+        const otherScrap = document.getElementById('otherScrap');
+        const otherScrap2 = document.getElementById('otherScrap2');
+        const otherScrapError = document.getElementById('otherScrapError');
+        const eprPotential = document.getElementById('eprPotential');
+        const wasteStatusWarning = document.getElementById('wasteStatusWarning');
+
+        // Add listeners to recalc
+        [noElvs, totalWeight, steelRecovered1, otherScrap].forEach(el=>{ if(el) el.addEventListener('input', recalcAll); });
+
+        function clearErrors(){
+            document.getElementById('globalErrors').innerHTML='';
+            typeOfElvError.style.display='none';
+            noElvsError.style.display='none';
+            steelRecoveredError.style.display='none';
+            otherScrapError.style.display='none';
+            wasteStatusWarning.style.display='none';
+        }
+
+        function recalcQualified(){
+            const tw = toNum(totalWeight.value);
+            const sr = toNum(steelRecovered1.value);
+            if(installedSteelCapacity && sr > installedSteelCapacity){
+                steelRecoveredError.style.display='block';
+                steelRecoveredError.textContent = `Entered steel recovered (${sr} Metric Ton) exceeds installed steel scrapping capacity (${installedSteelCapacity} Metric Ton) from registration.`;
+            } else {
+                steelRecoveredError.style.display='none';
+            }
+
+            if(category.value === '1'){
+                const cap = 0.65 * tw;
+                let qualified = sr;
+                if(tw <= 0){ qualified = 0; }
+                else if(sr > cap) qualified = parseFloat(cap.toFixed(2));
+                qualifiedQty.value = qualified ? qualified : '';
+                eprPotential.value = qualified ? qualified : '';
+            }
+        }
+
+        function recalcOtherScrapValidation(){
+            if(category.value !== '1'){
+                otherScrapError.style.display='none';
+                return;
+            }
+            const tw = toNum(totalWeight.value);
+            const sr = toNum(steelRecovered1.value);
+            const other = toNum(otherScrap.value);
+            const expectedMin = 0.8 * (tw - sr);
+            if(isFinite(expectedMin) && expectedMin > 0 && other < expectedMin){
+                otherScrapError.style.display='block';
+            } else {
+                otherScrapError.style.display='none';
+            }
+        }
+
+        function recalcNoElvsValidation(){
+            if(category.value !== '1') return;
+            const n = toNum(noElvs.value);
+            if(installedElvs && n > installedElvs){
+                noElvsError.style.display='block';
+                noElvsError.textContent = `Number of ELV scrapped (${n}) cannot exceed installed ELV (${installedElvs}) from registration.`;
+            } else if(procuredElvs && n > procuredElvs){
+                noElvsError.style.display='block';
+                noElvsError.textContent = `Number of ELV scrapped (${n}) cannot exceed procured quantity (${procuredElvs}).`;
+            } else {
+                noElvsError.style.display='none';
+            }
+        }
+
+       
+
+        function checkWasteStatuses() {
+            // Only ELV has waste table now
+            if (category.value !== '1') {
+                wasteStatusWarning.style.display = 'none';
+                return true;
+            }
+
+            const table = document.getElementById('wasteTableElv');
+            if (!table) return true;   // SAFETY GUARD
+
+            const rows = table.querySelectorAll('tbody tr');
+
+            const anyNotComplete = Array.from(rows).some(row => {
+                const qtyInput = row.querySelector('input.mt-quantity');
+                const qty = qtyInput ? toNum(qtyInput.value) : 0;
+
+                // status column is currently REMOVED → always valid
+                return false;
+            });
+
+            wasteStatusWarning.style.display = anyNotComplete ? 'block' : 'none';
+            return !anyNotComplete;
+        }
+
+
+        function recalcAll(){
+            recalcNoElvsValidation();
+            recalcQualified();
+            recalcOtherScrapValidation();
+            checkWasteStatuses();
+        }
+
+        // Add Other Waste functions
+        function addOtherWasteRow(tableId, isElv = true){
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            const rowId = `waste-${Date.now()}-${Math.random()}`;
+            
+            const row = document.createElement('tr');
+            row.className = 'dynamic-waste-row';
+            row.dataset.wasteId = rowId;
+            
+            row.innerHTML = `
+                <td>
+                    <input type="text" class="form-control" placeholder="Waste type" data-field="wasteName">
+                </td>
+                <td>
+                    <input type="number" min="0" step="0.01" class="form-control" placeholder="Quantity (Metric Ton)" data-field="wasteQty">
+                </td>
+                
+            `;
+            
+            
+            tbody.appendChild(row);
+            
+            if(isElv) dynamicWasteRowsElv.push(rowId);
+            else dynamicWasteRowsAuto.push(rowId);
+            
+            row.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('change', recalcAll);
+            });
+        }
+
+        function removeWasteRow(rowId, tableId){
+            const row = document.querySelector(`tr[data-waste-id="${rowId}"]`);
+            if(row) row.remove();
+            dynamicWasteRowsElv = dynamicWasteRowsElv.filter(id => id !== rowId);
+            dynamicWasteRowsAuto = dynamicWasteRowsAuto.filter(id => id !== rowId);
+            recalcAll();
+        }
+
+        // Add other waste buttons
+        document.getElementById('addOtherWasteElv').addEventListener('click', function(){
+            addOtherWasteRow('wasteTableElv', true);
+        });
+
+        const addAutoWasteBtn = document.getElementById('addOtherWasteAuto');
+
+        if (addAutoWasteBtn) {
+            addAutoWasteBtn.addEventListener('click', function () {
+                addOtherWasteRow('wasteTableAuto', false);
+            });
+        }
+
+
+        
+
+        // Preview logic
+        document.getElementById('previewBtn').addEventListener('click', function(){
+            clearErrors();
+            recalcAll();
+
+            const errors = [];
+            if(!document.getElementById('dateScrap').value) errors.push('Date of processing is required.');
+            if(!category.value) errors.push('Category selection is required.');
+
+            if(category.value === '1'){
+                if(!typeOfElv.value) errors.push('Type of ELV is required.');
+                if(typeOfElv.value === 'Others' && !document.getElementById('otherElvTypeInput').value) {
+                    errors.push('Please specify the ELV type.');
+                }
+                if(!noElvs.value) errors.push('No. of ELV scrapped is required.');
+                if(!totalWeight.value) errors.push('Total weight of ELV is required.');
+                if(!steelRecovered1.value) errors.push('Quantity of steel scrap recovered is required.');
+                if(!qualifiedQty.value) errors.push('Qualified quantity could not be computed. Check weight and steel recovered values.');
+                const tw = toNum(totalWeight.value); const sr = toNum(steelRecovered1.value); const other = toNum(otherScrap.value);
+              
+            }
+
+            if(category.value === '2'){
+                if(!document.getElementById('autoScrap').value) errors.push('Quantity of automobile steel scrap processed is required.');
+                if(!document.getElementById('steelRecovered2').value) errors.push('Quantity of steel scrap recovered is required.');
+            }
+
+            if(category.value === '1'){
+                const allWasteOK = checkWasteStatuses();
+                if(!allWasteOK) errors.push('At least one waste is partially/not done. Certificate cannot be generated until all recovered wastes are handled.');
+            }
+
+            if(errors.length){
+                const container = document.getElementById('globalErrors');
+                container.innerHTML = `<div class="alert alert-danger"><ul class="mb-0">${errors.map(e=>`<li>${e}</li>`).join('')}</ul></div>`;
+                window.scrollTo({top:0,behavior:'smooth'});
+                return;
+            }
+
+            // Build preview HTML
+            const modalBody = document.getElementById('previewContent');
+            let html = '<div class="table-responsive"><table class="table table-bordered"><tbody>';
+
+            const date = document.getElementById('dateScrap').value || '—';
+            const categoryVal = category.options[category.selectedIndex]?.text || '—';
+            html += `<tr><th width="50%">Date of Processing</th><td>${date}</td></tr>`;
+            // html += `<tr><th>Category</th><td>${categoryVal}</td></tr>`;
+
+            if(category.value === '1'){
+                const elvType = typeOfElv.value === 'Others' ? document.getElementById('otherElvTypeInput').value : typeOfElv.value;
+                html += `<tr><th>Type of ELV</th><td>${elvType || '—'}</td></tr>`;
+                html += `<tr><th>No. of ELV Scrapped</th><td>${noElvs.value || '—'}</td></tr>`;
+                html += `<tr><th>Total Weight (Metric Ton)</th><td>${totalWeight.value || '—'}</td></tr>`;
+                html += `<tr><th>Steel Scrap Recovered (Metric Ton)</th><td>${steelRecovered1.value || '—'}</td></tr>`;
+                html += `<tr><th>Qualified Quantity for Certificates (Metric Ton)</th><td>${qualifiedQty.value || '—'}</td></tr>`;
+                html += `<tr><th>Other Scraps Recovered (Metric Ton)</th><td>${otherScrap.value || '—'}</td></tr>`;
+
+                // Wastes details
+                const wastes = [];
+                const table = document.getElementById('wasteTableElv');
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const nameInput = row.querySelector('input[data-field="wasteName"], #otherWasteText');
+                    const qtyInput = row.querySelector('input[data-field="wasteQty"], #otherWasteQty');
+                    const statusSelect = row.querySelector('select[data-field="wasteStatus"], #otherWasteStatus');
+                    const wasteType = nameInput?.value || row.cells[0]?.textContent;
+                    const qty = qtyInput?.value;
+                    const status = statusSelect?.value;
+                    if(qty && toNum(qty) > 0) wastes.push(`${wasteType}: ${qty} Metric Ton (${status || '—'})`);
+                });
+
+                // if(wastes.length) html += `<tr><th>Other Wastes Recovered</th><td><ul>${wastes.map(w=>`<li>${w}</li>`).join('')}</ul></td></tr>`;
+
+                html += `<tr><th>Qualified Potential for EPR Certificate (Metric Ton)</th><td>${eprPotential.value || '—'}</td></tr>`;
+            }
+
+            if(category.value === '2'){
+                html += `<tr><th>Automobile Steel Scrap Processed (Metric Ton)</th><td>${document.getElementById('autoScrap').value || '—'}</td></tr>`;
+                html += `<tr><th>Steel Scrap Recovered (Metric Ton)</th><td>${document.getElementById('steelRecovered2').value || '—'}</td></tr>`;
+                // html += `<tr><th>Other Scraps Recovered (Metric Ton)</th><td>${otherScrap2.value || '—'}</td></tr>`;
+                html += `<tr><th>Qualified Potential for EPR Certificate Generation (Metric Ton)</th><td>${document.getElementById('eprPotential2').value || '—'}</td></tr>`;
+            }
+
+            html += '</tbody></table></div>';
+            modalBody.innerHTML = html;
+
+            const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+            modal.show();
+        });
+
+        
+
+            function collectOtherScrapsElv() {
+                const scraps = [];
+
+                const table = document.getElementById('wasteTableElv');
+                if (!table) return scraps;
+
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    let wasteType = '';
+                    let qty = '';
+
+                    // Fixed waste rows (Plastic, Oil, Battery, Tyre, E-waste)
+                    const fixedQty = row.querySelector('input.mt-quantity');
+                    if (fixedQty && row.cells[0]) {
+                        wasteType = row.cells[0].innerText.trim();
+                        qty = fixedQty.value;
+                    }
+
+                    // Dynamic rows
+                    const dynName = row.querySelector('input[data-field="wasteName"]');
+                    const dynQty = row.querySelector('input[data-field="wasteQty"]');
+                    if (dynName && dynQty) {
+                        wasteType = dynName.value.trim();
+                        qty = dynQty.value;
+                    }
+
+                    if (wasteType && qty && parseFloat(qty) > 0) {
+                        scraps.push({
+                            wasteType: wasteType,
+                            quantity: parseFloat(qty).toFixed(3)
+                        });
+                    }
+                });
+
+                return scraps;
+            }
+
+
+        document.getElementById('confirmSubmit').addEventListener('click', function () {
+
+    let payload = {
+        scrapping_date: document.getElementById("dateScrap").value,
+        category: category.value,
+        other_scraps: []   // ✅ ADD THIS
+    };
+
+    if (category.value === "1") {
+        payload.elv_type = (typeOfElv.value === "Others")
+            ? document.getElementById("otherElvTypeInput").value
+            : typeOfElv.value;
+
+        payload.scrapped_qty = noElvs.value;
+        payload.scrapped_weight = totalWeight.value;
+        payload.steel_scrap_recovered = steelRecovered1.value;
+        payload.other_scrap_recovered = otherScrap.value;
+        payload.cert_generating_potential = qualifiedQty.value;
+
+        // ✅ COLLECT ALL OTHER SCRAPS
+        payload.other_scraps = collectOtherScrapsElv();
+    }
+
+    if (category.value === "2") {
+        payload.automobile_scrap_processed = document.getElementById("autoScrap").value;
+        payload.steel_scrap_recovered = document.getElementById("steelRecovered2").value;
+        payload.cert_generating_potential = document.getElementById("eprPotential2").value;
+    }
+
+    fetch("{% url 'save_production_form' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(resp => {
+        if (resp.status === "success") {
+            bootstrap.Modal.getInstance(
+                document.getElementById('previewModal')
+            ).hide();
+            alert("✔ Entry saved successfully");
+            location.reload();
+        } else {
+            alert("❌ Error: " + resp.message);
+        }
+    });
+});
+        // Auto-update EPR potential for automobile route
+        document.getElementById('steelRecovered2').addEventListener('input', function(){
+            const v = toNum(this.value);
+            document.getElementById('eprPotential2').value = v ? v : '';
+        });
+
+        // Initialize
+        recalcAll();
+
+        function addHistoryRow(data) {
+            const table = document.getElementById("historyTable").querySelector("tbody");
+            const rowCount = table.rows.length + 1;
+            const row = `
+                <tr>
+                    <td>${rowCount}</td>
+                    <td>${new Date().toLocaleDateString()}</td>
+                    <td>${data.dateScrap}</td>
+                    <td>${data.elvCountOrScrap}</td>
+                    <td>${data.weight}</td>
+                    <td>${data.steel}</td>
+                    <td>${data.other}</td>
+                    <td>${data.epr}</td>
+                </tr>
+            `;
+            table.insertAdjacentHTML("beforeend", row);
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+
+            const table = $('#historyTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [5, 10, 25, 50, 100],
+                // order: [[1, 'desc']], // Date of Entry DESC
+                columnDefs: [
+                    { orderable: false }, // S.No not sortable
+                ],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search history…",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                }
+            });
+
+            // Column-wise filters
+            $('#historyTable tfoot th').each(function (i) {
+                if (i === 0) return;
+                $(this).html('<input type="text" class="form-control form-control-sm" placeholder="Filter" />');
+            });
+
+            table.columns().every(function () {
+                const that = this;
+                $('input', this.footer()).on('keyup change clear', function () {
+                    if (that.search() !== this.value) {
+                        that.search(this.value).draw();
+                    }
+                });
+            });
+
+        });
+    </script>
+
+<script>
+document.addEventListener('input', function (e) {
+    if (!e.target.classList.contains('mt-quantity')) return;
+
+    let value = e.target.value;
+
+    // 1️⃣ Remove everything except digits and dot
+    value = value.replace(/[^0-9.]/g, '');
+
+    // 2️⃣ Allow only ONE dot
+    const dotCount = (value.match(/\./g) || []).length;
+    if (dotCount > 1) {
+        value = value.substring(0, value.lastIndexOf('.'));
+    }
+
+    // 3️⃣ Restrict to 3 digits after decimal
+    if (value.includes('.')) {
+        const parts = value.split('.');
+        parts[1] = parts[1].slice(0, 3);
+        value = parts.join('.');
+    }
+
+    e.target.value = value;
+});
+
+// Auto-format to exactly 3 decimals on blur
+document.addEventListener('blur', function (e) {
+    if (!e.target.classList.contains('mt-quantity')) return;
+
+    let value = e.target.value;
+
+    if (value !== '' && !isNaN(value)) {
+        e.target.value = parseFloat(value).toFixed(3);
+    }
+}, true);
+</script>
+
+<script>
+/* ===============================
+   OTHER SCRAP AUTO SUM (ELV)
+================================ */
+
+document.addEventListener('input', function (e) {
+    // Only handle ELV category
+    if (category.value !== '1') return;
+
+    // Only number inputs inside ELV waste
+    if (!e.target.classList.contains('mt-quantity')) return;
+
+    enforceThreeDecimals(e.target);
+    calculateOtherScrapTotal();
+});
+
+/* Enforce max 3 decimals */
+function enforceThreeDecimals(input) {
+    let value = input.value;
+
+    value = value.replace(/[^0-9.]/g, '');
+
+    const dotCount = (value.match(/\./g) || []).length;
+    if (dotCount > 1) {
+        value = value.substring(0, value.lastIndexOf('.'));
+    }
+
+    if (value.includes('.')) {
+        const parts = value.split('.');
+        parts[1] = parts[1].slice(0, 3);
+        value = parts.join('.');
+    }
+
+    input.value = value;
+}
+
+/* Sum ALL other waste quantities (fixed + dynamic) for ELV */
+function calculateOtherScrapTotal() {
+    if (category.value !== '1') return;
+
+    let total = 0;
+
+    const table = document.getElementById('wasteTableElv');
+    if (!table) return;
+
+    const rows = table.querySelectorAll('tbody tr');
+
+    rows.forEach(row => {
+        // Fixed row inputs (plastic, oil, battery, tyre, e-waste)
+        const fixedInput = row.querySelector('input.mt-quantity');
+
+        // Dynamic rows (added via "Add Other Waste Type")
+        const dynamicInput = row.querySelector('input[data-field="wasteQty"]');
+
+        const input = fixedInput || dynamicInput;
+
+        if (input && input.value !== '' && !isNaN(input.value)) {
+            total += parseFloat(input.value);
+        }
+    });
+
+    otherScrap.value = total > 0 ? total.toFixed(3) : '';
+
+    // Re-run dependent validation
+    recalcOtherScrapValidation();
+}
+
+/* Optional: call on dynamic row add to instantly update total */
+function addOtherWasteRow(tableId, isElv = true){
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rowId = `waste-${Date.now()}-${Math.random()}`;
+    
+    const row = document.createElement('tr');
+    row.className = 'dynamic-waste-row';
+    row.dataset.wasteId = rowId;
+    
+    row.innerHTML = `
+        <td>
+            <input type="text" class="form-control" placeholder="Waste type" data-field="wasteName">
+        </td>
+        <td>
+            <input type="text" id='other_waste' inputmode="number" class="form-control mt-quantity" placeholder="Quantity (Metric Ton)" data-field="wasteQty">
+        </td>
+        <td>
+            <button type="button" class="btn-remove-waste" onclick="removeWasteRow('${rowId}', '${tableId}')">
+                <i class="fas fa-trash me-1"></i>Remove
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    
+    if(isElv) dynamicWasteRowsElv.push(rowId);
+    else dynamicWasteRowsAuto.push(rowId);
+    
+    row.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('input', calculateOtherScrapTotal);
+    });
+
+    // Immediately recalc total after adding row
+    calculateOtherScrapTotal();
+}
+
+function removeWasteRow(rowId, tableId){
+    const row = document.querySelector(`tr[data-waste-id="${rowId}"]`);
+    if(row) row.remove();
+    dynamicWasteRowsElv = dynamicWasteRowsElv.filter(id => id !== rowId);
+    dynamicWasteRowsAuto = dynamicWasteRowsAuto.filter(id => id !== rowId);
+    calculateOtherScrapTotal();
+}
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% load static %}
+<style>
+    .footer-container {
+        /* background: linear-gradient(to left, #152238, #05515a); */
+        background: linear-gradient(to left, #152238, #152238);
+        color: #ffffff;
+        padding: 10px 0 0 0;
+        border-top: 1px solid #ffffff;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .footer-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+
+    .footer-text {
+        font-size: 1.1rem;
+        font-weight: 500;
+        line-height: 1.5;
+    }
+    
+
+</style>
+
+<script>
+    WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+        families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+        ],
+        urls: ["{% static 'css/fonts.min.css' %}", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"],
+        },
+        active: function () {
+        sessionStorage.fonts = true;
+        },
+    });
+</script>
+
+<div class="footer-container">
+        <div class="footer-content">
+            <!-- Logo -->
+            <!-- <div class="footer-logo">
+                <i class="fas fa-globe-asia fa-2x"></i>
+            </div> -->
+            
+            <!-- Main text -->
+            <p class="footer-text">
+                Website designed, developed & hosted by: IT Division, Central Pollution Control Board.
+            </p>
+            
+            <!-- Contact information -->
+            <!-- <div class="footer-contact">
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Parivesh Bhawan, Delhi, India</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>+91-11-xxxxxxxx</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>info@cpcb.gov.in</span>
+                </div>
+            </div> -->
+        
+            
+            
+            <!-- <div class="footer-copyright">
+                &copy; 2023 Central Pollution Control Board. All Rights Reserved.
+            </div> -->
+        </div>
+</div>
+
+
+{% block extra_scripts %}
+    <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+{% endblock %}

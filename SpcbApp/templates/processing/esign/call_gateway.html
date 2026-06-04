@@ -1,0 +1,6 @@
+<form method="POST" action="https://demosignergateway.emsigner.com/" id="esignForm">
+    <input type="hidden" name="EncryptedData" value="{{ encjson }}">
+    <input type="hidden" name="EncryptedKey" value="{{ encsession }}">
+    <input type="hidden" name="EncryptedHash" value="{{ enchashof }}">
+</form>
+<script>document.getElementById("esignForm").submit();</script>

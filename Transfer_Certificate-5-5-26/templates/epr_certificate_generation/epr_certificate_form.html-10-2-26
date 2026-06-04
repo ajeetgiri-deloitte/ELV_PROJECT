@@ -1,0 +1,354 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .form-header {
+        background-color: #2c3e50;
+        color: white;
+        padding: .8rem 0;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.85rem;
+    }
+
+    input.is-invalid + .invalid-feedback,
+    select.is-invalid + .invalid-feedback {
+        display: block;
+    }
+
+    .modal-content { border-radius: 12px; }
+    .preview-table th { background: #f8f9fa; }
+</style>
+
+<!-- HEADER -->
+<div class="form-header px-4">
+    <h1 class="h4 mb-0">Sales Data</h1>
+</div>
+
+
+
+<!-- MAIN SINGLE CARD -->
+<div class="section-card">
+    <div class="row g-3">
+
+        <div class="col-md-4">
+            <label>Date of Sale *</label>
+            <input type="date" id="dateOfSale" class="form-control">
+            <div class="invalid-feedback">Please select a date.</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Type of Buyer *</label>
+            <select id="buyerType" class="form-select">
+                <option value="">Select Buyer</option>
+                <option>Blast Furnace</option>
+                <option>Induction Furnace</option>
+                <option>Electric Arc Furnace</option>
+                <option>Scrap Recyclers</option>
+                <option>Steel Mills</option>
+                <option>Others</option>
+            </select>
+
+            <div class="col-md-12 d-none mt-4" id="otherBuyerDiv">
+                <label>Specify Other Buyer Type *</label>
+                <input type="text" id="otherBuyerType" class="form-control">
+                <div class="invalid-feedback">Please specify buyer type.</div>
+            </div>
+
+            <div class="invalid-feedback">Please select a buyer type.</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Name of Buyer *</label>
+            <input type="text" id="buyerName" class="form-control">
+            <div class="invalid-feedback">Enter buyer name.</div>
+        </div>
+
+        <div class="col-md-12">
+            <label>Address *</label>
+            <textarea id="buyerAddress" class="form-control"></textarea>
+            <div class="invalid-feedback">Enter address.</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>GST Number *</label>
+            <input type="text" id="buyerGST" class="form-control" maxlength="15">
+            <div class="invalid-feedback">Enter a valid GST number (15 characters).</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Email ID *</label>
+            <input type="email" id="buyerEmail" class="form-control">
+            <div class="invalid-feedback">Enter a valid email ID.</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Quantity of Steel Scrap Sold (MT) *</label>
+            <input type="number" id="steelQty" class="form-control" min="0.01" step="0.01">
+            <div class="invalid-feedback">Enter quantity (must be greater than zero).</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Invoice Amount *</label>
+            <input type="number" id="invoiceAmount" class="form-control" min="0.01">
+            <div class="invalid-feedback">Enter invoice amount.</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Invoice Number *</label>
+            <input type="text" id="invoiceNumber" class="form-control">
+            <div class="invalid-feedback">Enter invoice number.</div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Upload Invoice File (Max 2MB, PDF/JPG) *</label>
+            <input type="file" id="invoiceFile" class="form-control">
+            <div class="invalid-feedback">Upload a valid file (PDF/JPG, less than 2 MB).</div>
+        </div>
+
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="mt-5">
+        <button type="button" class="btn btn-primary" id="previewBtn">Preview & Submit</button>
+        <a href="{% url 'certificate_generation_dashboard' %}" class="btn btn-secondary ms-2">Go to Dashboard</a>
+    </div>
+</div> <!-- END CARD -->
+
+
+
+
+
+    <!-- History -->
+    <div class="main-container mt-4">
+        <h4 class="mb-3">EPR Certificate Generated</h4>
+
+        <table class="table table-bordered" id="historyTable">
+            <thead class="table-light">
+                <tr>
+                    <th>S. No</th>
+                    <th>Date of Entry</th>
+                    <th>Date of Sale</th>
+                    <th>Quantity Sold (MT)</th>
+                    <th>Invoice Number</th>
+                    <th>Certificate Generated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in history %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ row.created_at|date:"d-m-Y" }}</td>
+                        <td>{{ row.sale_date|date:"d-m-Y" }}</td>
+                        <td>{{ row.quantity_sold }}</td>
+                        <td>{{ row.invoice_number }}</td>
+                        <td>{{ row.quantity_sold }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            No certificate generated yet
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+<!-- PREVIEW MODAL -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Preview Details</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <table class="table table-bordered preview-table">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="previewTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-warning" data-bs-dismiss="modal">Edit</button>
+        <button class="btn btn-success" id="finalSubmitBtn">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Validate form
+function validateForm() {
+    let valid = true;
+
+    function check(id, condition) {
+        const input = document.getElementById(id);
+        if (condition) {
+            input.classList.remove("is-invalid");
+        } else {
+            input.classList.add("is-invalid");
+            valid = false;
+        }
+    }
+
+    check("dateOfSale", dateOfSale.value !== "");
+    check("buyerType", buyerType.value !== "");
+    if (buyerType.value === "Others") {
+        check("otherBuyerType", otherBuyerType.value.trim() !== "");
+    }
+    check("buyerName", buyerName.value !== "");
+    check("buyerAddress", buyerAddress.value !== "");
+
+    const gst = buyerGST.value;
+    check("buyerGST", gst.length === 15);
+
+    const email = buyerEmail.value;
+    check("buyerEmail", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+
+    check("steelQty", steelQty.value > 0);
+    check("invoiceAmount", invoiceAmount.value > 0);
+    check("invoiceNumber", invoiceNumber.value !== "");
+
+    const file = invoiceFile.files[0];
+    if (!file || file.size > 2 * 1024 * 1024) {
+        invoiceFile.classList.add("is-invalid");
+        valid = false;
+    } else {
+        invoiceFile.classList.remove("is-invalid");
+    }
+
+    return valid;
+}
+
+// PREVIEW BUTTON
+document.getElementById("previewBtn").addEventListener("click", function () {
+    if (!validateForm()) return;
+
+    const buyerTypeValue =
+        buyerType.value === "Others"
+            ? `Others - ${otherBuyerType.value}`
+            : buyerType.value;
+
+    const fields = [
+        ["Date of Sale", dateOfSale.value],
+        ["Type of Buyer", buyerTypeValue],
+        ["Name of Buyer", buyerName.value],
+        ["Address", buyerAddress.value],
+        ["GST Number", buyerGST.value],
+        ["Email", buyerEmail.value],
+        ["Steel Scrap Sold (MT)", steelQty.value],
+        ["Invoice Amount", invoiceAmount.value],
+        ["Invoice Number", invoiceNumber.value],
+        ["Invoice File", invoiceFile.files[0].name],
+    ];
+
+
+    let rows = "";
+    fields.forEach((f, i) => {
+        rows += `
+            <tr>
+                <td class="text-center">${i + 1}</td>
+                <td>${f[0]}</td>
+                <td>${f[1]}</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("previewTableBody").innerHTML = rows;
+    new bootstrap.Modal(document.getElementById("previewModal")).show();
+});
+
+
+// FINAL SUBMIT → Add to History Table
+document.getElementById("finalSubmitBtn").addEventListener("click", function () {
+
+    const entry = {
+        dateOfSale: document.getElementById("dateOfSale").value,
+        qty: document.getElementById("steelQty").value,
+        invoiceNo: document.getElementById("invoiceNumber").value,
+    };
+
+    addHistoryRow(entry);
+
+    // Close modal
+    bootstrap.Modal.getInstance(document.getElementById("previewModal")).hide();
+
+    alert("✔ Certificate entry added successfully!");
+
+    // Optional: clear form
+    // document.querySelector("form")?.reset();
+});
+
+// Function to append row to History Table
+function addHistoryRow(data) {
+    const table = document.getElementById("historyTable").querySelector("tbody");
+    const rowCount = table.rows.length + 1;
+
+    const row = `
+        <tr>
+            <td>${rowCount}</td>
+            <td>${new Date().toLocaleDateString()}</td>
+            <td>${data.dateOfSale}</td>
+            <td>${data.qty}</td>
+            <td>${data.invoiceNo}</td>
+            <td>${data.qty}</td>
+        </tr>
+    `;
+
+    table.insertAdjacentHTML("beforeend", row);
+}
+
+</script>
+
+<script>
+    const buyerTypeSelect = document.getElementById("buyerType");
+    const otherBuyerDiv = document.getElementById("otherBuyerDiv");
+    const otherBuyerInput = document.getElementById("otherBuyerType");
+
+    buyerTypeSelect.addEventListener("change", function () {
+        if (this.value === "Others") {
+            otherBuyerDiv.classList.remove("d-none");
+        } else {
+            otherBuyerDiv.classList.add("d-none");
+            otherBuyerInput.value = "";
+            otherBuyerInput.classList.remove("is-invalid");
+        }
+    });
+</script>
+
+
+{% endblock %}

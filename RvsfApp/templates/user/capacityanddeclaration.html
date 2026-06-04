@@ -1,0 +1,245 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/equipmentdetails.css' %}">
+{% if messages %}
+<div class="container-fluid px-4">
+    {% for message in messages %}
+    <div class="alert alert-dismissible fade show mt-3 message-alert" 
+         role="alert"
+         data-message-type="{{ message.tags }}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+<div class="container-fluid px-4 page-container">
+
+<div class="maincard">
+    <h5 class="mb-3  fw-bold">Capacity & Declaration</h5>
+    <div class="card mb-4 form-card">
+        
+        <form id="rvsfForm" action="{% url 'capacityanddeclaration' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="row form-row">
+                <!-- 1. Image Upload -->
+                <div class="col-md-6 mb-4">
+                    <label for="Installed_capacity" class="form-label">
+                        Installed Capacity of the RVSF <span class="text-danger">*</span>
+                    </label>
+                    <input 
+    type="number" 
+    class="form-control" 
+    id="Installed_capacity" 
+    name="Installed_capacity"
+    value="{{ capacitydata.installed_vehicles|default:'' }}"
+    readonly
+    required disabled
+>
+                </div>
+
+                <!-- 2. PDF Upload -->
+                <div class="col-md-6 mb-4">
+                    <label for="Undertaking_pdf" class="form-label">
+                        Upload Undertaking (PDF only, Max 2 MB) <span class="text-danger">*</span>
+                    </label>
+                    
+
+                    {% if data.undertaking %}
+                        <a href="{% url 'protected_file_rvsf' data.undertaking.name %}" target="_blank" class="btn btn-outline-primary btn-sm mb-2">
+                            <i class="fas fa-file-pdf me-2"></i>View Undertaking
+                        </a>
+                        <div class="custom" style="display: flex;">
+                            <div class="col-md-10 mb-4">
+                                <input type="file" class="form-control" id="Undertaking_pdf" name="Undertaking_pdf" accept="application/pdf" >
+                            </div>
+                            <div class="col-md-1 mb-4"></div>
+                            <div class="col-md-1 mb-4">
+                                <a href="{% static 'doc/rvsf_Undertaking.pdf' %}" download class="btn btn-outline-secondary btn-sm">
+                                   <i class="fas fa-download me-1"></i>Sample
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                    <div class="custom" style="display: flex;">
+                        <div class="col-md-10 mb-4">
+                            <input type="file" class="form-control" id="Undertaking_pdf" name="Undertaking_pdf" accept="application/pdf" required>
+                        </div>
+                        <div class="col-md-1 mb-4"></div>
+                        <div class="col-md-1 mb-4">
+                            <a href="{% static 'doc/rvsf_Undertaking.pdf' %}" download class="btn btn-outline-secondary btn-sm">
+                               <i class="fas fa-download me-1"></i>Sample
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <small id="pdfError" class="text-danger d-none">
+                        Only PDF files up to 2 MB are allowed.
+                    </small>
+                </div>
+
+            <!-- 3. Total Area -->
+            
+
+            <!-- 4. Declaration Checkbox -->
+            <div class="form-check mb-4">
+                <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="declaration" 
+                    name="declaration" 
+                    required
+                >
+                <label class="form-check-label" for="declaration">
+                    I {{data.authorized_person_name}} on Behalf of {{data.company_name}} hereby declares that the information furnished is true, complete and correct to the best of my knowledge and belief. I understand that in the event of my information being found false or incorrect at any stage, my registration shall be liable to be cancelled without notice or any compensation in lieu thereof.
+                    <span class="text-danger">*</span>
+                </label>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i>Submit
+                </button>
+            </div>
+
+            <small id="formError" class="text-danger mt-2 d-none">
+                ⚠ Please fill all required fields before proceeding.
+            </small>
+
+        </form>
+
+    </div>
+</div>
+
+</div>
+
+<script src="{% static 'js/rvsfappjs/user/equipmentdetails.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Select all message alerts
+    const messageAlerts = document.querySelectorAll('.message-alert');
+    
+    messageAlerts.forEach(alert => {
+        const messageType = alert.getAttribute('data-message-type');
+        
+        // Map message types to Bootstrap classes
+        const typeMap = {
+            'success': 'alert-success',
+            'error': 'alert-danger',  // Red color for error
+            'warning': 'alert-warning',
+            'info': 'alert-info',
+            'debug': 'alert-secondary'
+        };
+        
+        // Default to 'info' if type not found
+        const alertClass = typeMap[messageType] || 'alert-info';
+        
+        // Add the appropriate class
+        alert.classList.add(alertClass);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+</script>
+
+<script>
+// Auto-check declaration checkbox if undertaking file exists
+document.addEventListener('DOMContentLoaded', function() {
+    const declarationCheckbox = document.getElementById('declaration');
+    
+    // Check if undertaking file exists (the "View Undertaking" button is present)
+    const undertakingExists = document.querySelector('a[href*="undertaking"]') !== null;
+    
+    if (undertakingExists) {
+        declarationCheckbox.checked = true;
+    }
+});
+
+document.getElementById('Undertaking_pdf').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const error = document.getElementById('pdfError');
+    if (file) {
+        const maxSizeBytes = 2 * 1024 * 1024; // 2 MB
+
+        if (file.type !== 'application/pdf') {
+            alert("Invalid file type. Please upload a PDF file.");
+            error.textContent = "Only PDF format is allowed.";
+            error.classList.remove('d-none');
+            event.target.value = '';
+        } 
+        else if (file.size > maxSizeBytes) {
+            alert("File is too large. Please upload a PDF smaller than 2 MB.");
+            error.textContent = "File exceeds 2 MB limit.";
+            error.classList.remove('d-none');
+            event.target.value = '';
+        } 
+        else {
+            error.classList.add('d-none');
+        }
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+<script>
+    // Function to validate file name for special characters (allow typical PDF filenames)
+    function validateFileName(input) {
+        if (!input || !input.files || input.files.length === 0) {
+            return true;
+        }
+        
+        const fileName = input.files[0].name;
+
+        // Allow letters, numbers, spaces, underscores, hyphens, parentheses, dots, and require .pdf extension.
+        // Must start with letter/number/( or _, cannot start with dot or hyphen
+        const validFileNameRegex = /^[a-zA-Z0-9_\- (][a-zA-Z0-9_\-\s().]*\.pdf$/i;
+        
+        // Explicitly reject forbidden characters (Windows forbidden): < > : " / \ | ? *
+        const specialCharRegex = /[<>:"/\\|?*]/;
+
+        if (specialCharRegex.test(fileName)) {
+            alert('Special characters like < > : " / \\ | ? * are not allowed in the file name.');
+            input.value = ''; // Clear the file input
+            return false;
+        }
+
+        if (!validFileNameRegex.test(fileName)) {
+            alert('Invalid file name. Specail Characters are not allowed in the file name.');
+            input.value = '';
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Apply onchange validation to all file inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        
+        fileInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    validateFileName(this);
+                }
+            });
+        });
+    });
+    </script>
+
+{% endblock %}

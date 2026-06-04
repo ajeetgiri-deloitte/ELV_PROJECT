@@ -1,0 +1,405 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .dashboard-header {
+        background: #2c3e50;
+        color: #fff;
+        padding: 13px 0;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.3rem;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .value-display {
+        background-color: #f8f9fa;
+        font-weight: 500;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        text-align: center;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .total-row {
+        background-color: #e9ecef;
+        font-weight: 600;
+    }
+    
+    .input-group-sm {
+        max-width: 120px;
+    }
+
+    .error-highlight {
+    background-color: #ffdddd !important;
+    color: #c70000 !important;
+    font-weight: 600;
+}
+
+.success-highlight {
+    background-color: #ddffdd !important;
+    color: #006600 !important;
+    font-weight: 600;
+}
+
+</style>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <h1 class="h3 mb-0">Denominate EPR Certificates</h1>
+        </div>
+    </div>
+
+
+        <!-- Certificate Summary Table -->
+        <div class="dashboard-card">
+            <div class="card-body">
+                <div class="header">
+                        <h4>Dashboard</h4>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Total value of Certificates generated (MT)</th>
+                                <th>Certificates denominated (MT)</th>
+                                <th>Remaining value of Certificates available for denomination (MT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="value-display" id="certGenerated">{{ certGenerated }}</td>
+                                <td class="value-display" id="certDenominated">{{ certDenominated }}</td>
+                                <td class="value-display" id="remainCertAvailDenominated">{{ remainCertAvailDenominated }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Certificate Value Section -->
+        <div class="dashboard-card">
+            <div class="card-body">
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Total Certificate Value to Denominate (MT)</label>
+                        <input type="number" id="mtValue" class="form-control" step="0.001" min="0">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Total Certificate Value in KG</label>
+                        <div id="kgValue" class="value-display"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Denomination Details Section -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                Denomination Details in KG
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="denomTable">
+                        <thead>
+                            <tr>
+                                <th>Denomination (KG)</th>
+                                <th>Count</th>
+                                <th>Total (KG)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>100</td>
+                                <td><input type="number" class="count-input form-control form-control-sm" value="0" min="0"></td>
+                                <td class="row-total">0</td>
+                            </tr>
+
+                            <tr>
+                                <td>200</td>
+                                <td><input type="number" class="count-input form-control form-control-sm" value="0" min="0"></td>
+                                <td class="row-total">0</td>
+                            </tr>
+
+                            <tr>
+                                <td>500</td>
+                                <td><input type="number" class="count-input form-control form-control-sm" value="0" min="0"></td>
+                                <td class="row-total">0</td>
+                            </tr>
+
+                            <tr>
+                                <td>1000</td>
+                                <td><input type="number" class="count-input form-control form-control-sm" value="0" min="0"></td>
+                                <td class="row-total">0</td>
+                            </tr>
+
+                            <tr>
+                                <td>10000</td>
+                                <td><input type="number" class="count-input form-control form-control-sm" value="0" min="0"></td>
+                                <td class="row-total">0</td>
+                            </tr>
+
+                            <tr class="total-row">
+                                <td colspan="2" class="text-end fw-bold">Total :</td>
+                                <td id="grandTotal" class="fw-bold">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="text-center mb-4">
+                <button class="btn btn-primary fw-bold" id="saveBtn">Save Denomination</button>
+            </div>
+
+        </div>
+
+        <div class="dashboard-card mt-4">
+            <div class="card-header">Denomination History</div>
+            <div class="card-body">
+                <table class="table table-bordered" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Sr. No</th>
+                            <th>Date of denomination</th>
+                            <th>Total certificate value denominated (KG)</th>
+                            <th>Denomination and their count (Denomination * Count)</th>
+                            <th>IDs of Certificates generated </th>
+                            <th>Expiry date of EPR Certificate </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const mtInput = document.getElementById("mtValue");
+    const kgOutput = document.getElementById("kgValue");
+    const grandTotalCell = document.getElementById("grandTotal");
+    const countInputs = document.querySelectorAll(".count-input");
+    const saveBtn = document.getElementById("saveBtn");
+    const historyTableBody = document.querySelector("#historyTable tbody");
+
+    const denominations = [100, 200, 500, 1000, 10000];
+
+    // Backend remaining MT
+    let remainingMT = parseFloat("{{ remainCertAvailDenominated }}") || 0;
+
+    // Backend remaining converted to KG
+    let remainingKG = remainingMT * 1000;
+
+    let srNo = 1;
+
+    // Set max input limit in MT field
+    mtInput.setAttribute("max", remainingMT.toFixed(3));
+
+
+    // Convert MT → KG with validation
+    function updateKG() {
+        let mt = parseFloat(mtInput.value) || 0;
+
+        // Prevent exceeding backend MT limit
+        if (mt > remainingMT) {
+            alert("Entered MT exceeds the remaining denomination limit (" + remainingMT.toFixed(3) + " MT)");
+            mt = remainingMT;
+            mtInput.value = remainingMT.toFixed(3);
+        }
+
+        kgOutput.textContent = parseInt(mt * 1000);
+        validateTotals();
+    }
+
+
+    // Calculate row totals + grand total
+    function calculateTotals() {
+        let grandTotal = 0;
+
+        countInputs.forEach((input, index) => {
+            let count = parseInt(input.value) || 0;
+            let denom = denominations[index];
+            let rowTotal = count * denom;
+
+            input.closest("tr").querySelector(".row-total").textContent = rowTotal;
+            grandTotal += rowTotal;
+        });
+
+        grandTotalCell.textContent = grandTotal;
+        validateTotals();
+    }
+
+
+    // Validate totals
+    function validateTotals() {
+        let totalKG = parseInt(kgOutput.textContent) || 0;
+        let grandTotal = parseInt(grandTotalCell.textContent) || 0;
+
+        grandTotalCell.classList.remove("error-highlight", "success-highlight");
+
+        if (grandTotal === 0) {
+            grandTotalCell.classList.add("error-highlight");
+            return false;
+        }
+
+        // Total denominations must match KG input
+        if (grandTotal !== totalKG) {
+            grandTotalCell.classList.add("error-highlight");
+            return false;
+        }
+
+        // Must NOT exceed backend remaining KG
+        if (grandTotal > remainingKG) {
+            grandTotalCell.classList.add("error-highlight");
+            return false;
+        }
+
+        grandTotalCell.classList.add("success-highlight");
+        return true;
+    }
+
+
+    // Generate Certificate IDs
+    function generateCertificateIDs(denomination, count) {
+        let ids = [];
+        for (let i = 1; i <= count; i++) {
+            ids.push(`CERT-${denomination}-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`);
+        }
+        return ids;
+    }
+
+
+    // Save denomination
+    saveBtn.addEventListener("click", function () {
+
+        if (!validateTotals()) {
+            alert("Error: Please check values. Total must match KG & must not exceed remaining.");
+            return;
+        }
+
+        let totalValueKG = parseInt(grandTotalCell.textContent);
+
+        let denomSummary = [];
+        let allIDs = [];
+
+        countInputs.forEach((input, index) => {
+            let count = parseInt(input.value) || 0;
+            let denom = denominations[index];
+
+            if (count > 0) {
+                denomSummary.push(`${denom} * ${count}`);
+                allIDs.push(...generateCertificateIDs(denom, count));
+            }
+        });
+
+        let today = new Date().toISOString().split("T")[0];
+        let expiry = new Date();
+        expiry.setFullYear(expiry.getFullYear() + 5);
+        let expiryDate = expiry.toISOString().split("T")[0];
+
+        let row = `
+            <tr>
+                <td>${srNo++}</td>
+                <td>${today}</td>
+                <td>${totalValueKG}</td>
+                <td>${denomSummary.join(", ")}</td>
+                <td>${allIDs.join(", ")}</td>
+                <td>${expiryDate}</td>
+            </tr>
+        `;
+        historyTableBody.insertAdjacentHTML("beforeend", row);
+
+        // Update remaining values
+        remainingKG -= totalValueKG;
+        remainingMT = remainingKG / 1000;
+
+        // Update max limit
+        mtInput.setAttribute("max", remainingMT.toFixed(3));
+
+        // Convert saved KG → MT
+        let savedMT = totalValueKG / 1000;
+
+        // Update Certificates Denominated MT
+        let currentDenominated = parseFloat(document.getElementById("certDenominated").textContent) || 0;
+        let newDenominated = currentDenominated + savedMT;
+        document.getElementById("certDenominated").textContent = newDenominated.toFixed(3);
+
+        // Update Remaining Certificates MT
+        document.getElementById("remainCertAvailDenominated").textContent = remainingMT.toFixed(3);
+
+
+        // ---- RESET INPUT FIELDS AFTER SAVE ----
+        countInputs.forEach(input => {
+            input.value = 0;
+        });
+
+        document.querySelectorAll(".row-total").forEach(cell => {
+            cell.textContent = "0";
+        });
+
+        // Reset MT and KG fields
+        mtInput.value = "";
+        kgOutput.textContent = "0";
+
+        // Reset grand total
+        grandTotalCell.textContent = "0";
+
+        // Remove highlight colors
+        grandTotalCell.classList.remove("error-highlight", "success-highlight");
+
+        alert("Denomination saved successfully!");
+    });
+
+
+    // Event Listeners
+    mtInput.addEventListener("input", updateKG);
+    countInputs.forEach(input => input.addEventListener("input", calculateTotals));
+
+    updateKG();
+    calculateTotals();
+
+});
+</script>
+
+
+
+{% endblock %}

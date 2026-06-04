@@ -1,0 +1,230 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+<style>
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+.table td, .table th {
+    
+    color: black !important;
+}
+.table tbody tr:hover {
+    background-color: #adbbe4 !important;
+    border-left: 4px solid #0d6efd;
+}
+</style>
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+            <h4 class="mb-0">List of SPCB Users</h4>
+            <div class="input-group" style="width: 300px;">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search users...">
+                <span class="input-group-text"><i class="fa fa-search"></i></span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped  align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>Officer Name</th>
+                            <th>Designation</th>
+                            <th>Mobile No</th>
+                            <th>Email Id</th>
+                            <th>District</th>
+                            <th>User Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+<th>Action</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in data %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ data.OfficerName }}</td>
+                            <td>{{ data.officerDesignation }}</td>
+                            <td>{{ data.auth_mobile }}</td>
+                            <td>{{ data.auth_email }}</td>
+                            <td>{{ data.district_name }}</td>
+                            <td>{{ data.username }}</td>
+                            <td>
+                                {% if data.RoleAccess == '0' %}
+                                    <span class="badge ">No Role Assigned</span>
+                                {% elif data.RoleAccess == '2' %}
+                                    <span class="badge ">Recommending Authority</span>
+                                {% elif data.RoleAccess == '3' %}
+                                    <span class="badge ">Verification Authority</span>
+                                {% endif %}
+                            </td>
+                            <td>
+    {% if data.DisableStatus == 0 %}
+        <span class="badge bg-success">Enabled</span>
+    {% else %}
+        <span class="badge bg-danger">Disabled</span>
+    {% endif %}
+</td>
+
+<td>
+    <!-- Enable / Disable -->
+    <a href="{% url 'toggle_user_status' data.id %}"
+       class="btn btn-sm {% if data.DisableStatus == 0 %}btn-warning{% else %}btn-success{% endif %}"
+       onclick="return confirm('Are you sure you want to change status?')">
+        {% if data.DisableStatus == 0 %}Disable{% else %}Enable{% endif %}
+    </a>
+
+    <!-- Delete -->
+    <button class="btn btn-sm btn-danger"
+            onclick="openDeleteModal({{ data.id }})">
+        Delete
+    </button>
+</td>
+                           
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Reassign Applications Before Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Applications Table -->
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>App No</th>
+                <th>Status</th>
+                <th>Created Date</th>
+              </tr>
+            </thead>
+            <tbody id="applicationTableBody"></tbody>
+          </table>
+        </div>
+
+        <hr>
+
+        <!-- Verifier Dropdown -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">
+            Select New Verifier (RoleAccess = 3)
+          </label>
+          <select class="form-control" id="reassignUser">
+              <option value="">-- Select Officer --</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <form method="POST" id="deleteForm">
+            {% csrf_token %}
+            <input type="hidden" name="new_user_id" id="newUserId">
+            <button type="submit" class="btn btn-danger">
+                Confirm Delete
+            </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- jQuery Search Filter -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+function openDeleteModal(userId) {
+
+    // Clear old data
+    document.getElementById("applicationTableBody").innerHTML = "";
+    document.getElementById("reassignUser").innerHTML =
+        '<option value="">-- Select Officer --</option>';
+
+    // Fetch data using Django URL
+    fetch("{% url 'get_user_applications' 0 %}".replace('0', userId))
+    .then(response => response.json())
+    .then(data => {
+
+        // Fill Applications Table
+        let tbody = document.getElementById("applicationTableBody");
+
+        if (data.applications.length === 0) {
+            tbody.innerHTML =
+                `<tr><td colspan="3" class="text-center text-muted">
+                    No applications assigned
+                </td></tr>`;
+        } else {
+            data.applications.forEach(app => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${app.username}</td>
+                        <td>${app.appstatus}</td>
+                        <td>${app.created_at}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Fill Verifier Dropdown
+        let dropdown = document.getElementById("reassignUser");
+
+        data.verifiers.forEach(user => {
+            dropdown.innerHTML += `
+                <option value="${user.id}">
+                    ${user.OfficerName}
+                </option>
+            `;
+        });
+
+        // Set Delete Form Action
+        let deleteUrl = "{% url 'delete_user' 0 %}".replace('0', userId);
+        document.getElementById("deleteForm").action = deleteUrl;
+
+        // Show Modal
+        new bootstrap.Modal(
+            document.getElementById('deleteModal')
+        ).show();
+    });
+}
+
+
+// Submit Validation
+document.getElementById("deleteForm").addEventListener("submit", function(e){
+
+    let selectedUser = document.getElementById("reassignUser").value;
+
+    if (!selectedUser) {
+        alert("Please select a verifier before deleting.");
+        e.preventDefault();
+        return;
+    }
+
+    document.getElementById("newUserId").value = selectedUser;
+
+    if (!confirm("Are you sure you want to delete this user?")) {
+        e.preventDefault();
+    }
+});
+</script>
+<script src="{% static 'js/spcbapp/usermanagement/listusers.js' %}"></script>
+
+{% endblock %}

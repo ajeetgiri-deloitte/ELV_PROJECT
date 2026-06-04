@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+
+    <style>
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            background: linear-gradient(to right, #3976a1, #4a339e);
+            color: white;
+            text-align: center;
+        }
+
+        .card-header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .hidden-field {
+            visibility: hidden;  /* Instead of display: none */
+            height: 0;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: #2A6A8E;
+            border-bottom: 3px solid #F4A261;
+            /* display: inline-block; */
+            padding-bottom: 8px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2A6A8E;
+            font-size: 0.95rem;
+        }
+
+        .required::after {
+            content: " *";
+            color: #D9534F;
+            font-weight: bold;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #2A6A8E;
+            border-radius: 8px;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #F4A261;
+            box-shadow: 0 0 8px rgba(244, 162, 97, 0.4);
+            outline: none;
+        }
+
+        .form-control[readonly] {
+            background-color: #e9ecef;
+            opacity: 0.8;
+        }
+
+        .submit-btn {
+            background: linear-gradient(90deg, #2A6A8E, #1F4D6A);
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(42, 106, 142, 0.3);
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(90deg, #1F4D6A, #143B54);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(42, 106, 142, 0.5);
+        }
+
+        .input-group-text {
+            background-color: #2A6A8E;
+            color: white;
+            border: none;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+            .submit-btn {
+                width: 100%;
+            }
+        }
+        .wdthfit{
+            width: fit-content !important;
+        }
+    </style>
+<script>
+    setTimeout(function () {
+        document.querySelectorAll('.auto-dismiss').forEach(function(el) {
+            el.style.transition = "opacity 0.5s ease-out";
+            el.style.opacity = "0";
+            setTimeout(() => el.style.display = "none", 500);
+        });
+    }, 7000);
+</script>
+
+    {% include "layouts/header.html" %}
+    <div class=" m-5">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert-danger alert alert-{{ message.tags }} alert-dismissible fade show auto-dismiss" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% if registration_success %}
+            <script>
+                alert("Registration successful! Credentials have been sent to your email.");
+                window.location.href = "{% url 'rvsf_home' %}";
+            </script>
+        {% endif %}
+        <!-- Optional loader -->
+        <div id="gst-loader" style="display:none;">Loading GST details...</div>
+        <div class="card-header text-white">
+                <h4>Create Account</h4>
+                <p>Under the Environment Protection (End-of-Life Vehicles) Rules, 2025</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'rvsf_signup' %}" id="registrationForm" class="needs-validation" novalidate autocomplete="off">
+                    {% csrf_token %}
+                    <input type="hidden" id="gst_verified_no" name="gst_verified_no">
+                    <input type="hidden" name="is_company_email_verified" id="is_company_email_verified" value="false">
+                    <input type="hidden" name="is_auth_email_verified" id="is_auth_email_verified" value="false">
+                    <input type="hidden" name="is_mobile_verified" id="is_mobile_verified" value="false">
+
+
+                    <!-- <h5 class="section-title">Type of Entity</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label required">Select Type of Entity</label>
+
+                                </div>
+
+                                <div class="form-check px-4">
+                                    <input type="checkbox" class="form-check-input entity-checkbox" id="entity_rsvf" name="entity[]" value="1" {% if '1' in entity_selected %}checked{% endif %}>
+                                    <label class="form-check-label" for="entity_rsvf">Registered Vehicle Scrapping Facilities (RVSFs)</label>
+                                </div>
+
+                                <div class="form-check px-4">
+                                    <input type="checkbox" class="form-check-input entity-checkbox" id="entity_consumer" name="entity[]" value="2" {% if '2' in entity_selected %}checked{% endif %}>
+                                    <label class="form-check-label" for="entity_consumer">Bulk Consumers</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <h5 class="section-title">Type of Entity</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-2">
+                            <!-- <label class="form-label required">Select Type of Entity</label>
+                                <select name="entity" class="form-control" id="" required="required">
+                                    <option value="">Please Select</option>
+                                    <option value="3">Producer</option>
+                                </select> -->
+                            <!-- <label class="form-label required">Type of Entity</label> -->
+                               <select class="form-control fw-bold text-center wdthfit" disabled>
+                                    <option value="3" selected>Registered Vehicle Scrapping Facilities</option>
+                                </select>
+                                <input type="hidden" name="entity" value="3">
+                        </div>
+
+                        {% comment %} <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input entity-checkbox" id="entity_rsvf" name="entity[]" value="1" {% if '1' in entity_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_rsvf">Registered Vehicle Scrapping Facilities (RVSFs)</label>
+                        </div>
+
+                        <div class="form-check px-4">
+                            <input type="checkbox" class="form-check-input entity-checkbox" id="entity_consumer" name="entity[]" value="2" {% if '2' in entity_selected %}checked{% endif %}>
+                            <label class="form-check-label" for="entity_consumer">Bulk Consumers</label>
+                        </div> {% endcomment %}
+                    </div>
+
+                    <h5 class="section-title">Entity Details</h5>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="gst_no" class="form-label required">
+                                GST Number
+                                <i class="bi bi-info-circle-fill text-primary ms-1"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Format: 15 characters — e.g., 22ABCDE1234F1Z5">
+                                </i>
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                <input type="text" 
+                                    class="form-control" 
+                                    id="gst_no" 
+                                    name="gst_no" 
+                                    value="{{ form_data.gst_no|default:'' }}"
+                                    maxlength="15"
+                                    placeholder="GST No" 
+                                    required>
+                                <div class="invalid-feedback">
+                                GST Number is required.
+                                </div>
+                            </div>
+
+                            <!-- Error message -->
+                            <div id="gst-error" class="alert alert-danger mt-2" style="display:none; font-size: 14px;"></div>
+                            
+                        </div>
+                        <div class="col-md-4">
+                            <label for="company_name" class="form-label required">Trade Name</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" value="{{ form_data.company_name|default:'' }}" placeholder="Auto Fetched from GST No" readonly>
+
+                        </div>
+                        <div class="col-md-4 field-legal-name">
+                            <label for="legal_name" class="form-label required">Legal Name</label>
+                            <input type="text" class="form-control" id="legal_name" name="legal_name" value="{{ form_data.legal_name|default:'' }}" placeholder="Auto Fetched from GST No" readonly>
+
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3 ">
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-8 field-company-email">
+                                    <label for="company_email" class="form-label required">Company Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" class="form-control" id="company_email" name="company_email" value="{{ form_data.company_email|default:'' }}" placeholder="Enter company email" required>
+                                        <div class="invalid-feedback">
+                                          Company email is required.
+                                        </div>
+                                    </div>
+                                    <div class="text-danger small mt-1 error-message" style="display:none;"></div>
+                                </div>
+                                {% if is_company_email_verified %}
+                                <div class="col-md-4">
+                                    <label for=""></label>
+                                    <div class="form-group mt-2">
+                                        <span class=" btn btn-success" >Verified</span>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="col-md-4">
+                                    <label for=""></label>
+                                    <div class="form-group sendEmailOTPDiv mt-2">
+                                        <span class=" btn btn-primary" data-toggle="modal" data-target="#myModal2" id="send_comp_email_otp">Get OTP</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                        <div class="col-md-4">
+                            <label for="business_category" class="form-label required">Business Category</label>
+                            <input type="text" class="form-control" id="business_category" name="business_category" value="{{ form_data.business_category|default:'' }}" placeholder="Auto Fetched from GST No" readonly>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label for="registered_address" class="form-label required">Registered Address</label>
+                            <textarea class="form-control" id="registered_address" name="registered_address" rows="2" placeholder="Registered Company Address" maxlength="300" required>{{ form_data.registered_address|default:'' }}</textarea>
+                            <div class="invalid-feedback">
+                                  Registered Address is required (maximum 300 characters).
+                                </div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="state" class="form-label required">State/UT</label>
+                            <select class="form-select" id="state" name="state" required>
+                                <option  value="" selected disabled>Select State/UT</option>
+                                {% for state in states %}
+                                <option class="text-black" value="{{ state.state_id }}"
+                                    {% if form_data.state == state.state_id|stringformat:"s" %}selected{% endif %}>
+                                {{ state.state_name }}
+                            </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                 Plaese select State.
+                                </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="district" class="form-label required">District</label>
+                            <select id="district" name="district" class="form-select" required>
+                                <option  value="" selected disabled>Select District</option>
+                                <option value="{{ form_data.district }}"  hidden>{{ form_data.district_name }}</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                  Please select district.
+                                </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="pin_code" class="form-label required">Pin Code</label>
+                            <!-- <input type="text" class="form-control" id="pin_code" name="pin_code" maxlength="6" pattern="\d{6}" inputmode="numeric" value="{{ form_data.pin_code|default:'' }}" placeholder="PIN Code" required> -->
+                            <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-pin"></i></span>
+                                    <input type="text" class="form-control" id="pin_code" name="pin_code" maxlength="6" pattern="\d{6}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"  value="{{ form_data.pin_code|default:'' }}" placeholder="6 digit PIN Code" required>
+                                <div class="invalid-feedback">
+                                  Please enter a valid 6-digit PIN Code.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="website" class="form-label">Website Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                <input type="url" class="form-control" id="website" name="website" value="{{ form_data.website|default:'' }}" placeholder="https://">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="pan_no" class="form-label required">
+                                Company PAN Number
+                                <i class="bi bi-info-circle-fill text-primary ms-1"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Format: 5 letters, 4 digits, 1 letter (e.g., ABCDE1234F)">
+                                </i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-file-alt"></i></span>
+                                <input type="text" class="form-control" id="pan_no" name="pan_no" maxlength="10"
+                                    value="{{ form_data.pan_no|default:'' }}"
+                                    placeholder="e.g., ABCDE1234F"
+                                    pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                    title="Enter valid PAN" required>
+                                <div class="invalid-feedback">
+                                  Required/Improper PAN Format e.g., ABCDE1234F.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="tin" class="form-label">
+                                Tax Identification Number (TIN)
+                                <i class="bi bi-info-circle-fill text-primary ms-1"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Format: 11 digits (e.g., 12345678901)">
+                                </i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-file-alt"></i></span>
+                                <input type="text" class="form-control" id="tin" name="tin" value="{{ form_data.tin|default:'' }}" maxlength="11"
+                                    pattern="\d{11}"
+                                    title="TIN should be an 11-digit number" placeholder="e.g., 12345678901">
+                                    <div class="invalid-feedback">TIN must be exactly 11 digits e.g., 12345678901. </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="cin" class="form-label">
+                                Corporate Identification Number (CIN)
+                                <i class="bi bi-info-circle-fill text-primary ms-1"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Format: 21 characters like L12345MH2000PLC123456">
+                                </i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                <input type="text" class="form-control" id="cin" name="cin" value="{{ form_data.cin|default:'' }}" maxlength="21"
+                                    style="text-transform: uppercase;"
+                                    pattern="[LU]{1}[0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}"
+                                    title="Enter valid CIN" placeholder="e.g., U72900MH2023PTC123456">
+                                    <div class="invalid-feedback">Invalid CIN format. Example: U72900MH2023PTC123456</div>
+                            </div>
+                        </div>
+                        <!-- <div class="col-md-4 field-iec">
+                            <label for="iec" class="form-label">Import Export Code (IEC)</label>
+                            <input type="text" class="form-control" id="iec" name="iec" value="{{ form_data.iec|default:'' }}">
+                        </div> -->
+                    </div>
+
+                    <h5 class="section-title">Authorized Person Details</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="authorized_person_name" class="form-label required">Name of Authorized Person</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control" id="authorized_person_name" name="authorized_person_name" value="{{ form_data.authorized_person_name|default:'' }}" placeholder="Authorized Person Name" required>
+                                <div class="invalid-feedback">
+                                  Authorized Person name is required.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="authorized_person_designation" class="form-label required">Designation of Authorized Person</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                <input type="text" class="form-control" id="authorized_person_designation" name="authorized_person_designation" value="{{ form_data.authorized_person_designation|default:'' }}" placeholder="Designation" required>
+                                <div class="invalid-feedback">
+                                  Authorized Person Designation is required.
+                                </div>
+                            </div>
+                        </div>
+                    <!-- </div>
+                    <div class="row"> -->
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <label for="authorized_person_email" class="form-label required">Authorized Person Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" class="form-control" id="authorized_person_email" name="authorized_person_email" value="{{ form_data.authorized_person_email|default:'' }}" placeholder="Email" required>
+                                        <div class="invalid-feedback">
+                                          Authorized Person email is required.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if is_auth_email_verified %}
+<div class="col-md-3 mt-2">
+    <label></label>
+    <div class="form-group">
+        <span class="btn btn-success">Verified</span>
+    </div>
+</div>
+{% else %}
+<div class="col-md-3 mt-2">
+    <label></label>
+    <div class="form-group sendEmailOTPDiv">
+        <span class="btn btn-primary" id="send_auth_email_otp">Get OTP</span>
+    </div>
+</div>
+{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="row">
+                                <!-- <div class="col-md-8">
+                                    <label for="authorized_person_mobile" class="form-label required">Authorized Person Mobile Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="text" class="form-control" id="authorized_person_mobile" name="authorized_person_mobile" maxlength="10" pattern="\d{10}" inputmode="numeric" value="{{ form_data.authorized_person_mobile|default:'' }}" placeholder="Mobile No" required>
+                                        <div class="invalid-feedback">
+                                          Authorized Person Contact is required.
+                                        </div>
+                                    </div>
+                                </div> -->
+                                <div class="col-md-8">
+                                    <label for="authorized_person_mobile" class="form-label required">Authorized Person Mobile Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="text" class="form-control" id="authorized_person_mobile" name="authorized_person_mobile" 
+                                            maxlength="10" inputmode="numeric" 
+                                            value="{{ form_data.authorized_person_mobile|default:'' }}" placeholder="Mobile No" required>
+                                        <div class="invalid-feedback">
+                                            Only numbers allowed (0-9), exactly 10 digits required.
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if is_mobile_verified %}
+<div class="col-md-4 mt-2">
+    <label></label>
+    <div class="form-group">
+        <span class="btn btn-success">Verified</span>
+    </div>
+</div>
+{% else %}
+<div class="col-md-4 mt-2">
+    <label></label>
+    <div class="form-group sendEmailOTPDiv">
+        <span class="btn btn-primary" id="send_auth_mob_otp">Get OTP</span>
+    </div>
+</div>
+{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="authorized_person_pan" class="form-label required">
+                                Authorized Person PAN
+                                <i class="bi bi-info-circle-fill text-primary ms-1"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Format: 5 letters, 4 digits, 1 letter (e.g., ABCDE1234F)">
+                                </i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-file-alt"></i></span>
+                                <input type="text" class="form-control" id="authorized_person_pan" name="authorized_person_pan" maxlength="10" value="{{ form_data.authorized_person_pan|default:'' }}"
+                                    pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" placeholder="Authorized Person PAN" required>
+                                <div class="invalid-feedback">
+                                  Required/Invalid PAN Format e.g., ABCDE1234F.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ✅ Captcha Section -->
+                    <div class="col-md-3 my-3 ">
+                        <div id="captchaContainer">
+                            {{ form.captcha }}
+                        </div>
+                        <button type="button" id="refreshCaptcha" class="btn btn-outline-secondary mt-2">
+                            ↻ Refresh Captcha
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-4 mb-2">
+                        <button type="submit" class="submit-btn">Signup</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% include 'layouts/footer.html' %}
+
+
+<script>
+    $(document).ready(function () {
+        
+        var selectedState = "{{ form_data.state|default:'' }}";
+            var selectedDistrict = "{{ form_data.district|default:'' }}";
+
+    // If state was previously selected, trigger the change manually
+    if (selectedState) {
+        $('#state').val(selectedState); // Preselect state
+        $.ajax({
+            url: "{% url 'load_districts' %}",
+            data: { 'state_id': selectedState },
+            success: function (data) {
+                $('#district').empty().append('<option disabled>Select District</option>');
+                $.each(data, function (index, district) {
+                    var selected = district.city_id == selectedDistrict ? 'selected' : '';
+                    $('#district').append('<option value="' + district.city_id + '" ' + selected + '>' + district.city_name + '</option>');
+                });
+            }
+        });
+    }
+
+    // Handle state change manually by user
+    $('#state').change(function () {
+        var stateId = $(this).val();
+        if (stateId) {
+            $.ajax({
+                url: "{% url 'load_districts' %}",
+                data: { 'state_id': stateId },
+                success: function (data) {
+                    $('#district').empty().append('<option selected disabled>Select District</option>');
+                    $.each(data, function (index, district) {
+                        $('#district').append('<option value="' + district.city_id + '">' + district.city_name + '</option>');
+                    });
+                }
+            });
+        }
+    });
+});
+</script>
+
+    <script>
+        $("#gst_no").on("keypress", function (e) {
+            let regex = new RegExp("^[A-Za-z0-9]+$");
+            let str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+            if (!regex.test(str)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+    </script>
+
+<script>
+    $(document).ready(function () {
+
+        let cooldownTimers = {};
+        // === GST VALIDATION SECTION ===
+    // function showGstError(message) {
+    //     $("#gst-error")
+    //         .stop(true, true)
+    //         .hide()
+    //         .text(message)
+    //         .fadeIn()
+    //         .delay(1000)
+    //         .fadeOut();
+    // }
+
+    // let gstTimer;
+    // $("#gst_no").on("input", function () {
+    //     clearTimeout(gstTimer);
+    //     let gst_no = $(this).val().trim();
+
+    //     if (gst_no.length === 15) {
+    //         gstTimer = setTimeout(function () {
+    //             $.ajax({
+    //                 url: "{% url 'fetch-gst-details' %}",
+    //                 method: "GET",
+    //                 data: { gst_no: gst_no },
+    //                 beforeSend: function () {
+    //                     $("#gst-loader").show();
+    //                 },
+    //                 success: function (response) {
+    //                     $("#gst-loader").hide();
+    //                     if (response.success) {
+    //                         $("#company_name").val(response.company_name);
+    //                         $("#legal_name").val(response.legal_name);
+    //                         $("#business_category").val(response.business_category);
+    //                         $("#gst-error").hide();
+    //                     } else {
+    //                         $("#company_name, #legal_name, #business_category").val("");
+    //                         showGstError(response.error || "Invalid GST Number");
+    //                     }
+    //                 },
+    //                 error: function (xhr) {
+    //                     $("#gst-loader").hide();
+    //                     let msg = "An error occurred while fetching GST details.";
+    //                     if (xhr.responseJSON && xhr.responseJSON.error) {
+    //                         msg = xhr.responseJSON.error;
+    //                     }
+    //                     $("#company_name, #legal_name, #business_category").val("");
+    //                     showGstError(msg);
+    //                 }
+    //             });
+    //         }, 500);
+    //     } else {
+    //         $("#company_name, #legal_name, #business_category").val("");
+    //         showGstError("GST Number must be 15 characters.");
+    //     }
+    // });
+
+
+// === GST VALIDATION SECTION ===
+function showGstError(message) {
+    $("#gst-error")
+        .stop(true, true)
+        .hide()
+        .text(message)
+        .fadeIn();
+}
+
+$("#gst_no").on("input", function () {   // blur = tab press ya field chhodna
+    let gst_no = $(this).val().trim();
+
+    if (gst_no.length !== 15) {
+        if (gst_no.length > 0) {
+            showGstError("GST Number must be 15 characters. Expected: 22ABCDE1234F1Z5");
+        }
+        $("#company_name, #legal_name, #business_category").val("");
+        $("#gst_verified_no").val("");
+        return;
+    }
+
+    // Pehle error hata do
+    $("#gst-error").hide();
+
+    // Loading dikhana fields ke andar
+    $("#company_name").val("Loading...");
+    $("#legal_name").val("Loading...");
+    $("#business_category").val("Loading...");
+
+    // Ajax call
+    $.ajax({
+        url: "{% url 'fetchgst' %}",
+        method: "GET",
+        data: { gst_no: gst_no },
+        success: function (response) {
+            if (response.success) {
+                $("#company_name").val(response.company_name);
+                $("#legal_name").val(response.legal_name);
+                $("#business_category").val(response.business_category);
+                $("#gst_no").val(response.gst_no);
+                $("#gst_verified_no").val(response.gst_no);
+            } else {
+                $("#company_name, #legal_name, #business_category").val("");
+                $("#gst_verified_no").val("");
+                showGstError(response.error || "Invalid GST format. Expected: 22ABCDE1234F1Z5 (15 characters).");
+            }
+        },
+        error: function (xhr) {
+            let msg = "An error occurred while fetching GST details.";
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error;
+            }
+            $("#company_name, #legal_name, #business_category").val("");
+            $("#gst_verified_no").val("");
+            showGstError(msg);
+        }
+    });
+});
+
+
+
+
+
+        // === COOLDOWN FUNCTION ===
+        function startCooldown($button, seconds, otpType) {
+            let remaining = seconds;
+            $button.prop('disabled', true).text(`Retry in ${remaining}s`);
+
+            // Clear existing timer if exists
+            if (cooldownTimers[otpType]) clearInterval(cooldownTimers[otpType]);
+
+            cooldownTimers[otpType] = setInterval(() => {
+                remaining--;
+                if (remaining > 0) {
+                    $button.text(`Retry in ${remaining}s`);
+                } else {
+                    clearInterval(cooldownTimers[otpType]);
+                    $button.prop('disabled', false).text('Resend OTP').show();
+                }
+            }, 1000);
+        }
+
+        // === OTP GENERATION ===
+        function generateOTP(otpType, button) {
+            let value;
+            if (otpType === 'company_email') {
+                value = $('#company_email').val();
+            } else if (otpType === 'authorized_person_email') {
+                value = $('#authorized_person_email').val();
+            } else if (otpType === 'authorized_person_mobile') {
+                value = $('#authorized_person_mobile').val();
+            }
+
+            if (!value) {
+                alert(`Please enter ${otpType.replace(/_/g, ' ')} first`);
+                return;
+            }
+
+            let $button = $(button);
+            let $parent = $button.parent();
+
+            $button.prop('disabled', true).text('Sending...');
+            startCooldown($button, 30, otpType);  // Start cooldown
+
+            $.ajax({
+                url: "{% url 'generate_otp1' %}",
+                type: 'POST',
+                data: JSON.stringify({
+                    otp_type: otpType,
+                    authorization: value
+                }),
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    // alert('sanskar.cpcb@gmail.com');
+                    if (response.success) {
+                        // alert(response.message);
+                        if (!$parent.find('.otp-input[data-type="' + otpType + '"]').length) {
+                            $parent.append(`
+                                <input type="text" class="form-control otp-input mt-2"
+                                    data-type="${otpType}" 
+                                    placeholder="Enter OTP" maxlength="6">
+                                <button type="button" class="btn btn-primary mt-2 verify-otp">Verify</button>
+                            `);
+                        } else {
+                            
+                            $parent.find('.otp-input[data-type="' + otpType + '"]').val('').prop('readonly', false).prop('disabled', false);
+                            $parent.find('.verify-otp').prop('disabled', false).text('Verify OTP').removeClass('btn-success').addClass('btn-primary');
+                        }
+
+                        $button.hide();
+                    } else {
+                        
+                        alert(response.message);
+
+                        // Stop cooldown if failed
+                        clearInterval(cooldownTimers[otpType]);
+                        $button.prop('disabled', false).text('Send OTP').show();
+                    }
+                },
+                error: function () {
+                    alert('Error generating OTP');
+
+                    clearInterval(cooldownTimers[otpType]);
+                    $button.prop('disabled', false).text('Send OTP').show();
+                }
+            });
+        }
+        
+
+        // === ATTACH OTP BUTTON EVENTS ===
+        $('#send_comp_email_otp').click(function () {
+            if (!$(this).prop('disabled')) {
+                generateOTP('company_email', this);
+            }
+        });
+
+        $('#send_auth_email_otp').click(function () {
+            if (!$(this).prop('disabled')) {
+                generateOTP('authorized_person_email', this);
+            }
+        });
+
+        $('#send_auth_mob_otp').click(function () {
+            if (!$(this).prop('disabled')) {
+                generateOTP('authorized_person_mobile', this);
+            }
+        });
+
+        // === OTP VERIFICATION ===
+        $(document).on('click', '.verify-otp', function () {
+            let otpType = $(this).prev().data('type');
+            let otp = $(this).prev().val();
+            let value;
+            if (otpType === 'company_email') {
+                value = $('#company_email').val();
+            } else if (otpType === 'authorized_person_email') {
+                value = $('#authorized_person_email').val();
+            } else if (otpType === 'authorized_person_mobile') {
+                value = $('#authorized_person_mobile').val();
+            }
+
+            if (!otp || !value) {
+                alert("Please fill in the required OTP and corresponding field.");
+                return;
+            }
+
+            let $otpInput = $(this).prev();
+            let $verifyBtn = $(this);
+            let $container = $(this).parent();
+
+            $.ajax({
+                url: "{% url 'verify_otp2' %}",
+                type: 'POST',
+                data: JSON.stringify({
+                    otp_type: otpType,
+                    otp: otp,
+                    authorization: value
+                }),
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    alert(response.message);
+                    if (response.success) {
+                        $otpInput.prop('readonly', true);
+                        $verifyBtn.text('Verified')
+                            .removeClass('btn-primary')
+                            .addClass('btn-success')
+                            .prop('disabled', true);
+
+                        if (otpType === 'company_email') {
+                            $('#is_company_email_verified').val('true');
+                            $('#send_comp_email_otp').hide();
+                        } else if (otpType === 'authorized_person_email') {
+                            $('#is_auth_email_verified').val('true');
+                            $('#send_auth_email_otp').hide();
+                        } else if (otpType === 'authorized_person_mobile') {
+                            $('#is_mobile_verified').val('true');
+                            $('#send_auth_mob_otp').hide();
+                        }
+
+                        $container.find('.resend-otp-btn').remove();
+                        if (cooldownTimers[otpType]) {
+                            clearInterval(cooldownTimers[otpType]);
+                            cooldownTimers[otpType] = null;
+                        }
+                    } else if (response.message.toLowerCase().includes('expired')) {
+                        $verifyBtn.prop('disabled', true);
+                        $otpInput.prop('disabled', true);
+
+                        if ($container.find('.resend-otp-btn').length === 0) {
+                            $container.append(`
+                                <button type="button" class="btn btn-warning mt-2 resend-otp-btn">Resend OTP</button>
+                            `);
+                        }
+                    }
+                },
+                error: function () {
+                    alert('Error verifying OTP');
+                }
+            });
+        });
+
+        // === RESEND OTP ===
+        $(document).on('click', '.resend-otp-btn', function () {
+            let $container = $(this).parent();
+            let otpType = $container.find('.otp-input').data('type');
+            let value;
+
+            if (otpType === 'company_email') {
+                value = $('#company_email').val();
+            } else if (otpType === 'authorized_person_email') {
+                value = $('#authorized_person_email').val();
+            } else if (otpType === 'authorized_person_mobile') {
+                value = $('#authorized_person_mobile').val();
+            }
+
+            if (!value) {
+                alert(`Please enter ${otpType.replace(/_/g, ' ')} first`);
+                return;
+            }
+
+            let $resendBtn = $(this);
+            $resendBtn.prop('disabled', true).text('Resending...');
+            startCooldown($resendBtn, 30, otpType);
+
+            $.ajax({
+                url: "{% url 'generate_otp' %}",
+                type: 'POST',
+                data: JSON.stringify({
+                    otp_type: otpType,
+                    authorization: value
+                }),
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        $container.find('.otp-input').val('').prop('disabled', false);
+                        $container.find('.verify-otp').prop('disabled', false).text('Verify OTP').removeClass('btn-success').addClass('btn-primary');
+                        $resendBtn.text('Retry in 30s');
+                    } else {
+                        alert(response.message);
+                        $resendBtn.prop('disabled', false).text('Resend OTP');
+                    }
+                },
+                error: function () {
+                    alert('Error resending OTP');
+                    $resendBtn.prop('disabled', false).text('Resend OTP');
+                }
+            });
+        });
+
+        // === RESET VERIFICATION ON FIELD CHANGE ===
+        $('#company_email, #authorized_person_email, #authorized_person_mobile').on('input', function () {
+            let fieldId = $(this).attr('id');
+            let otpType;
+
+            if (fieldId === 'company_email') {
+                otpType = 'company_email';
+                $('#is_company_email_verified').val('false');
+                $('#send_comp_email_otp').show().prop('disabled', false).text('Send OTP');
+                $('#send_comp_email_otp').siblings('.otp-input, .verify-otp, .resend-otp-btn').remove();
+            } else if (fieldId === 'authorized_person_email') {
+                otpType = 'authorized_person_email';
+                $('#is_auth_email_verified').val('false');
+                $('#send_auth_email_otp').show().prop('disabled', false).text('Send OTP');
+                $('#send_auth_email_otp').siblings('.otp-input, .verify-otp, .resend-otp-btn').remove();
+            } else if (fieldId === 'authorized_person_mobile') {
+                otpType = 'authorized_person_mobile';
+                $('#is_mobile_verified').val('false');
+                $('#send_auth_mob_otp').show().prop('disabled', false).text('Send OTP');
+                $('#send_auth_mob_otp').siblings('.otp-input, .verify-otp, .resend-otp-btn').remove();
+            }
+
+            // Clear the cooldown timer
+            if (cooldownTimers[otpType]) {
+                clearInterval(cooldownTimers[otpType]);
+                cooldownTimers[otpType] = null;
+            }
+        });
+
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+        const panFields = [
+        document.getElementById("pan_no"),
+        document.getElementById("authorized_person_pan")
+    ];
+
+    panFields.forEach(function (field) {
+        if (!field) return;  // skip if the field doesn't exist
+
+        field.addEventListener("input", function () {
+            let value = this.value.toUpperCase();
+            let newValue = "";
+
+            // enforce PAN format: first 5 letters, next 4 digits, last 1 letter
+            for (let i = 0; i < value.length && i < 10; i++) {
+                const char = value[i];
+                if (i < 5) {          // first 5 must be letters
+                    if (/[A-Z]/.test(char)) newValue += char;
+                } else if (i < 9) {   // 6-9 must be digits
+                    if (/[0-9]/.test(char)) newValue += char;
+                } else {              // 10th must be a letter
+                    if (/[A-Z]/.test(char)) newValue += char;
+                }
+            }
+
+            this.value = newValue;
+        });
+    });
+    });
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // GST
+    document.getElementById("gst_no").addEventListener("input", function () {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+
+
+    // PAN & Authorized PAN: A-Z and 0-9 only
+    const panInputs = ["pan_no", "authorized_person_pan"];
+    panInputs.forEach(id => {
+        document.getElementById(id).addEventListener("input", function (e) {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    });
+
+    // CIN: A-Z and 0-9 only, starts with L or U
+    document.getElementById("cin").addEventListener("input", function () {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+
+    // TIN: Digits only
+    document.getElementById("tin").addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Final form validation on submit
+    document.querySelector("form").addEventListener("submit", function (e) {
+    let panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    let cinRegex = /^[LU]{1}[0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/;
+    let tinRegex = /^\d{11}$/;
+    let gstRegex = /^\d{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+    // Fetch values
+    let pan = document.getElementById("pan_no")?.value || "";
+    let cin = document.getElementById("cin")?.value || "";
+    let tin = document.getElementById("tin")?.value || "";
+    let authPan = document.getElementById("authorized_person_pan")?.value || "";
+    let gst = document.getElementById("gst_no")?.value || "";
+
+    // Clear old error messages
+    document.querySelectorAll(".error-message").forEach(el => el.remove());
+
+        let isValid = true;
+
+        // GST
+        if (gst && !gstRegex.test(gst)) {
+            showError("gst_no", "Invalid GST Number format. It should look like 22ABCDE1234F1Z5");
+            isValid = false;
+        }
+
+        // PAN
+        if (pan && !panRegex.test(pan)) {
+            showError("pan_no", "Invalid Company PAN format.");
+            isValid = false;
+        }
+
+        // Authorized PAN
+        if (authPan && !panRegex.test(authPan)) {
+            showError("authorized_person_pan", "Invalid Authorized PAN format.");
+            isValid = false;
+        }
+
+        // CIN
+        if (cin && !cinRegex.test(cin)) {
+            showError("cin", "Invalid CIN format. Example: U72900MH2023PTC123456");
+            isValid = false;
+        }
+
+        // TIN
+        if (tin && !tinRegex.test(tin)) {
+            showError("tin", "TIN must be exactly 11 digits.");
+            isValid = false;
+        }
+
+        if (!isValid) e.preventDefault();
+    });
+
+    // Function to display error message
+function showError(fieldId, message) {
+    let input = document.getElementById(fieldId);
+    if (input) {
+        let error = document.createElement("div");
+        error.className = "error-message text-danger small mt-1";
+        error.innerText = message;
+
+        // highlight the input in red using Bootstrap
+        input.classList.add("is-invalid");
+
+        // append error message below the whole column
+        let col = input.closest(".col-md-4");
+        col.appendChild(error);
+    }
+}
+
+
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Define a safe pattern: A-Z, a-z, 0-9, space, -, _, ., /
+    const safePattern = /[^A-Za-z0-9\s\-_,.\/@]/g;
+
+    // Apply to all input and textarea fields
+    document.querySelectorAll("input, textarea").forEach(field => {
+        field.addEventListener("input", function () {
+            // Remove unwanted characters
+            // For email field, allow '@' too
+            if (field.type === "email") {
+                this.value = this.value.replace(/[^A-Za-z0-9@._\-]/g, '');
+            }
+            else if (field.id === "website") {
+                this.value = this.value.replace(/[^A-Za-z0-9:\/._\-?=&%@#]/g, '');
+            }
+             else {
+                this.value = this.value.replace(safePattern, '');
+            }
+        });
+    });
+});
+</script>
+
+<!-- <script>
+  (function () {
+    'use strict'
+    const form = document.getElementById('registrationForm');
+
+    form.addEventListener('submit', function (event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();  // stop form submission
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated'); // Bootstrap shows errors
+    }, false);
+  })();
+</script> -->
+
+<!-- GST Validation -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const gstInput = document.getElementById("gst_no");
+    const gstError = document.getElementById("gst-error");
+
+    // GST Regex pattern
+    const gstPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+    gstInput.addEventListener("input", function () {
+        const value = gstInput.value.trim();
+
+        if (value === "") {
+            gstError.style.display = "none";
+            gstInput.classList.remove("is-invalid");
+            return;
+        }
+
+        if (!gstPattern.test(value)) {
+            gstError.textContent = "Invalid GST format. Expected: 22ABCDE1234F1Z5 (15 characters).";
+            gstError.style.display = "block";
+            gstInput.classList.add("is-invalid");
+        } else {
+            gstError.style.display = "none";
+            gstInput.classList.remove("is-invalid");
+        }
+    });
+});
+
+["authorized_person_name", "authorized_person_designation"].forEach(id => {
+    document.getElementById(id).addEventListener("input", function () {
+        this.value = this.value.replace(/[^A-Za-z\s]/g, "");
+    });
+});
+
+</script>
+
+<script>
+const mobileInput = document.getElementById('authorized_person_mobile');
+
+mobileInput.addEventListener('keypress', function(e) {
+    const char = String.fromCharCode(e.which);
+    // Allow only digits
+    if (!/[0-9]/.test(char)) {
+        e.preventDefault(); // block the key
+    }
+});
+
+// Optional: enforce 10-digit requirement on submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (mobileInput.value.length !== 10) {
+        mobileInput.classList.add('is-invalid');
+        e.preventDefault(); // stop submission
+    } else {
+        mobileInput.classList.remove('is-invalid');
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registrationForm');
+    
+    form.addEventListener('submit', function(event) {
+        // First, remove any existing was-validated class
+        form.classList.remove('was-validated');
+        
+        // Check form validity
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Manually trigger validation for all required fields
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                }
+            });
+        }
+        
+        // Add Bootstrap validation styling
+        form.classList.add('was-validated');
+    });
+
+    // Real-time validation for fields as user types
+    const fields = form.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+        
+        field.addEventListener('blur', function() {
+            if (!this.checkValidity()) {
+                this.classList.add('is-invalid');
+            }
+        });
+    });
+
+    // Special handling for GST field
+    const gstInput = document.getElementById('gst_no');
+    if (gstInput) {
+        gstInput.addEventListener('blur', function() {
+            if (this.value.trim() && this.value.length !== 15) {
+                this.classList.add('is-invalid');
+            }
+        });
+    }
+
+    // Special handling for mobile field
+    const mobileInput = document.getElementById('authorized_person_mobile');
+    if (mobileInput) {
+        mobileInput.addEventListener('blur', function() {
+            if (this.value.trim() && this.value.length !== 10) {
+                this.classList.add('is-invalid');
+            }
+        });
+    }
+});
+</script>
+
+<script>
+  document.getElementById('refreshCaptcha').addEventListener('click', function() {
+    fetch("{% url 'refresh_captcha' %}")
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('captchaContainer').innerHTML = data.captcha_html;
+      })
+      .catch(error => console.error('Error refreshing captcha:', error));
+  });
+</script>
+</html>

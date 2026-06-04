@@ -1,0 +1,190 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .dashboard-header {
+        background: #2c3e50;
+        color: #fff;
+        padding: 13px 0;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.3rem;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .value-display {
+        background-color: #f8f9fa;
+        font-weight: 500;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        text-align: center;
+    }
+    
+    .summary-table {
+        margin-bottom: 2rem;
+    }
+    
+    td.status-transferred {
+        color: #28a745;
+        font-weight: 500;
+    }
+    
+    .guide-section {
+        margin-bottom: 1.5rem;
+    }
+    .table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    text-align: center;
+    font-size: 0.85rem;
+}
+</style>
+<div class="mb-3 d-flex justify-content-end">
+        <a href="{% url 'transfer_certificate' %}" class="btn btn-success">
+            Transfer Certificate
+        </a>
+    </div>
+
+    <div class="dashboard-header">
+        <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap">
+            <h1 class="h3 mb-0">Transfer of EPR Certificates</h1>
+            <!-- <button class="btn btn-primary">Transfer Certificate</button> -->
+             
+        </div>
+    </div>
+
+
+    <div class="container-fluid">
+        <!-- Certificate Summary Table -->
+        <div class="dashboard-card">
+            <div class="card-body">
+                <h5 class="fw-bold">Denomination Details in KG</h5>
+                <div class="table-responsive summary-table">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Total value of Certificates denominated (KG)</th>
+                                <th>Total value of Certificates Transferred</th>
+                                <th>Remaining value of Certificates available for transferring</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="value-display" id="total_denom">{{ certDenominated}}</td>
+                                <td class="value-display" >{{ total_transferred_weight }}</td>
+                                <td class="value-display" id="remaining_value">{{ remainCertAvailTransferred }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Guide Section -->
+                <div class="guide-section">
+                    <h5 class="fw-bold">Transfer Transaction</h5>
+                </div>
+
+                <!-- Transfer History Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Sr. No</th>
+                                <th>Date</th>
+                                <th>Transaction ID</th>
+                                <th>Transfer To</th>
+                                <th>Total value of certificates transferred</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in transaction_details %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ row.transfer_date|date:"d-m-Y" }}</td>
+        <td>{{ row.denomination_detail_id }}</td>
+        <td>{{ row.company_name }}</td>
+        <td>{{ row.total_weight }}</td>
+        <td>
+            <span class="badge bg-success">{{row.status}}</span>
+        </td>
+    </tr>
+{% empty %}
+    <tr>
+        <td colspan="6" class="text-center text-muted py-3">
+            No transaction records found
+        </td>
+    </tr>
+{% endfor %}
+                            <!-- <tr>
+                                <td>1</td>
+                                <td>26-08-2023</td>
+                                <td>txn:121105263610011123053</td>
+                                <td>ID:SAFELU LIFE INDIA PRIVATE LIMITED</td>
+                                <td class="transferred-value">1600.657</td>
+                                <td class="status-transferred">Transferred</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>26-08-2023</td>
+                                <td>txn:13111320330010121016</td>
+                                <td>ID:SAFELU LIFE INDIA PRIVATE LIMITED</td>
+                                <td class="transferred-value">1200.876</td>
+                                <td class="status-transferred">Transferred</td>
+                            </tr> -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let totalDenom = parseFloat(document.getElementById("total_denom").innerText.replace(/,/g, ''));
+        let transferValues = document.querySelectorAll(".transferred-value");
+
+        let sum = 0;
+
+        transferValues.forEach(val => {
+            let num = parseFloat(val.innerText.replace(/,/g, '')) || 0;
+            sum += num;
+        });
+
+        // Update the values
+        document.getElementById("total_transferred").innerText = sum.toLocaleString();
+        document.getElementById("remaining_value").innerText = (totalDenom - sum).toLocaleString();
+    });
+</script>
+
+
+{% endblock %}

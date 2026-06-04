@@ -1,0 +1,167 @@
+
+    <table class="checklist-table">
+        <thead>
+            <tr>
+                <th>Checklist Item</th>
+                <th>Yes / No</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <form action="{% url "save_general_checklist" %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                <input type="hidden" name="appno" value="{{ AppNo }}">
+                <tr>
+                    <td>Provided Address *</td>
+                    <td>
+                        <select name="rvsf_address" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.rvsf_address == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.rvsf_address == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_rvsf_address" class="form-control" value="{{ general.remarks_rvsf_address }}" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Provided GPS location (Latitude, Longitude) *</td>
+                    <td>
+                        <select name="gps_location" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.gps_location == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.gps_location == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_gps_location"  value="{{ general.remarks_gps_location }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Provided State *</td>
+                    <td>
+                        <select name="rvsf_state" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.rvsf_state == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.rvsf_state == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_rvsf_state" value="{{ general.remarks_rvsf_state }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Provided and Uploaded CTO Certificate *</td>
+                    <td>
+                        <select name="cto_certificate" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.cto_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.cto_certificate == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_cto_certificate" value="{{ general.remarks_cto_certificate }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Validity of CTO *</td>
+                    <td>
+                        <select name="cto_validity" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.cto_validity == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.cto_validity == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_cto_validity" value="{{ general.remarks_cto_validity }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Provided and Uploaded HOWM Authorization Certificate *</td>
+                    <td>
+                        <select name="howm_certificate" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.howm_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.howm_certificate == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_howm_certificate" value="{{ general.remarks_howm_certificate }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Provided and Uploaded DIC registration certificate *</td>
+                    <td>
+                        <select name="dic_certificate" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.dic_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.dic_certificate == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_dic_certificate" value="{{ general.remarks_dic_certificate }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Provided and Uploaded RVSF Certificate (Form 1A Under Motor Vehicles Rules, 2021) *</td>
+                    <td>
+                        <select name="rvsf_certificate" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.rvsf_certificate == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.rvsf_certificate == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_rvsf_certificate" value="{{ general.remarks_rvsf_certificate }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Validity of RVSF certificate *</td>
+                    <td>
+                        <select name="rvsf_certificate_validity" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.rvsf_certificate_validity == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.rvsf_certificate_validity == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_rvsf_certificate_validity" value="{{ general.remarks_rvsf_certificate_validity}}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Upload Process Flow Diagram with brief write-up *</td>
+                    <td>
+                        <select name="process_flow" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.process_flow == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.process_flow == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_process_flow" value="{{ general.remarks_process_flow }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Upload Material Balance Sheet *</td>
+                    <td>
+                        <select name="material_balance_sheet" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.material_balance_sheet == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.material_balance_sheet == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_material_balance_sheet" value="{{ general.remarks_material_balance_sheet }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td>Uploaded Annual Return (Form 4 of HOWM Rules, 2016) last 2 FY *</td>
+                    <td>
+                        <select name="annual_return" class="form-control" required>
+                            <option value="">--Select--</option>
+                            <option value="Yes" {% if general.annual_return == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if general.annual_return == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="remarks_annual_return" value="{{ general.remarks_annual_return }}" class="form-control" placeholder="Remarks"></td>
+                </tr>
+                <tr>
+                    <td colspan="3"><button type="submit" class="btn btn-primary">Save</button></td>
+                </tr>
+            </form>
+            <tr>
+                <form action="{% url "ViewGeneralDetails" %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+                    <input type="hidden" name="appno" value="{{ AppNo }}">
+                    <tr>
+                        <td colspan="3"> 
+                            <button type="submit" class="btn btn-warning">View Submitted Data</button>
+                        </td>
+                    </tr>
+                </form>
+                
+            </tr>
+        </tbody>
+    </table>
+
+

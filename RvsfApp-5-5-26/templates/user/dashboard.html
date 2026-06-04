@@ -1,0 +1,300 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/dashboard.css' %}">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- CryptoJS for AES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<script>
+    function decryptAES(ciphertext) {
+        var key = CryptoJS.enc.Utf8.parse("16charSecretKey!");
+        var iv  = CryptoJS.enc.Utf8.parse("16charSecretIV!!");
+
+        var decrypted = CryptoJS.AES.decrypt(
+            { ciphertext: CryptoJS.enc.Base64.parse(ciphertext) },
+            key,
+            { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+        );
+        return decrypted.toString(CryptoJS.enc.Utf8);
+    }
+</script>
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4">View Profile</h2>
+
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item">
+            <a href="{% url 'rvsf_dashboard' %}" class="text-decoration-none text-reset">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">User Profile</li>
+    </ol>
+
+    <!-- {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %} -->
+
+    <!-- Profile Header -->
+    <div class="profile-header text-center">
+        <div class="profile-img-container mb-3">
+            <img src="{% static 'images/userimage.png' %}" class="rounded-circle profile-img">
+        </div>
+
+        <h2 class="mb-1"><b id="company_name_title"></b></h2>
+        <p class="opacity-75 mb-0"><b id="username_title"></b></p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="card profile-info-card">
+
+        <div class="info-section">
+            <div class="section-title">Company Information</div>
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">Company Name</div>
+                    <div class="info-value" id="company_name"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value" id="email"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">GST Number</div>
+                    <div class="info-value" id="gst"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">PAN Number</div>
+                    <div class="info-value" id="pan"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="section-title">Contact Information</div>
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">Phone Number</div>
+                    <div class="info-value" id="mobile"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">State</div>
+                    <div class="info-value" id="state"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">District</div>
+                    <div class="info-value" id="district"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="info-label">PIN Code</div>
+                    <div class="info-value" id="pincode"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons text-end" id="actionButtons">
+            <!-- Buttons will be inserted here by JavaScript -->
+            
+            {% if has_application %}
+                <a href="{% url 'submittedapplication' %}" class="btn btn-view text-white me-2">View Submitted Application</a>
+            {% endif %}
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let appstatus = decryptAES("{{ confirm_encrypted }}");
+                let actionButtons = document.getElementById('actionButtons');
+                
+                if (appstatus === "9") {
+                    // Create certificate form (always show if appstatus is 9)
+                    let certForm = document.createElement('form');
+                    certForm.action = "{% url 'GenerateCertificate' %}";
+                    certForm.method = "post";
+                    certForm.style.display = "inline";
+                    certForm.className = "me-2";
+                    
+                    let csrfToken = document.createElement('input');
+                    csrfToken.type = "hidden";
+                    csrfToken.name = "csrfmiddlewaretoken";
+                    csrfToken.value = "{{ csrf_token }}";
+                    
+                    let industryId = document.createElement('input');
+                    industryId.type = "hidden";
+                    industryId.name = "industryid";
+                    industryId.id = "industry_id_hidden";
+                    industryId.value = "{{ certificate.id }}";
+                    
+                    let submitBtn = document.createElement('button');
+                    submitBtn.type = "submit";
+                    submitBtn.className = "btn btn-primary";
+                    submitBtn.textContent = "View Certificate";
+                    
+                    certForm.appendChild(csrfToken);
+                    certForm.appendChild(industryId);
+                    certForm.appendChild(submitBtn);
+                    
+                    // Insert certificate form
+                    // actionButtons.insertBefore(certForm, actionButtons.firstChild);
+                    
+                    // Create document button ONLY if certificate file exists
+                    {% if certificate and certificate.attested_certificate and certificate.attested_certificate.name %}
+                    let docButton = document.createElement('button');
+                    docButton.className = 'btn btn-primary me-2';
+                    docButton.innerHTML = '<i class="fas fa-file-pdf me-2"></i>View Document';
+                    docButton.onclick = function() {
+                        window.open('{% url 'protected_file_rvsf' certificate.attested_certificate.name %}', '_blank');
+                    };
+                    
+                    // Insert document button
+                    actionButtons.insertBefore(docButton, actionButtons.firstChild);
+                    {% endif %}
+                }
+            });
+            </script>
+
+    </div>
+</div>
+
+<!-- Modal Overlay -->
+<div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); z-index:9998;"></div>
+
+<!-- Center Modal -->
+<div id="statusModal" style="display:none; position:fixed; top:50%; left:50%;
+transform:translate(-50%, -50%); background:white; border-radius:10px; padding:25px;
+width:350px; box-shadow:0 0 20px rgba(0,0,0,0.3); z-index:9999; opacity:0; transition:0.3s;">
+    <h4 id="modalMessage" class="mb-3"></h4>
+    <button id="redirectBtn" class="btn btn-primary w-100">Go to Track Application</button>
+</div>
+
+<!-- Fill Decrypted Values -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.getElementById("company_name").innerText       = decryptAES("{{ user_encrypted }}");
+    document.getElementById("company_name_title").innerText = decryptAES("{{ user_encrypted }}");
+
+    document.getElementById("username_title").innerText     = decryptAES("{{ email_encrypted }}");
+
+    document.getElementById("email").innerText              = decryptAES("{{ email_encrypted }}");
+    document.getElementById("gst").innerText                = decryptAES("{{ gst_encrypted }}");
+    document.getElementById("pan").innerText                = decryptAES("{{ pan_encrypted }}");
+    document.getElementById("mobile").innerText             = decryptAES("{{ mobile_encrypted }}");
+    document.getElementById("state").innerText              = decryptAES("{{ state_encrypted }}");
+    document.getElementById("district").innerText           = decryptAES("{{ district_encrypted }}");
+    document.getElementById("pincode").innerText            = decryptAES("{{ pincode_encrypted }}");
+
+    // Hidden industry ID
+    let decrypted_id = decryptAES("{{ encrypted_userid }}");
+    console.log("Decrypted industryid:", decrypted_id);
+    let inputField = document.getElementById("industry_id_hidden");
+    if (inputField) inputField.value = decrypted_id;
+
+});
+</script>
+
+<!-- AJAX Modal Code -->
+<!-- <script>
+$(document).ready(function () {
+
+    var userid = "{{ request.session.user_id }}";
+
+    $.ajax({
+        url: "{% url 'check_user_status' %}",
+        type: "POST",
+        data: { userid: userid, csrfmiddlewaretoken: '{{ csrf_token }}' },
+        success: function(response) {
+
+            if (response.status === 1) {
+
+                $("#modalMessage").text(response.message);
+                $("#redirectBtn").data("url", response.redirect_url);
+
+                $("#modalOverlay").fadeIn(200);
+
+                $("#statusModal").css("opacity", "0").show();
+                setTimeout(() => $("#statusModal").css("opacity", "1"), 50);
+            }
+        }
+    });
+
+    $("#redirectBtn").on("click", function () {
+        window.location.href = $(this).data("url");
+    });
+
+    $("#modalOverlay").on("click", function () {
+        $("#statusModal").fadeOut(200);
+        $("#modalOverlay").fadeOut(200);
+    });
+
+});
+</script> -->
+<script>
+    $(document).ready(function () {
+    
+        // Check if modal already shown in this session
+        if (sessionStorage.getItem("statusModalShown") === "true") {
+            return; // Stop execution
+        }
+    
+        var userid = "{{ request.session.user_id }}";
+    
+        $.ajax({
+            url: "{% url 'check_user_status' %}",
+            type: "POST",
+            data: {
+                userid: userid,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+    
+                if (response.status === 1) {
+    
+                    // Mark modal as shown
+                    sessionStorage.setItem("statusModalShown", "true");
+    
+                    $("#modalMessage").text(response.message);
+                    $("#redirectBtn").data("url", response.redirect_url);
+    
+                    $("#modalOverlay").fadeIn(200);
+    
+                    $("#statusModal").css("opacity", "0").show();
+                    setTimeout(() => $("#statusModal").css("opacity", "1"), 50);
+                }
+            }
+        });
+    
+        $("#redirectBtn").on("click", function () {
+            window.location.href = $(this).data("url");
+        });
+    
+        $("#modalOverlay").on("click", function () {
+            $("#statusModal").fadeOut(200);
+            $("#modalOverlay").fadeOut(200);
+        });
+    
+    });
+    </script>
+    
+{% endblock %}

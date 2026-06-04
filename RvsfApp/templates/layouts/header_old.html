@@ -1,0 +1,143 @@
+{% load static %}
+
+<!-- Bootstrap 4 CSS -->
+<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
+<!-- Popper.js v1 (compatible with Bootstrap 4) -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script> -->
+
+<!-- Bootstrap 4 JS -->
+<!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/layouts/header.css' %}">
+
+
+<div class="container-fluid bg-white">
+    <header class="py-3">
+        <div class="header-top">
+            <div class="row align-items-center text-center text-sm-left">
+                <div class="col-4 col-sm-2 col-md-1">
+                    <img src="{% static 'img/golden_jubilee_logo.png' %}" style="height:110px; width:auto;" >
+                </div>
+                <div class="col-8 col-sm-4 col-md-3">
+                    <div class="inner-column text-info" style="text-align: center;">
+                        <p style="margin:0px; font-size: 18px;"><b>Central Pollution Control Board</b></p>
+                        <p style="margin:0px;">(Ministry of Environment, Forest and Climate Change)</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-5 text-center my-2 my-md-0" style="margin-left: -50px;">
+                    <img src="{% static 'img/site_logo.jpg' %}" class="img-fluid mb-2" style="max-width:50px;" alt="Site Logo"> <br>
+                    <a class="h5 text-dark " style=" color:#2b598a; text-decoration:none;" href="#"><b>EPR Portal for End-of-Life Vehicles</b></a>
+                    <div class="row">
+                        <div class="h6 col-sm-12 mt-1">
+                            Under Environment Protection (End-of-Life Vehicles) Rules, 2025
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 d-flex justify-content-end mt-3 mt-md-0" >
+                    <img src="{% static 'img/life_logo.png' %}" style="height:70px; width:auto; margin: auto;" >
+                    <!-- <img src="{% static 'img/g20-logo.png' %}" class="img-fluid" style="max-width:70px;" alt="G20 Logo"> -->
+                    <!-- <img src="{% static 'img/ministry_logo.png' %}" class="img-fluid" style="max-width:70px;" alt="Ministry Logo"> -->
+                        <img src="{% static 'img/ministry_logo.png' %}" style="height:140px; width:auto; margin-right: -62px;" >
+                </div>
+
+            </div>
+        </div>
+    </header>
+</div>
+<!-- Navigation -->
+<div class="container-fluid p-0">
+    <nav class="navbar navbar-expand-sm navbar-dark batterynavigation w-100" style=" padding: 10px 15px;">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-list-3">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar-list-3">
+            <ul class="navbar-nav ml-3">
+                <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+                    <a class="nav-link headerMenuu" href="{% url 'home' %}">Home</a>
+                </li>
+
+                <li class="nav-item {% if request.path == '/aboutus/' %}active{% endif %}">
+                    <a class="nav-link headerMenuu" href="{% url 'aboutus' %}">About Us</a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink3" data-toggle="dropdown">
+                        Rules
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="{% static 'doc/ELV_Rules_2025.pdf' %}" target="_blank">
+                            End-of-Life Vehicles Rules, 2025
+                        </a>
+                    </div>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown">
+                        Guidance Manual
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#">Registration of Producer</a>
+                        <a class="dropdown-item" href="#">Registration of RVSFs</a>
+                    </div>
+                </li>
+
+                <li class="nav-item {% if request.path == '/national-dashboard/' %}active{% endif %}">
+                    <a class="nav-link headerMenuu" href="{% url 'national_dashboard' %}">National Dashboard</a>
+                </li>
+
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown">
+                        Important Communication
+                    </a>
+                    <!-- <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#">Memorandum</a>
+                        <a class="dropdown-item" href="#">Registration Guidelines</a>
+                    </div> -->
+                </li>
+
+                
+
+
+                <li class="nav-item">
+                    <a class="nav-link headerMenuu" href="#">FAQs</a>
+                </li>
+
+                <!-- <li class="nav-item">
+                    <a class="nav-link headerMenuu" href="#">Video tutorials</a>
+                </li> -->
+
+                
+                <li class="nav-item">
+                    <a class="nav-link headerMenuu" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">
+                        Contact Us
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+</div>
+
+<!-- Add these in your <head> or before the closing </body> -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const link = document.getElementById("nationalDashboardLink");
+
+    link.addEventListener("click", function (e) {
+        e.preventDefault();
+        // Redirect to the page with role=Producer in query string
+        window.location.href = '/national-dashboard?role=Producer';
+    });
+});
+
+</script>

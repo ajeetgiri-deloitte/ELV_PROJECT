@@ -1,0 +1,52 @@
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Receipt</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/payment/payment_receipt.css' %}">
+</head>
+<body>
+
+<div class="receipt-container" id="receipt">
+<div class="col-sm-1">
+    <img src="{% static 'img/golden_jubilee_logo.png' %}" class="circle responsive-img" style="width:100px">
+</div>
+  <div class="header">
+    <div class="title">PAYMENT RECEIPT</div>
+    <p><strong>Transaction No:</strong> {{ transaction_id }}</p>
+  </div>
+
+  
+  <div class="section details">
+    <p class="label">Receiver (Name and Address)</p>
+    <p>Central Pollution Control Board <br> Parivesh Bhawan, East Arjun Nagar, Shahdara, Delhi-110032</p>
+  </div>
+
+
+
+  <div class="section details">
+    <p><strong>Registration Fees Amount:</strong> ₹{{ amount|intcomma }}</p>
+    <p><strong>Payment Date:</strong> {{ transaction_date }}</p>
+    <!-- <p><strong>Payment Date:</strong> {{ transaction_date|date:"j F Y, g:i A" }}</p> -->
+    <p><strong>Payment Mode:</strong> Online</p>
+    <p><strong>Payment Status:</strong> <span class="success">{{ status|title }}</span></p>
+  </div>
+
+  <div class="footer">
+    <p><strong>Name of the authorised person:</strong> CPCB</p>
+    <!-- <p><strong>Stamp of authorised person:</strong> ____________________</p> -->
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-print" onclick="printReceipt()">Print Receipt</button>
+  
+  <a href="/rvsf/dashboard/" class="btn btn-back">Back to Dashboard</a>
+  
+</div>
+</body>
+<!-- Load external JS -->
+<script src="{% static 'js/rvsfappjs/payment/payment_receipt.js' %}"></script>
+</html>

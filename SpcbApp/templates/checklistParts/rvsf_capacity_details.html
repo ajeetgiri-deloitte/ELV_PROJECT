@@ -1,0 +1,168 @@
+<form action="{% url 'CapacityChecklist' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+    
+    <table class="checklist-table">
+        <thead>
+            <tr>
+                <th>Checklist Item</th>
+                <th>Yes / No</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>Provided Category of vehicle *</td>
+                <td>
+                    <select name="vehicle_category" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if capacity and capacity.vehicle_category == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if capacity and capacity.vehicle_category == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_vehicle_category" value="{{ capacity.remarks_vehicle_category }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided Installed capacity (vehicle per annum) *</td>
+                <td>
+                    <select name="vehicle_installed_capacity" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if capacity and capacity.vehicle_installed_capacity == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if capacity and capacity.vehicle_installed_capacity == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_vehicle_installed_capacity" value="{{ capacity.remarks_vehicle_installed_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided Installed capacity (total steel scrap recovered MT per annum) *</td>
+                <td>
+                    <select name="steel_installed_capacity" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if capacity and capacity.steel_installed_capacity == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if capacity and capacity.steel_installed_capacity == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_steel_installed_capacity" value="{{ capacity.remarks_steel_installed_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided Operating capacity for FY 2022-2023, FY 2023-2024, FY 2024-2025 (vehicle per annum) *</td>
+                <td>
+                    <select name="vehicle_operating_capacity" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if capacity and capacity.vehicle_operating_capacity == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if capacity and capacity.vehicle_operating_capacity == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_vehicle_operating_capacity" value="{{ capacity.remarks_vehicle_operating_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided Operating capacity for FY 2022-2023, FY 2023-2024, FY 2024-2025 (total steel scrap recovered MT per annum) *</td>
+                <td>
+                    <select name="steel_operating_capacity" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if capacity and capacity.steel_operating_capacity == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if capacity and capacity.steel_operating_capacity == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_steel_operating_capacity" value="{{ capacity.remarks_steel_operating_capacity }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</form>
+
+<form action="{% url 'ViewRvsfCapacityDetails' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+    <tr>
+        <td colspan="3"> 
+            <button type="submit" class="btn btn-warning">View Submitted Data</button>
+        </td>
+    </tr>
+</form>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    
+        const selects = document.querySelectorAll('.check-select');
+        const form = document.querySelector("form[action*='CapacityChecklist']");
+    
+        function updateRemarksState(select, remarks) {
+            const hasValue = remarks.value.trim() !== '';
+    
+            if (select.value === 'Yes') {
+                remarks.disabled = false;
+                remarks.removeAttribute('required');
+                remarks.style.backgroundColor = '#e9ecef';
+                remarks.style.borderColor = '#ccc';
+            }
+            else if (select.value === 'No') {
+                remarks.disabled = false;
+                remarks.setAttribute('required', 'required');
+                remarks.style.backgroundColor = '#ffffff';
+                remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+            }
+            else {
+                remarks.disabled = false;
+                remarks.setAttribute('required', 'required');
+                remarks.style.backgroundColor = '#ffffff';
+                remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+            }
+        }
+    
+        // Initialize all rows on page load
+        selects.forEach(select => {
+            const row = select.closest('tr');
+            const remarks = row.querySelector('.remarks-field');
+    
+            updateRemarksState(select, remarks);
+    
+            select.addEventListener('change', () => updateRemarksState(select, remarks));
+            remarks.addEventListener('input', () => updateRemarksState(select, remarks));
+        });
+    
+        // Stop form submission if No + empty remarks
+        form.addEventListener('submit', function (e) {
+            let valid = true;
+    
+            selects.forEach(select => {
+                const row = select.closest('tr');
+                const remarks = row.querySelector('.remarks-field');
+    
+                if (select.value === 'No' && remarks.value.trim() === '') {
+                    remarks.style.borderColor = 'red';
+                    valid = false;
+                }
+            });
+    
+            if (!valid) {
+                e.preventDefault();
+                alert("❗ Please fill remarks for all fields where 'No' is selected.");
+            }
+        });
+    
+    });
+    </script>
+    

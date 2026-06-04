@@ -1,0 +1,101 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-buildings"></i> Facility Details</h5>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th>S.No.</th>
+              <th>Number of Employees Working</th>
+              <th>Shifts Operated Per Day</th>
+              <th>Total Area of RVSF (sq. m)</th>
+              <th>Geo-tagged Video</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for eq in facilitydata %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ eq.no_of_employees }}</td>
+                <td>{{ eq.shifts_per_day }}</td>
+                <td>{{ eq.total_area }}</td>
+                <td>
+                  {% if eq.geo_video %}
+                    <a href="{% url 'protected_file_spcb' eq.geo_video.name %}" target="_blank" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-camera-video"></i> View
+                    </a>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">No facility details available.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <hr class="my-4">
+
+      <!-- Comment Section -->
+      {% if commentcount > 0 %}
+      <div class="mb-4">
+        <h6 class="fw-bold"> Comment / Remark</h6>
+        <div class="form-control bg-light" style="min-height: 100px;">
+          {{ comment.SPCBComments|default:"—" }}
+        </div>
+        <small class="text-muted fst-italic">Commented on {{ comment.SPCBCommentDate|date:'d-m-Y H:i' }}</small>
+      </div>
+    {% else %}
+      <form method="post" action="{% url 'save_general_trail' %}">
+        {% csrf_token %}
+        <input type="hidden" name="industryid" value="{{ fetchapp.userid }}">
+        <input type="hidden" name="stateid" value="{{ statename.state_id }}">
+        <input type="hidden" name="appno" value="{{ fetchapp.appno }}">
+        <input type="hidden" name="editmode" value="3">
+        <input type="hidden" name="editPart" value="facility">
+
+        <div class="mb-3">
+          <label for="SPCBComments" class="form-label fw-bold">
+            <i class="bi bi-chat-left-text"></i> Comment / Remark
+          </label>
+          <textarea name="SPCBComments" id="SPCBComments" class="form-control" rows="4" placeholder="Reason for reverting this section...">{{ general.remarks }}</textarea>
+        </div>
+
+        <div class="text-end">
+          <button type="submit" class="btn btn-warning">
+            <i class="bi bi-arrow-counterclockwise"></i> Mark as Incomplete
+          </button>
+        </div>
+      </form>
+      {% endif %}
+      {% if comment.UnitCommentDate %}
+    <div class="mb-4">
+      <h6 class="fw-bold text-success">Industry Response</h6>
+      <div class="card border-success shadow-sm">
+        <div class="card-body">
+          <p class="mb-2"><strong>Response:</strong> {{ comment.UnitComments|default:"—" }}</p>
+          <hr>
+          <p class="mb-0 text-secondary">
+            <strong>Comment Date:</strong> {{ comment.UnitCommentDate|date:"d M Y, H:i" }}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

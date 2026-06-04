@@ -1,0 +1,670 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    body { background-color: #f5f7fa; }
+    .form-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .section-title {
+        font-weight: 600;
+        color: #0b3c5d;
+        border-bottom: 2px solid #0b3c5d;
+        padding-bottom: 6px;
+        margin-bottom: 15px;
+    }
+    .required::after {
+        content: " *";
+        color: red;
+    }
+    .table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    text-align: center;
+    font-size: 0.85rem;
+}
+</style>
+
+<div class="container my-4">
+    <div class="form-card">
+
+        <!-- 🔴 ERROR / SUCCESS MESSAGES -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'save_waste_form' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="section-title">Waste Processing Details</div>
+
+            <div class="row mb-3">
+                <label class="col-md-3 col-form-label required">Select Waste Type</label>
+                <div class="col-md-6">
+                    <select class="form-select" name="waste_type" id="wasteTypeSelect" required>
+                        <option value="">-- Select Waste --</option>
+
+                        {% for item in waste_summary %}
+                            <option value="{{ item.wasteType }}"
+                                    data-remaining="{{ item.remaining_quantity }}">
+                                {{ item.wasteType }} 
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-md-3 col-form-label required">Select Activity</label>
+                <div class="col-md-6">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="activity" value="recycled" required>
+                        <label class="form-check-label">Recycled</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="activity" value="refurbish">
+                        <label class="form-check-label">Refurbish</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="activity" value="disposal">
+                        <label class="form-check-label">Disposal</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4 " id="manifestRow">
+                <div class="row mb-4" id="manifestRow">
+    <label class="col-md-3 col-form-label required">Upload Manifest Document</label>
+    <div class="col-md-6">
+        <input type="file" name="manifest_document"
+               id="manifestDocument"
+               class="form-control">
+    </div>
+    
+</div>
+<div class="row mb-4 d-none" id="tsdfRow">
+    <label class="col-md-3 col-form-label required">Upload Agreement or TSDF Membership Certificate</label>
+    <div class="col-md-6">
+        <input type="file" name="tsdf_document"
+               id="tsdfDocument"
+               class="form-control">
+    </div>
+    
+</div>
+
+             <div class="row mb-3">
+            <label class="col-md-3 col-form-label">Available / Recovered Qty (Metric Ton)</label>
+            <div class="col-md-6">
+                <input type="text" id="availableQty" class="form-control" readonly>
+
+            </div>
+        </div>
+
+            <div class="row mb-4">
+                <label class="col-md-3 col-form-label required">Enter Qty to Process (Metric Ton)</label>
+                <div class="col-md-6">
+                    <input type="number" name="qty" id="processQty" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="section-title">Waste Receiving Details</div>
+            <div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header  text-white">
+                <h6 class="mb-0">Waste Collection Details</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped mb-0" id="wasteTable">
+                    <thead class="table-dark text-center align-middle">
+                        <tr>
+                            <th style="min-width: 100px;">Date</th>
+                            <th style="min-width: 120px;">Steel Waste <br>
+                            </small></th>
+                            <th style="min-width: 120px;">Oil Waste <br>
+                            </small></th>
+                            <th style="min-width: 120px;">Plastic Waste <br>
+                            </small></th>
+                            <th style="min-width: 120px;">Battery Waste <br>
+                            </small></th>
+                            <th style="min-width: 120px;">Tyre Waste <br>
+                            </small></th>
+                            <th style="min-width: 120px;">E Waste <br>
+                            </small></th>
+                            <th style="min-width: 120px;">Glass Waste <br>
+                            </small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold text-center align-middle bg-light">17-02-2026</td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <!-- <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="steel_17_02_26" data-date="17-02-2026" data-type="steel" data-value="20"> -->
+                                    <label class="form-check-label" for="steel_17_02_26">20</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="oil_17_02_26" data-date="17-02-2026" data-type="oil" data-value="20">
+                                    <label class="form-check-label" for="oil_17_02_26">10</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="plastic_17_02_26" data-date="17-02-2026" data-type="plastic" data-value="20">
+                                    <label class="form-check-label" for="plastic_17_02_26">20</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="battery_17_02_26" data-date="17-02-2026" data-type="battery" data-value="20">
+                                    <label class="form-check-label" for="battery_17_02_26">20</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="tyre_17_02_26" data-date="17-02-2026" data-type="tyre" data-value="20">
+                                    <label class="form-check-label" for="tyre_17_02_26">20</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="ewaste_17_02_26" data-date="17-02-2026" data-type="ewaste" data-value="20">
+                                    <label class="form-check-label" for="ewaste_17_02_26">20</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="other_17_02_26" data-date="17-02-2026" data-type="other" data-value="20">
+                                    <label class="form-check-label" for="other_17_02_26">20</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-center align-middle bg-light">18-02-2026</td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <!-- <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="steel_17_02_26" data-date="17-02-2026" data-type="steel" data-value="20"> -->
+                                    <label class="form-check-label" for="steel_17_02_26">10</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="oil_17_02_26" data-date="17-02-2026" data-type="oil" data-value="20">
+                                    <label class="form-check-label" for="oil_17_02_26">10</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="plastic_17_02_26" data-date="17-02-2026" data-type="plastic" data-value="20">
+                                    <label class="form-check-label" for="plastic_17_02_26">5</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="battery_17_02_26" data-date="17-02-2026" data-type="battery" data-value="20">
+                                    <label class="form-check-label" for="battery_17_02_26">3</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="tyre_17_02_26" data-date="17-02-2026" data-type="tyre" data-value="20">
+                                    <label class="form-check-label" for="tyre_17_02_26">2</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="ewaste_17_02_26" data-date="17-02-2026" data-type="ewaste" data-value="20">
+                                    <label class="form-check-label" for="ewaste_17_02_26">7</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="other_17_02_26" data-date="17-02-2026" data-type="other" data-value="20">
+                                    <label class="form-check-label" for="other_17_02_26">6</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-center align-middle bg-light">19-02-2026</td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <!-- <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="steel_17_02_26" data-date="17-02-2026" data-type="steel" data-value="20"> -->
+                                    <label class="form-check-label" for="steel_17_02_26">22</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="oil_17_02_26" data-date="17-02-2026" data-type="oil" data-value="20">
+                                    <label class="form-check-label" for="oil_17_02_26">32</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="plastic_17_02_26" data-date="17-02-2026" data-type="plastic" data-value="20">
+                                    <label class="form-check-label" for="plastic_17_02_26">11</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="battery_17_02_26" data-date="17-02-2026" data-type="battery" data-value="20">
+                                    <label class="form-check-label" for="battery_17_02_26">4</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="tyre_17_02_26" data-date="17-02-2026" data-type="tyre" data-value="20">
+                                    <label class="form-check-label" for="tyre_17_02_26">7</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="ewaste_17_02_26" data-date="17-02-2026" data-type="ewaste" data-value="20">
+                                    <label class="form-check-label" for="ewaste_17_02_26">9</label>
+                                </div>
+                            </td>
+                            <td class="text-center align-middle">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input waste-checkbox" type="checkbox" 
+                                           id="other_17_02_26" data-date="17-02-2026" data-type="other" data-value="20">
+                                    <label class="form-check-label" for="other_17_02_26">6</label>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    
+                </table>
+            </div>
+            
+            
+        </div>
+    </div>
+</div>
+            <div class="row mb-3">
+                <label class="col-md-3 col-form-label required">Name of Waste Buyer</label>
+                <div class="col-md-6">
+                    <input type="text" name="buyer_name" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-md-3 col-form-label required">GST Number</label>
+                <div class="col-md-6">
+                    <input type="text" name="gst" class="form-control" required>
+                </div>
+            </div>
+             <div class="row mb-3">
+            <label class="col-md-3 col-form-label">Address</label>
+            <div class="col-md-6">
+                <textarea class="form-control" rows="2" name="address"></textarea>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-md-3 col-form-label">Email</label>
+            <div class="col-md-6">
+                <input type="email" class="form-control" name="email">
+            </div>
+        </div>
+
+            <div class="row mb-3">
+                <label class="col-md-3 col-form-label required">Date of Sale</label>
+                <div class="col-md-3">
+                    <input type="date" name="sale_date" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <label class="col-md-3 col-form-label required">Copy of Invoice</label>
+                <div class="col-md-6">
+                    <input type="file" name="invoice" class="form-control" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+            <label class="col-md-3 col-form-label required">Invoice Number</label>
+            <div class="col-md-6">
+                <input type="text" name="invoice_number" class="form-control" required>
+            </div>
+        </div>
+
+            <div class="text-center">
+                <!-- <button type="submit" class="btn btn-success">Submit</button> -->
+                 <button type="button" class="btn btn-success" id="previewBtn">
+    Preview & Submit
+</button>
+
+            </div>
+
+        </form>
+    </div>
+</div>
+<hr class="my-4">
+
+<div class="section-title">Processed Waste Records</div>
+
+<div class="table-responsive">
+    <table id="wasteTable" class="table table-bordered table-striped table-sm w-100">
+        <thead class="table-dark">
+<tr>
+    <th>S.No</th>
+    <th>Waste Type</th>
+    <th>Activity</th>
+    <th>Processed Qty (Metric Ton)</th>
+    <th>Buyer Name</th>
+    <th>GST</th>
+    <th>Date of Sale</th>
+    <th>Invoice No</th>
+    <th>Invoice File</th>
+</tr>
+</thead>
+
+<tbody>
+{% for row in waste_list %}
+<tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ row.waste_type }}</td>
+    <td>{{ row.activity|title }}</td>
+    <td>{{ row.processed_qty }}</td>
+    <td>{{ row.buyer_name }}</td>
+    <td>{{ row.gst_number }}</td>
+    <td>{{ row.sale_date }}</td>
+    <td>{{ row.invoice_number }}</td>
+    <td>
+        {% if row.invoice %}
+            <a href="{{ row.invoice }}" target="_blank"
+               class="btn btn-sm btn-outline-primary">
+                View
+            </a>
+        {% else %}
+            <span class="text-muted">N/A</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
+
+    </table>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+    $('#processQty').on('input', function () {
+
+        let enteredQty = parseFloat($(this).val());
+        let selectedWaste = $('#wasteTypeSelect').val();
+
+        if (!enteredQty || !selectedWaste) return;
+
+        let remaining = enteredQty;
+
+        // Clear previous markings
+        $('.waste-checkbox').prop('checked', false);
+        $('.consumed-label').remove();
+
+        // Map dropdown value to table data-type
+        let wasteMap = {
+            "Used oil": "oil",
+            "Plastic waste": "plastic",
+            "Battery waste": "battery",
+            "Tyre waste": "tyre",
+            "E-waste": "ewaste"
+        };
+
+        let wasteType = wasteMap[selectedWaste];
+
+        if (!wasteType) return;
+
+        // Loop rows top to bottom
+        $('.waste-checkbox[data-type="' + wasteType + '"]').each(function () {
+
+            if (remaining <= 0) return false;
+
+            let available = parseFloat($(this).siblings('label').text());
+
+            let consume = Math.min(available, remaining);
+
+            // Add consumed label
+            $(this).parent().append(
+                `<label class="form-check-label consumed-label ms-2 text-success">| ${consume}</label>`
+            );
+
+            if (consume === available) {
+                $(this).prop('checked', true);
+            }
+
+            remaining -= consume;
+        });
+
+    });
+
+});
+
+$(document).ready(function () {
+
+    $('#wasteTypeSelect').on('change', function () {
+
+        let selectedOption = $(this).find(':selected');
+        let remainingQty = selectedOption.data('remaining');
+
+        if (remainingQty) {
+
+            // Show in Available field
+            $('#availableQty').val(remainingQty);
+
+            // Set max limit on qty field
+            $('#processQty').attr('max', remainingQty);
+
+        } else {
+            $('#availableQty').val('');
+            $('#processQty').removeAttr('max');
+        }
+
+    });
+
+    // Extra Safety: Prevent manual override
+    $('#processQty').on('input', function () {
+
+        let max = parseFloat($(this).attr('max'));
+        let current = parseFloat($(this).val());
+
+        if (current > max) {
+            alert("Quantity cannot exceed available quantity (" + max + ")");
+            $(this).val(max);
+        }
+
+    });
+
+});
+</script>
+
+<script>
+$(document).ready(function () {
+
+    $('input[name="activity"]').on('change', function () {
+        const selected = $(this).val();
+
+        if (selected === 'disposal') {
+           
+            $('#tsdfRow').removeClass('d-none');
+            $('#manifestDocument').prop('required', true);
+            $('#tsdfDocument').prop('required', true);
+        } else {
+            
+            $('#tsdfRow').addClass('d-none');
+            // $('#manifestDocument').prop('required', false);
+            $('#tsdfDocument').prop('required', false);
+            $('#manifestDocument').val(''); // clear file if hidden
+            $('#tsdfDocument').val(''); // clear file if hidden
+        }
+    });
+
+});
+
+</script>
+
+<script>
+$(document).ready(function () {
+
+    if ($('#wasteTable').length) {
+        $('#wasteTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            lengthChange: true,
+
+            pageLength: 10,
+            lengthMenu: [5, 10, 25, 50, 100],
+
+            scrollX: true,
+
+            columnDefs: [
+                { targets: 0, orderable: false }
+            ]
+        });
+    }
+
+});
+</script>
+<script>
+$(document).ready(function () {
+
+    $('#previewBtn').click(function () {
+
+        const form = $('form')[0];
+
+        // Basic Fields
+        const wasteType = $('select[name="waste_type"]').val();
+        const activity = $('input[name="activity"]:checked').val();
+        const qty = $('input[name="qty"]').val();
+        const buyer = $('input[name="buyer_name"]').val();
+        const gst = $('input[name="gst"]').val();
+        const address = $('textarea[name="address"]').val();
+        const email = $('input[name="email"]').val();
+        const saleDate = $('input[name="sale_date"]').val();
+        const invoiceNo = $('input[name="invoice_number"]').val();
+
+        // FILES
+        const invoiceFile = $('input[name="invoice"]')[0].files[0];
+        const manifestFile = $('#manifestDocument')[0].files[0];
+        const tsdfFile = $('#tsdfDocument')[0].files[0];
+
+        // Create file preview links
+        let invoicePreview = invoiceFile
+            ? `<a href="${URL.createObjectURL(invoiceFile)}" target="_blank">View File</a>`
+            : "No File";
+
+        let manifestPreview = manifestFile
+            ? `<a href="${URL.createObjectURL(manifestFile)}" target="_blank">View File</a>`
+            : "No File";
+
+        let tsdfPreview = tsdfFile
+            ? `<a href="${URL.createObjectURL(tsdfFile)}" target="_blank">View File</a>`
+            : "No File";
+
+        // Validation
+        if (!wasteType || !activity || !qty || !buyer || !gst || !saleDate || !invoiceNo) {
+            alert("Please fill all required fields before preview.");
+            return;
+        }
+
+        // Build preview HTML
+        let previewHTML = `
+            <table class="table table-bordered">
+                <tr><th>Waste Type</th><td>${wasteType}</td></tr>
+                <tr><th>Activity</th><td>${activity}</td></tr>
+                <tr><th>Quantity</th><td>${qty}</td></tr>
+                <tr><th>Buyer Name</th><td>${buyer}</td></tr>
+                <tr><th>GST</th><td>${gst}</td></tr>
+                <tr><th>Address</th><td>${address || '-'}</td></tr>
+                <tr><th>Email</th><td>${email || '-'}</td></tr>
+                <tr><th>Date of Sale</th><td>${saleDate}</td></tr>
+                <tr><th>Invoice Number</th><td>${invoiceNo}</td></tr>
+                <tr><th>Invoice File</th><td>${invoicePreview}</td></tr>
+        `;
+
+        // Show extra files only if Disposal selected
+        if (activity === 'disposal') {
+            previewHTML += `
+                <tr><th>Manifest Document</th><td>${manifestPreview}</td></tr>
+                <tr><th>TSDF Certificate</th><td>${tsdfPreview}</td></tr>
+            `;
+        }
+
+        previewHTML += `</table>`;
+
+        $('#previewContent').html(previewHTML);
+
+        let modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        modal.show();
+    });
+
+    $('#confirmSubmit').click(function () {
+        $('form').submit();
+    });
+
+});
+</script>
+
+
+<!-- PREVIEW MODAL -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title text-white">Confirm Waste Processing Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="previewContent"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Edit
+                </button>
+                <button type="button" class="btn btn-success" id="confirmSubmit">
+                    Confirm & Submit
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

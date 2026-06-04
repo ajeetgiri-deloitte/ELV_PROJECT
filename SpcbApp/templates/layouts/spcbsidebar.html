@@ -1,0 +1,594 @@
+{% load static %}
+<html lang="en">
+   <head>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <!-- basic -->
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <!-- mobile metas -->
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+      <!-- site metas -->
+      <title>SPCB</title>
+      <meta name="keywords" content="">
+      <meta name="description" content="">
+      <meta name="author" content="">
+      <!-- site icon -->
+      <!-- {% static 'css/styles.css' %} -->
+      <link rel="icon" href="{% static 'images/fevicon.png' %}" type="image/png" />
+      <!-- bootstrap css -->
+      <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+      <!-- site css -->
+      <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+      <!-- responsive css -->
+      <link rel="stylesheet" href="{% static 'css/responsive.css' %}" />
+      <!-- color css -->
+      <link rel="stylesheet" href="{% static 'css/colors.css' %}" />
+      <!-- select bootstrap -->
+      <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}" />
+      <!-- scrollbar css -->
+      <link rel="stylesheet" href="{% static 'css/perfect-scrollbar.css' %}" />
+      <!-- custom css -->
+      <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+      <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+      <![endif]-->
+     <style>
+
+/* ========================================
+   SIDEBAR TREE STRUCTURE STYLE
+======================================== */
+
+/* Reset */
+#sidebar ul,
+#sidebar li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Base link styling */
+#sidebar ul li > a,
+.sidebar-form .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 14px;
+    text-decoration: none;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Hover */
+#sidebar ul li > a:hover,
+.sidebar-form .sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffc107;
+}
+
+/* ========================================
+   TREE CONNECTOR LINES
+======================================== */
+
+/* First level collapse container */
+#sidebar ul.collapse {
+    position: relative;
+    margin-left: 20px;
+}
+
+/* Vertical line */
+#sidebar ul.collapse::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12px;
+    width: 1px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Each submenu item */
+#sidebar ul.collapse > li {
+    position: relative;
+}
+
+/* Horizontal branch */
+#sidebar ul.collapse > li::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 12px;
+    width: 20px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Second level collapse */
+#sidebar ul.collapse ul.collapse {
+    margin-left: 20px;
+}
+
+#sidebar ul.collapse ul.collapse::before {
+    left: 32px;
+}
+
+#sidebar ul.collapse ul.collapse > li::before {
+    left: 32px;
+}
+
+/* Adjust padding for tree spacing */
+#sidebar ul.collapse > li > a,
+#sidebar ul.collapse > li > .sidebar-form .sidebar-link {
+    padding-left: 40px;
+}
+
+#sidebar ul.collapse ul.collapse > li > a,
+#sidebar ul.collapse ul.collapse > li > .sidebar-form .sidebar-link {
+    padding-left: 60px;
+}
+
+/* ========================================
+   ICON ALIGNMENT
+======================================== */
+#sidebar i {
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   DROPDOWN ARROW ANIMATION
+======================================== */
+
+#sidebar a.dropdown-toggle {
+    position: relative;
+}
+
+#sidebar a.dropdown-toggle::after {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s ease;
+}
+
+/* Rotate arrow when open */
+#sidebar a.dropdown-toggle[aria-expanded="true"]::after {
+    transform: translateY(-50%) rotate(90deg);
+}
+
+/* ========================================
+   REMOVE EXTRA SPACING ON COLLAPSE
+======================================== */
+#sidebar .collapse.show {
+    /* margin: 0; */
+    padding: 0;
+}
+
+/* ========================================
+   PERFECT SCROLLBAR FIX
+======================================== */
+#sidebar {
+    overflow-x: hidden;
+}
+
+/* =====================================
+   ACTIVE / SELECTED MENU STYLING
+===================================== */
+
+/* Selected item */
+#sidebar a.active,
+#sidebar .sidebar-link.active {
+    background-color: #ffc107;
+    color: #000 !important;
+    font-weight: 500;
+}
+
+/* Parent of selected submenu */
+#sidebar li.active > a,
+#sidebar li.active > .sidebar-form .sidebar-link {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107 !important;
+}
+
+/* Disable hover when active */
+#sidebar a.active:hover,
+#sidebar .sidebar-link.active:hover {
+    background-color: #ffc107;
+    color: #000 !important;
+}
+
+/* Arrow rotate when active */
+#sidebar a.dropdown-toggle.active::after {
+    transform: translateY(-50%) rotate(90deg);
+}
+
+</style>
+   </head>
+   <body class="dashboard dashboard_1">
+      <div class="full_container">
+         <div class="inner_container">
+            <!-- Sidebar  -->
+            <nav id="sidebar">
+               <div class="sidebar_blog_1">
+                  <div class="sidebar-header">
+                     <div class="logo_section"> 
+
+                     </div>
+                  </div>
+                  <div class="sidebar_user_info">
+                     <div class="icon_setting"></div>
+                     <div class="user_profle_side">
+                        <!-- <div class="user_img"><img class="img-responsive" src="{% url 'image_proxy' %}?url={{ statelogo|urlencode }}" alt="Golden Jubilee Logo" />
+                        </div> -->
+                        <div class="user_info">
+                           <h6>{{ request.session.officername }}</h6>
+                           <p><span class="online_animation"></span>{% if request.session.role_id == '1' %} Approver {% elif request.session.role_id == '2'  %} Recommending {% else %} Verifier {% endif %}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="sidebar_blog_2">
+                  <h4>EPR End of Life Vehicle</h4>
+                  <ul class="list-unstyled components">
+                     <li>
+                        <a href="{% url "dashboard" %}">
+                        <i class="fa fa-home white_color"></i> <span>Dashboard</span></a>
+                     </li>
+                         
+                     
+                     {% if request.session.role_id == '2' %}
+
+                     <li >
+
+                        <a href="#dashboard" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-dashboard yellow_color"></i> <span>Register User</span></a>
+                        <ul class="collapse list-unstyled" id="dashboard">
+                           <li>
+                              
+                             
+                            
+                           </li>
+                           <li>
+                              <a href="{% url "addspcbuser" %}"> <span>Add Users</span></a>
+                           </li>
+                           <li>
+                              <a href="{% url "viewusers" %}"> <span>View Users</span></a>
+                           </li>
+                           
+                        </ul>
+                     </li>
+                     <!-- <li>
+                        <a href="#element" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-diamond purple_color"></i> <span>User Mapping</span></a>
+                        <ul class="collapse list-unstyled" id="element">
+                           <li><a href="{% url "viewroles" %}"><span>Add Roles</span></a></li>
+                           
+                           
+                        </ul>
+                     </li> -->
+                           
+                           {% endif %}
+                     
+                  
+                 
+                   
+                   
+<!-- For RVSF roles (2 and 3) -->
+{% if request.session.role_id == '2' or request.session.role_id == '3' %}
+<li>
+  <a href="#rvsfMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+    <i class="fa fa-clone yellow_color"></i>
+    <span>RVSF</span>
+  </a>
+
+  <ul class="collapse list-unstyled" id="rvsfMenu">
+
+    <!-- Inbox (common) -->
+    <li>
+      <a href="#inboxMenuRvsf" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+        <i class="fa fa-object-group blue2_color"></i>
+        <span>Inbox</span>
+      </a>
+      <ul class="collapse list-unstyled" id="inboxMenuRvsf">
+        <!-- <li>
+          <form action="{% url 'list_rvsf' %}" method="post" class="sidebar-form">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="1">
+            <button type="submit" class="sidebar-link">
+              <i class="fas fa-external-link"></i>
+              <span>New Application</span>
+            </button>
+          </form>
+        </li> -->
+        <li><a href="{% url 'rvsf_applications' %}?status=1"><span>New Application</span></a></li>
+        <li>
+          <form action="{% url 'rvsf_applications' %}?status=1" method="post" class="sidebar-form">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="2">
+            <input type="hidden" name="resubmit" value="1">
+            <button type="submit" class="sidebar-link">
+              <!-- <i class="fa fa-paper-plane"></i> -->
+              <span>Resubmitted Application</span>
+            </button>
+          </form>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Forwarded -->
+    <li>
+      <form action="{% url 'list_rvsf' %}" method="post" class="sidebar-form">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="2">
+        <button type="submit" class="sidebar-link">
+          <!-- <i class="fa fa-forward yellow_color"></i> -->
+          <span>Forwarded (within SPCBs/PCCs)</span>
+        </button>
+      </form>
+    </li>
+
+    <!-- Sent Back to User -->
+    <li>
+      <form action="{% url 'list_rvsf' %}" method="post" class="sidebar-form">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="4">
+        <input type="hidden" name="incomplete" value="1">
+        <button type="submit" class="sidebar-link">
+          <!-- <i class="fa fa-reply yellow_color"></i> -->
+          <span>Sent Back to User</span>
+        </button>
+      </form>
+    </li>
+
+  </ul>
+</li>
+{% endif %}
+
+
+<!-- For Role 1 -->
+{% if request.session.role_id == '1' %}
+<li>
+  <a href="#role1Menu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+    <i class="fa fa-clone yellow_color"></i>
+    <span>RVSF</span>
+  </a>
+
+  <ul class="collapse list-unstyled" id="role1Menu">
+
+    <!-- Inbox -->
+    <li>
+      <a href="#inboxMenuRole1" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+        <i class="fa fa-object-group blue2_color"></i>
+        <span>Inbox</span>
+      </a>
+      <ul class="collapse list-unstyled" id="inboxMenuRole1">
+        <!-- <li>
+          <form action="{% url 'list_rvsf' %}" method="post" class="sidebar-form">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="1">
+            <button type="submit" class="sidebar-link">
+              <i class="fas fa-external-link"></i>
+              <span>New Application111</span>
+            </button>
+          </form>
+        </li> -->
+        <li><a href="{% url 'rvsf_applications' %}?status=1"><span>New Application</span></a></li>
+        <li>
+          <form action="{% url 'rvsf_applications' %}?status=1" method="post" class="sidebar-form">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="2">
+            <input type="hidden" name="resubmit" value="1">
+            <button type="submit" class="sidebar-link">
+              <i class="fa fa-paper-plane"></i>
+              <span>Resubmitted Application</span>
+            </button>
+          </form>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Approved -->
+    <li>
+      <form action="{% url 'list_rvsf' %}" method="post" class="sidebar-form">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="4">
+        <button type="submit" class="sidebar-link">
+          <i class="fa fa-check green_color"></i>
+          <span>Approved</span>
+        </button>
+      </form>
+    </li>
+
+    <!-- Rejected -->
+    <li>
+      <form action="{% url 'list_rvsf' %}" method="post" class="sidebar-form">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="7">
+        <button type="submit" class="sidebar-link">
+          <i class="fa fa-times red_color"></i>
+          <span>Rejected</span>
+        </button>
+      </form>
+    </li>
+
+    <!-- Sent Back to Recommending Officer -->
+    <li>
+      <form action="{% url 'list_rvsf' %}" method="post" class="sidebar-form">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="2">
+        <input type="hidden" name="recommending_officer" value="2">
+        <button type="submit" class="sidebar-link">
+          <i class="fa fa-reply yellow_color"></i>
+          <span>Sent Back to Recommending Officer</span>
+        </button>
+      </form>
+    </li>
+
+  </ul>
+</li>
+{% endif %}
+
+
+
+                     <!-- <li>
+                        <a href="#apps" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-object-group blue2_color"></i> <span>Inbox</span></a>
+                        <ul class="collapse list-unstyled" id="apps">
+                           <li><a href="{% url 'rvsf_applications' %}?status=1"><span>New Application</span></a></li>
+                           <li><a href="calendar.html"> <span>Resubmitted Application</span></a></li>
+                           
+                        </ul>
+                     </li> -->
+                     <!-- <li class="active">
+                        <a href="#additional_page" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-clone yellow_color"></i> <span>Query Raised</span></a>
+                        <ul class="collapse list-unstyled" id="additional_page">
+                           <li>
+                              <a href="profile.html"> <span>RVSF</span></a>
+                           </li>
+                           <li>
+                              <a href="project.html"> <span>Bulk Consumer </span></a>
+                           </li>
+                           
+                        </ul>
+                     </li> -->
+                     <!-- <li class="active">
+                        <a href="#additional_page2" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-clone yellow_color"></i> <span>Certificates</span></a>
+                        <ul class="collapse list-unstyled" id="additional_page2">
+                           <li>
+                              <a href="profile.html">> <span>RVSF</span></a>
+                           </li>
+                           <li>
+                              <a href="project.html">> <span>Bulk Consumer</span></a>
+                           </li>
+                           
+                        </ul>
+                     </li>
+ 
+                     <li><a href="price.html"><i class="fa fa-briefcase blue1_color"></i> <span>Payment Reports</span></a></li>
+                     <li>
+                        <a href="contact.html">
+                        <i class="fa fa-paper-plane red_color"></i> <span>Contact</span></a>
+                     </li> -->
+                                        
+
+                     {% comment %} <li><a href="map.html"><i class="fa fa-map purple_color2"></i> <span>Map</span></a></li>
+                     <li><a href="charts.html"><i class="fa fa-bar-chart-o green_color"></i> <span>Charts</span></a></li>
+                     <li><a href="settings.html"><i class="fa fa-cog yellow_color"></i> <span>Settings</span></a></li> {% endcomment %}
+                  </ul>
+               </div>
+            </nav>
+            
+            <div id="content">
+               <!-- topbar -->
+               <div class="topbar">
+                  <nav class="navbar navbar-expand-lg navbar-light">
+                     <div class="full">
+                        <button type="button" id="sidebarCollapse" class="sidebar_toggle"><i class="fa fa-bars"></i></button>
+                        
+                        <div class="right_topbar">
+                           <div class="icon_info">
+                              <!-- <ul>
+                                 <li><a href="#"><i class="fa fa-bell-o"></i><span class="badge">2</span></a></li>
+                                 <li><a href="#"><i class="fa fa-question-circle"></i></a></li>
+                                 <li><a href="#"><i class="fa fa-envelope-o"></i><span class="badge">3</span></a></li>
+                              </ul> -->
+                              <ul class="user_profile_dd">
+                                 <li>
+                                    <a class="dropdown-toggle" data-toggle="dropdown"><img class="img-responsive rounded-circle" src="{% static 'images/logo/ELVLogo.jpg'%}" alt="#" /><span class="name_user">{{request.session.officername}}</span></a>
+                                    <div class="dropdown-menu">
+                                       <!-- <a class="dropdown-item" href="profile.html">My Profile</a>
+                                       <a class="dropdown-item" href="settings.html">Settings</a>
+                                       <a class="dropdown-item" href="help.html">Help</a> -->
+                                       <a class="dropdown-item" href="{% url "logoutspcb" %}"><span>Log Out</span> <i class="fa fa-sign-out"></i></a>
+                                    </div>
+                                 </li>
+                              </ul>
+                           </div>
+                        </div>
+                     </div>
+                  </nav>
+               </div>
+                   
+               <div class="midde_cont">
+                     {% block content %}
+                          {% endblock  %}
+                  
+                        </div>
+                  <!-- footer -->
+                  <!-- <div class="container-fluid">
+                     <div class="footer">
+                        <p>Copyright © 2018 Designed by html.design. All rights reserved.<br><br>
+                           Distributed By: <a href="https://themewagon.com/">ThemeWagon</a>
+                        </p>
+                     </div>
+                  </div> -->
+               </div>
+               <!-- end dashboard inner -->
+            </div>
+            <!-- end sidebar -->
+            <!-- right content -->
+            
+         </div>
+      </div>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+      <!-- jQuery -->
+      <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+      <script src="{% static 'js/popper.min.js'%}"></script>
+      <script src="{% static 'js/bootstrap.min.js'%}"></script> -->
+      <!-- wow animation -->
+      <script src="{% static 'js/animate.js'%}"></script>
+      <!-- select country -->
+      <script src="{% static 'js/bootstrap-select.js'%}"></script>
+      <!-- owl carousel -->
+      <script src="{% static 'js/owl.carousel.js'%}"></script> 
+      <!-- chart js -->
+      <script src="{% static 'js/Chart.min.js'%}"></script>
+
+      <script src="{% static 'js/utils.js'%}"></script>
+      <script src="{% static 'js/analyser.js'%}"></script>
+      <!-- nice scrollbar -->
+      <script src="{% static 'js/perfect-scrollbar.min.js'%}"></script>
+      <script>
+         var ps = new PerfectScrollbar('#sidebar');
+      </script>
+      <!-- custom js -->
+      <script src="{% static 'js/custom.js'%}"></script>
+      <script src="{% static 'js/chart_custom_style1.js'%}"></script>
+      <script>
+         // Function to restrict input to alphabets, numbers, spaces, dot, and comma
+         function restrictInput(event) {
+             const regex = /^[a-zA-Z0-9 .,\n\r]*$/; // Added \n and \r for textarea line breaks
+             if (!regex.test(event.target.value)) {
+                 // Replace anything not allowed
+                 event.target.value = event.target.value.replace(/[^a-zA-Z0-9 .,\n\r]/g, '');
+             }
+         }
+     
+         // Attach restriction to all text input elements
+         document.addEventListener("DOMContentLoaded", function () {
+             // Select all text inputs and textareas
+             const textInputs = document.querySelectorAll(
+                 'input[type="text"], ' +
+                 'input[type="search"], ' +
+                 'textarea, ' +
+                 'input:not([type])' // Inputs without specified type (defaults to text)
+             );
+             
+             textInputs.forEach(function(element) {
+                 element.addEventListener("input", restrictInput);
+                 // Also handle paste events
+                 element.addEventListener("paste", restrictInput);
+             });
+         });
+     </script>
+   </body>
+</html>

@@ -1,0 +1,737 @@
+{% extends "layouts/spcbsidebar.html" %}
+{% load static %}
+{% block content %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<style>
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+.table td, .table th {
+    
+    color: black !important;
+}
+.table tbody tr:hover {
+    background-color: #adbbe4 !important;
+    border-left: 4px solid #0d6efd;
+}
+</style>
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+            <h4 class="mb-0">List of RVSF Applications</h4>
+            <div class="input-group" style="width: 300px;">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search users...">
+                <span class="input-group-text"><i class="fa fa-search"></i></span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="applicationsTable" class="table table-striped align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>S No.</th>
+                            <th>Application No</th>
+                            <th>Unit Name</th>
+                            <th>Unit Address</th>
+                            <th>Unit Email</th>
+                            <!-- <th>Status</th> -->
+                            <th>Submission Date</th>
+                            <th>View Application</th>
+                            <th>Trailings</th>
+                            {% if userinfo.RoleAccess == '2' %}
+                            <th>System Certificate</th>
+                            <th>Attested Certificate</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ item.username }}</td>
+                            <td>{{ item.company_name }}</td>
+                            <td>{{ item.registered_address }}</td>
+                            <td>{{ item.company_email }}</td>
+                            <!-- <td>
+                                {% if item.appstatus == 1 %}
+                                    New Application
+                                {% elif item.appstatus == 2 %}
+                                    Under Scrutiny
+                                {% endif %}
+                            </td> -->
+                            <td>{{ item.created_at|date:"d-m-Y" }}</td>
+                            <td>
+                                <form action="{% url 'viewapplication' %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="userid" value="{{ item.userid }}">
+                                    <button type="submit" class="btn btn-sm btn-primary">View</button>
+                                </form>
+                            </td>
+                            <td>
+                                <!-- <form action="{% url 'get_trails' %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="userid" value="{{ item.userid }}">
+                                    <button type="submit" class="btn btn-sm btn-primary">Trailings</button>
+                                </form> -->
+                                <!-- <div id="trailBox" class="p-3"
+                            style="max-height: 250px; overflow-y: auto; background-color: #e6f4ea; border: 2px solid #28a745; border-radius: 8px;">
+                            <p class="text-muted">No previous actions found.</p>
+                        </div> -->
+                        <button type="button"
+                            class="btn btn-sm btn-primary get-trails-btn"
+                            data-userid="{{ item.userid }}"
+                            data-appno="{{ item.appno }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#markModal"
+                            onclick="fetchtrails('{{ item.appno }}')">
+                            View Trails
+                        </button>
+                        <script>
+const getTrailsUrl = "{% url 'get_trails' %}";
+function fetchtrails(appno) {
+    $.ajax({
+        url: getTrailsUrl,
+        data: { appno: appno },
+        success: function(response) {
+            const trails = response.trails;
+            let trailHtml = '';
+            
+            // Map role numbers to labels
+            const roleLabels = {
+                "1": "Approving Officer",
+                "2": "Recommending Officer",
+                "3": "Reviewing Officer",
+                "0": "User"
+            };
+            
+            if (trails.length > 0) {
+                trails.forEach((item, index) => {
+                    const isFirst = index === trails.length - 1;
+                    const isLast = index === 0;
+                    
+                    let roleKey = (item.marked_to_role !== undefined && item.marked_to_role !== null) ? String(item.marked_to_role) : "";
+                    let roleText = roleLabels[roleKey] ? `Marked To ${roleLabels[roleKey]}` : `Marked To ${item.marked_to_role}`;
+                    
+                    // Determine styling based on position
+                    let positionBadge = '';
+                    let borderStyle = '';
+                    let backgroundColor = '';
+                    
+                    if (isFirst && isLast) {
+                        // Only one trail
+                        positionBadge = '<div style="position: absolute; top: -10px; left: 20px; background: linear-gradient(90deg, #ffc107, #28a745); color: white; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;"><i class="fa fa-flag"></i> Start & Current</div>';
+                        borderStyle = 'border: 2px solid #ffc107;';
+                        backgroundColor = 'background-color: #fff9e6;';
+                    } else if (isFirst) {
+                        positionBadge = '<div style="position: absolute; top: -10px; left: 20px; background-color: #ffc107; color: white; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;"><i class="fa fa-flag"></i> Trail Started</div>';
+                        borderStyle = 'border-left: 4px solid #ffc107;';
+                        backgroundColor = 'background-color: #fff9e6;';
+                    } else if (isLast) {
+                        positionBadge = '<div style="position: absolute; top: -10px; left: 20px; background-color: #28a745; color: white; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;"><i class="fa fa-clock-o"></i> Current State</div>';
+                        borderStyle = 'border: 2px solid #28a745;';
+                        backgroundColor = 'background-color: #f0fff0;';
+                    }
+                    
+                    trailHtml += `
+                        <div style="background: white; border: 1px solid #e9ecef; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; ${borderStyle} ${backgroundColor}">
+                            ${positionBadge}
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; ${isFirst || isLast ? 'margin-top: 15px;' : ''}">
+                                <div>
+                                    ${isFirst ? '<span style="display: inline-block; width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; margin-right: 8px;" title="Trail Start"></span>' : ''}
+                                    ${isLast ? '<span style="display: inline-block; width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; margin-right: 8px; animation: blink 1.5s infinite;" title="Current Trail"></span>' : ''}
+                                    <span style="font-weight: 500; color: #000000;">Marked By the </span>
+                                    <span style="font-weight: 600; color: #2c3e50;">${item.user}</span>
+                                    <span style="font-weight: 500; color: #000000; font-size: 13px; margin-left: 8px;">${item.designation}</span>
+                                </div>
+                                <span style="font-weight: 500; color: #000000;">${item.date}</span>
+                            </div>
+                            <div style="margin: 8px 0;">
+                                <span style="background: #e9ecef; padding: 2px 10px; border-radius: 15px; font-size: 11px; color: #000000;">
+                                    ${roleText}
+                                </span>
+                            </div>
+                            <div style="font-weight: 500; color: #000000; line-height: 1.5; font-size: 14px; padding: 8px 0; border-top: 1px dashed #e9ecef;">
+                                ${item.comment}
+                            </div>
+                            ${index < trails.length - 1 ? `
+                            <div style="position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);">
+                                <span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px;">
+                                    <i class="fa fa-arrow-down"></i> Next
+                                </span>
+                            </div>
+                            ` : ''}
+                        </div>`;
+                });
+            } else {
+                trailHtml = '<p class="text-muted">No previous actions found.</p>';
+            }
+            $('#trailBox').html(trailHtml);
+        },
+        error: function() {
+            $('#trailBox').html('<p class="text-danger">Error loading previous actions.</p>');
+        }
+    });
+}
+</script>
+
+<style>
+@keyframes blink {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Add connecting line between trails */
+.trail-connector {
+    position: relative;
+}
+
+.trail-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 30px;
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(to bottom, #6c757d, #adb5bd);
+    z-index: 1;
+}
+
+/* Tooltip for dots */
+[title] {
+    position: relative;
+    cursor: help;
+}
+
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+}
+</style>
+
+                        
+                            </td>
+                            {% if userinfo.RoleAccess == '2' %}
+                            <td>
+                                {% if item.appstatus == 4 or item.appstatus == 9  %}
+                                <form action="{% url 'GenerateCertificate' %}" method="post" class="d-inline" target="_blank">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="industryid" value="{{ item.userid }}">
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm d-flex align-items-center gap-1" target="_blank"
+                                           >
+                                        <i class="fa fa-certificate"></i>
+                                        <span>&nbsp; View Certificate</span>
+                                    </button>
+                                </form>
+                                {% else %}
+                                    <!-- <button type="button"
+                                            class="btn btn-sm btn-primary mark-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#markModal"
+                                            data-userid="{{ item.userid }}"
+                                            data-appno="{{ item.appno }}"
+                                            data-appstatus="{{ item.appstatus }}">
+                                        Mark
+                                    </button> -->
+                                {% endif %}
+                                </td>
+                                {% if item.appstatus == 9 %}
+                                <td id="certificateCell_{{ item.userid }}">
+                                    {% if item.attested_certificate %}
+                                        <!-- View Certificate Button -->
+                                        <button type="button"
+                                                class="btn btn-sm btn-info view-certificate-btn"
+                                                data-userid="{{ item.userid }}"
+                                                data-appno="{{ item.appno }}"
+                                                data-certificate-url="{{ item.attested_certificate.url }}"
+                                                data-uploaded-at="{{ item.attested_certificate_uploaded_at|date:'Y-m-d H:i' }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#viewCertificateModal">
+                                            <i class="fa fa-eye"></i> View Attested Certificate
+                                        </button>
+                                    {% else %}
+                                        <!-- Upload Certificate Button -->
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning upload-certificate-btn"
+                                                data-userid="{{ item.userid }}"
+                                                data-appno="{{ item.appno }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#attestedCertificateModal">
+                                            <i class="fa fa-upload"></i> Upload Certificate
+                                        </button>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                                {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">No applications found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="markModal" tabindex="-1" aria-labelledby="markModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="markModalLabel">View Trailing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- <form id="markForm" method="POST" action="{% url 'mark_application' %}"> -->
+                    {% csrf_token %}
+                    <input type="hidden" name="userid" id="useridField">
+                    <input type="hidden" name="appno" id="fetchappno">
+
+                    <!-- <p><strong>Application No:</strong> <span id="appNoText"></span></p>
+
+                    <div class="mb-3">
+                        <label class="form-label">Application Status:</label>
+                        <select class="form-select" id="statusDropdown" name="appstatus" required>
+                            <option value="">-- Choose --</option>
+                            {% for fetchappstage in fetchappstage %}
+                                <option value="{{ fetchappstage.AppStatus }}">{{ fetchappstage.Description }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Authority:</label>
+                        <select class="form-select" name="marked_to_role" required>
+                            <option value="">-- Choose --</option>
+                            {% for key, label in Roles.items %}
+                            <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                           
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <textarea class="form-control" name="comment" placeholder="Add remarks" required></textarea>
+                    </div> -->
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Previous Actions & Comments</strong></label>
+                        <div id="trailBox" class="p-3"
+                             style="max-height: 250px; overflow-y: auto; background-color: #e6f4ea; border: 2px solid #28a745; border-radius: 8px;">
+                            <p class="text-muted">No previous actions found.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-end">
+                        <!-- <button type="submit" class="btn btn-success">Confirm</button> -->
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                <!-- </form> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ Load jQuery (full version) and Bootstrap JS -->
+
+<!-- ✅ Custom Script -->
+<!-- Pass Django URL to JS safely -->
+<script src="{% static 'js/spcbapp/processing/listapplications.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $("#searchInput").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+    
+            $("table tbody tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+    </script>
+<script>
+    $(document).ready(function () {
+    
+        var table = $('#applicationsTable').DataTable({
+            "pageLength": 10,   // Show 10 rows per page
+            "lengthChange": false, // Hide page length dropdown
+            "ordering": true,   // Enable sorting
+        });
+    
+        // Connect your custom search box to DataTables search
+        $("#searchInput").on("keyup", function () {
+            table.search(this.value).draw();
+        });
+    
+    });
+    </script>    
+<!-- <script>
+    const getTrailsUrl = "{% url 'get_trails' %}";
+    function fetchtrails(appno) {
+    $.ajax({
+        url: getTrailsUrl,
+        data: { appno: appno },
+        success: function(response) {
+            const trails = response.trails;
+            let trailHtml = '';
+            if (trails.length > 0) {
+                trails.forEach(item => {
+                    trailHtml += `
+                        <div style="background:#d4edda; border-left:5px solid #28a745; padding:10px; margin-bottom:8px; border-radius:5px;">
+                            <strong>${item.user}</strong> 
+                            <span style="color:#6c757d; font-size:12px;">(${item.designation}) – ${item.date}</span><br>
+                            <em>${item.comment}</em>
+                        </div>`;
+                });
+            } else {
+                trailHtml = '<p class="text-muted">No previous actions found.</p>';
+            }
+            $('#trailBox').html(trailHtml);
+        },
+        error: function() {
+            $('#trailBox').html('<p class="text-danger">Error loading previous actions.</p>');
+        }
+    });
+}
+</script> -->
+
+
+<!-- Attested Certificate Upload Modal -->
+<div class="modal fade" id="attestedCertificateModal" tabindex="-1" aria-labelledby="attestedCertificateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="attestedCertificateModalLabel">Upload Attested Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="attestedCertificateForm" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="certificateUserid" name="userid">
+                    <input type="hidden" id="certificateAppno" name="appno">
+                    
+                    <div class="mb-3">
+                        <label for="attestedCertificateFile" class="form-label">
+                            Upload Attested Certificate <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="attestedCertificateFile" 
+                               name="attested_certificate" 
+                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" 
+                               required>
+                        <div class="form-text">
+                            Allowed formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 2MB)
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload Certificate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Certificate Modal -->
+<div class="modal fade" id="viewCertificateModal" tabindex="-1" aria-labelledby="viewCertificateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="viewCertificateModalLabel">View Attested Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="certificatePreview"></div>
+                <div class="mt-3">
+                    <a id="downloadCertificateLink" href="#" target="_blank" class="btn btn-success">
+                        <i class="fa fa-download"></i> Download Certificate
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <p class="text-muted small" id="uploadedAtInfo"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+
+    /* ===============================
+       Upload Certificate Button
+    =============================== */
+    $(document).on('click', '.upload-certificate-btn', function () {
+        $('#certificateUserid').val($(this).data('userid'));
+        $('#certificateAppno').val($(this).data('appno'));
+    });
+
+
+    /* ===============================
+       Upload Certificate Form
+    =============================== */
+    $('#attestedCertificateForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+
+        submitBtn.prop('disabled', true)
+                 .html('<i class="fa fa-spinner fa-spin"></i> Uploading...');
+
+        $.ajax({
+            url: '{% url "upload_attested_certificate" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success(response) {
+                if (!response.success) {
+                    alert(response.message || 'Upload failed');
+                    return;
+                }
+
+                $('#attestedCertificateModal').modal('hide');
+                $('#attestedCertificateForm')[0].reset();
+
+                const userid = $('#certificateUserid').val();
+                const appno = $('#certificateAppno').val();
+
+                $('#certificateCell_' + userid).html(`
+                    <button type="button"
+                        class="btn btn-sm btn-info view-certificate-btn"
+                        data-userid="${userid}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#viewCertificateModal">
+                        <i class="fa fa-eye"></i> View Attested Certificate
+                    </button>
+                `);
+
+                alert('Certificate uploaded successfully!');
+            },
+            error() {
+                alert('An error occurred while uploading.');
+            },
+            complete() {
+                submitBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+
+    /* ===============================
+       View Certificate Modal (ONLY place for preview)
+    =============================== */
+    $('#viewCertificateModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const userid = button.data('userid');
+
+        const preview = $('#certificatePreview');
+        const downloadLink = $('#downloadCertificateLink');
+        const uploadedInfo = $('#uploadedAtInfo');
+
+        preview.html('<div class="spinner-border text-primary"></div>');
+        downloadLink.hide();
+        uploadedInfo.text('');
+
+        $.ajax({
+            url: '{% url "get_certificate_info" %}',
+            type: 'GET',
+            data: { userid },
+            success(response) {
+
+                if (!response.success) {
+                    preview.html('<p class="text-danger">Certificate not found</p>');
+                    return;
+                }
+
+                const fileUrl = response.certificate_url;
+                const uploadedAt = response.uploaded_at || '';
+
+                const ext = fileUrl.split('.').pop().toLowerCase();
+
+                if (ext === 'pdf') {
+                    preview.html(`
+                        <iframe src="${fileUrl}" width="100%" height="500px"
+                            style="border:none;"></iframe>
+                    `);
+                } else if (['jpg','jpeg','png'].includes(ext)) {
+                    preview.html(`
+                        <img src="${fileUrl}" class="img-fluid rounded">
+                    `);
+                } else {
+                    preview.html(`
+                        <div class="alert alert-info">
+                            Preview not available. Please download.
+                        </div>
+                    `);
+                }
+
+                downloadLink.attr('href', fileUrl).show();
+                uploadedInfo.text('Uploaded on: ' + uploadedAt);
+            },
+            error() {
+                preview.html('<p class="text-danger">Failed to load certificate</p>');
+            }
+        });
+    });
+
+});
+</script>
+
+
+<!-- 
+<script>
+$(document).ready(function() {
+    // Handle Upload Certificate button click
+    $(document).on('click', '.upload-certificate-btn', function() {
+        const userid = $(this).data('userid');
+        const appno = $(this).data('appno');
+        
+        $('#certificateUserid').val(userid);
+        $('#certificateAppno').val(appno);
+    });
+    
+    // Handle View Certificate button click
+    $(document).on('click', '.view-certificate-btn', function() {
+        const certificateUrl = $(this).data('certificate-url');
+        const uploadedAt = $(this).data('uploaded-at');
+        const userid = $(this).data('userid');
+        
+        // Determine file type and display accordingly
+        const fileExt = certificateUrl.split('.').pop().toLowerCase();
+        let previewHtml = '';
+        
+        if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
+            previewHtml = `<img src="${certificateUrl}" class="img-fluid" alt="Certificate">`;
+        } else if (fileExt === 'pdf') {
+            previewHtml = `
+                <iframe src="${certificateUrl}" 
+                        width="100%" 
+                        height="500px" 
+                        style="border: none;">
+                </iframe>
+            `;
+        } else {
+            previewHtml = `
+                <div class="alert alert-info">
+                    <i class="fa fa-file"></i> Document file: ${certificateUrl.split('/').pop()}<br>
+                    <small>Preview not available for this file type. Please download to view.</small>
+                </div>
+            `;
+        }
+        
+        $('#certificatePreview').html(previewHtml);
+        $('#downloadCertificateLink').attr('href', certificateUrl);
+        $('#uploadedAtInfo').text('Uploaded on: ' + uploadedAt);
+    });
+    
+    // Handle certificate form submission
+    $('#attestedCertificateForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalBtnText = submitBtn.html();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Uploading...');
+        
+        $.ajax({
+            url: '{% url "upload_attested_certificate" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // alert('11111111')
+                if (response.success) {
+                    // Close the modal
+                    $('#attestedCertificateModal').modal('hide');
+                    
+                    // Reset the form
+                    $('#attestedCertificateForm')[0].reset();
+                    
+                    // Show success message
+                    alert('Certificate uploaded successfully!');
+                    
+                    // Get the userid and appno from the form
+                    const userid = $('#certificateUserid').val();
+                    const appno = $('#certificateAppno').val();
+                    
+                    // Update the button in the table
+                    const certificateCell = $('#certificateCell_' + userid);
+                    certificateCell.html(`
+                        <button type="button"
+                                class="btn btn-sm btn-info view-certificate-btn"
+                                data-userid="${userid}"
+                                data-appno="${appno}"
+                                data-certificate-url="${response.certificate_url}"
+                                data-uploaded-at="${response.uploaded_at}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#viewCertificateModal">
+                            <i class="fa fa-eye"></i> View Attested Certificate
+                        </button>
+                    `);
+                    
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('An error occurred while uploading the certificate.');
+            },
+            complete: function() {
+                // alert('222222')
+                submitBtn.prop('disabled', false).html(originalBtnText);
+            }
+        });
+    });
+    
+    // Refresh certificate info when modal opens
+    $('#viewCertificateModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget);
+        const userid = button.data('userid');
+        
+        // If we don't have the URL data, fetch it
+        if (!button.data('certificate-url')) {
+            $.ajax({
+                url: '{% url "get_certificate_info" %}',
+                type: 'GET',
+                data: { userid: userid },
+                success: function(response) {
+                    if (response.success) {
+                        button.data('certificate-url', response.certificate_url);
+                        button.data('uploaded-at', response.uploaded_at);
+                    }
+                }
+            });
+        }
+    });
+});
+</script> -->
+</script>
+{% endblock %}

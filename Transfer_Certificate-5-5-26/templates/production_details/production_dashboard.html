@@ -1,0 +1,294 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .dashboard-header {
+        background: #2c3e50;
+        color: #fff;
+        padding: 12px 0;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.3rem;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .dashboard-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+.table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.6px;
+    /* border-bottom: 2px solid #08304a; */
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+table.dataTable thead th {
+    text-align: center !important;
+    vertical-align: middle !important;
+    /* padding: 12px 10px !important; */
+}
+
+/* table.dataTable thead .sorting:before,
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_desc:before,
+table.dataTable thead .sorting_desc:after {
+    display: none !important;
+} */
+
+
+
+
+
+
+    .table tbody td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+        text-align: center;
+        background-color: #fff;
+    }
+
+    .total-row {
+        background: #eef3f8 !important;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .auto-calculated {
+        color: #007bff;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+    .table-bordered td, 
+    .table-bordered th {
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .total-row td:first-child {
+        text-align: center;
+        padding-left: 15px;
+    }
+
+
+
+</style>
+
+
+    <div class="mb-3 d-flex justify-content-end">
+    <a href="{% url 'production_form' %}" class="btn btn-success">
+        Production Data Entry Form
+    </a>
+</div>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <h1 class="h3 mb-0">Dashboard for Scrapping End-Of-Life Vehicles (ELV)</h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="dashboard-card">
+            <div class="table-responsive w-100">
+                <table id="elvTable" class="table table-bordered table-sm w-100">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Type of ELV</th>
+                            <th>No. of ELV Procured</th>
+                            <th>No. of ELV Scrapped</th>
+                            <th>Weight of the ELV Scrapped (Metric Ton)</th>
+                            <th>Remaining No. of ELV to be Scrapped</th>
+                            <th>Quantity of Steel Recovered (Metric Ton)</th>
+                            <th>Certificate Generating Potential (Metric Ton)</th>
+                            <!-- <th>Quantity of other scraps recovered</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in elv_data %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ row.elv_type }}</td>
+                            <td>{{ row.procured_qty }}</td>
+                            <td>{{ row.total_scrapped_qty }}</td>
+                            <td>{{ row.total_scrapped_weight }}</td>
+                            <td>{{ row.remaining_qty }}</td>
+                            <td>{{ row.total_steel_recovered }}</td>
+                            <td>{{ row.total_cert_potential }}</td>
+                            <!-- <td>{{ row.total_other_recovered }}</td> -->
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2" class="text-center"><strong>Total</strong></td>
+                            <td>{{ elv_totals.procured_qty }}</td>
+                            <td>{{ elv_totals.total_scrapped_qty }}</td>
+                            <td>{{ elv_totals.total_scrapped_weight }}</td>
+                            <td>{{ elv_totals.total_remaining_qty }}</td>
+
+                            <td>{{ elv_totals.total_steel_recovered }}</td>
+                            <td>{{ elv_totals.total_cert_potential }}</td>
+                            <!-- <td>{{ elv_totals.total_other_recovered }}</td> -->
+                        </tr>
+                    </tfoot>
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Dashboard for Processing Automobile Steel Scrap -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <h1 class="h3 mb-0">Dashboard for processing Automobile steel scrap</h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="dashboard-card">
+            <div class="table-responsive w-100">
+                <table id="autoSteelTable" class="table table-bordered table-sm w-100">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Quantity of Automobile steel scrap Procured (Metric Ton)</th>
+                            <th>Automobile steel scrap</th>
+                            <th>Quantity of Steel Recovered (Metric Ton)</th>
+                            <th>Remaining Quantity of Automobile steel scrap (Metric Ton)</th>
+                            <th>Certificate Generating Potential (Metric Ton)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in auto_data %}
+                        <tr class="total-row">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ row.procured_qty }}</td>
+                            <td>{{ row.processed_qty }}</td>
+                            <td>{{ row.total_steel_recovered }}</td>
+                            <td>{{ row.remaining_qty }}</td>
+                            <td>{{ row.total_cert_potential }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+
+                    <!-- <tfoot>
+                        <tr class="total-row">
+                            <td><strong>Total</strong></td>
+                            <td>{{ auto_totals.processed_qty }}</td>
+                            <td>{{ auto_totals.procured_qty }}</td>
+                            <td>{{ auto_totals.total_steel_recovered }}</td>
+                            <td>{{ auto_totals.total_remaining_qty }}</td>
+                            <td>{{ auto_totals.total_cert_potential }}</td>
+                        </tr>
+                    </tfoot> -->
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+        <!-- Dashboard for Processing Automobile Steel Scrap -->
+    <!-- <div class="dashboard-header">
+        <div class="container-fluid">
+            <h1 class="h3 mb-0">Details of Other scraps recovered (Other than Steel) </h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="dashboard-card">
+            <div class="table-responsive w-100">
+                <table id="otherScrapTable" class="table table-bordered table-sm w-100">
+                    <thead class="w-100">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Waste Type</th>
+                            <th>Quantity (Metric Ton)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in other_scrap %}
+                        <tr class="total-row">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ row.wasteType }}</td>
+                            <td>{{ row.total_qty }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2" class="text-center"><strong>Total</strong></td>
+                            <td><strong>{{ other_scrap_totals.total_qty }}</strong></td>
+                            
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div> -->
+
+
+
+<script>
+    $(document).ready(function () {
+
+        function initTable(tableId) {
+            $('#' + tableId).DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+
+                pageLength: 10,
+                lengthMenu: [5, 10, 25, 50, 100],
+
+                /* ✅ THIS IS THE KEY */
+                scrollY: "300px",
+                scrollCollapse: true,
+                scrollX: true,
+
+                order: [],
+                columnDefs: [
+                    { orderable: false }
+                ],
+
+                language: {
+                    search: "Search:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    paginate: {
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+        }
+
+        initTable('elvTable');
+        initTable('autoSteelTable');
+        initTable('otherScrapTable');
+
+    });
+</script>
+
+
+
+
+{% endblock %}

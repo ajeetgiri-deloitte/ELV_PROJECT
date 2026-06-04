@@ -1,0 +1,265 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .form-header {
+        background-color: #2c3e50;
+        color: white;
+        padding: .8rem 0;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .is-invalid { border-color: #dc3545 !important; }
+    .invalid-feedback { display: none; color: #dc3545; font-size: 0.85rem; }
+
+    input.is-invalid + .invalid-feedback,
+    select.is-invalid + .invalid-feedback {
+        display: block;
+    }
+    #buyerGST {
+    text-transform: uppercase;
+}
+</style>
+
+<div class="form-header px-4">
+    <h1 class="h4 mb-0">Sales Data</h1>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+<form method="post"
+      action="{% url 'certificate_generation_form' %}"
+      enctype="multipart/form-data"
+      id="saleForm">
+
+{% csrf_token %}
+
+<div class="section-card">
+<div class="row g-3">
+
+    <div class="col-md-4">
+        <label>Date of Sale *</label>
+        <input type="date" id="dateOfSale" name="date_of_sale" class="form-control" required>
+        <div class="invalid-feedback">Please select date.</div>
+    </div>
+
+    <div class="col-md-4">
+        <label>Type of Buyer *</label>
+        <select id="buyerType" name="buyer_type" class="form-select" required>
+            <option value="">Select Buyer</option>
+            <option>Blast Furnace</option>
+            <option>Induction Furnace</option>
+            <option>Electric Arc Furnace</option>
+            <option>Scrap Recyclers</option>
+            <option>Steel Mills</option>
+            <option>Others</option>
+        </select>
+        <div class="invalid-feedback">Select buyer type.</div>
+    </div>
+
+    <div class="col-md-12 d-none" id="otherBuyerDiv">
+        <label>Specify Other Buyer Type *</label>
+        <input type="text" id="otherBuyerType" name="other_buyer_type" class="form-control">
+    </div>
+
+    <div class="col-md-4">
+        <label>Name of Buyer *</label>
+        <input type="text" id="buyerName" name="buyer_name" class="form-control" required>
+    </div>
+
+    <div class="col-md-12">
+        <label>Address *</label>
+        <textarea id="buyerAddress" name="buyer_address" class="form-control" required></textarea>
+    </div>
+
+    <div class="col-md-4">
+        <label>GST Number *</label>
+        <input type="text" id="buyerGST" name="gst_number" class="form-control" maxlength="15" required>
+    </div>
+
+    <div class="col-md-4">
+        <label>Email *</label>
+        <input type="email" id="buyerEmail" name="email" class="form-control" required>
+    </div>
+
+    <div class="col-md-4">
+        <label>Quantity Sold *</label>
+        <input type="number" id="steelQty" name="quantity_sold" class="form-control" required>
+    </div>
+
+    <div class="col-md-4">
+        <label>Invoice Amount *</label>
+        <input type="number" id="invoiceAmount" name="invoice_amount" class="form-control" required>
+    </div>
+
+    <div class="col-md-4">
+        <label>Invoice Number *</label>
+        <input type="text" id="invoiceNumber" name="invoice_number" class="form-control" required>
+    </div>
+
+    <div class="col-md-4">
+        <label>Upload Invoice *</label>
+        <input type="file" id="invoiceFile" name="invoice_file" class="form-control" accept=".pdf,.jpg,.jpeg" required>
+    </div>
+
+</div>
+
+<div class="mt-4">
+    <button type="button" id="previewBtn" class="btn btn-primary">
+        Preview
+    </button>
+</div>
+
+</div>
+
+<!-- ================= PREVIEW MODAL ================= -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+
+<div class="modal-header bg-dark text-white">
+    <h5 class="modal-title">Preview Details</h5>
+    <button type="button" class="btn-close btn-close-white"
+            data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <table class="table table-bordered">
+        <tbody id="previewTableBody"></tbody>
+    </table>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-warning"
+            data-bs-dismiss="modal">Edit</button>
+
+    <!-- 🔥 THIS SENDS POST -->
+    <button type="submit" class="btn btn-success">
+        Confirm & Submit
+    </button>
+</div>
+
+</div>
+</div>
+</div>
+
+</form>
+
+<!-- History --> <div class="main-container mt-4"> 
+    <h4 class="mb-3">EPR Certificate Generated</h4> 
+    <table class="table table-bordered" id="historyTable">
+         <thead class="table-light"> 
+            <tr> 
+                <th>S. No</th>
+                 <th>Date of Entry</th> 
+                 <th>Date of Sale</th>
+                  <th>Quantity Sold (Metric Ton)</th> 
+                  <th>Invoice Number</th> 
+                  <th>Certificate Generated</th> 
+                </tr> 
+            </thead> 
+            <tbody> 
+                {% for row in history %} 
+                <tr>
+                     <td>{{ forloop.counter }}</td> 
+                     <td>{{ row.created_at|date:"d-m-Y" }}</td>
+                      <td>{{ row.sale_date|date:"d-m-Y" }}</td>
+                       <td>{{ row.quantity_sold }}</td>
+                        <td>{{ row.invoice_number }}</td>
+                         <td>{{ row.quantity_sold }}</td>
+                         </tr>
+                          {% empty %} 
+                          <tr>
+                             <td colspan="6" class="text-center text-muted"> No certificate generated yet </td>
+                             </tr>
+                              {% endfor %} 
+                            </tbody>
+                         </table>
+                         </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const previewBtn = document.getElementById("previewBtn");
+    const buyerType = document.getElementById("buyerType");
+    const otherBuyerDiv = document.getElementById("otherBuyerDiv");
+
+    buyerType.addEventListener("change", function () {
+        if (this.value === "Others") {
+            otherBuyerDiv.classList.remove("d-none");
+        } else {
+            otherBuyerDiv.classList.add("d-none");
+        }
+    });
+
+    previewBtn.addEventListener("click", function () {
+
+        if (!document.getElementById("saleForm").checkValidity()) {
+            document.getElementById("saleForm").reportValidity();
+            return;
+        }
+
+        const file = invoiceFile.files[0];
+        let filePreview = file
+            ? `<a href="${URL.createObjectURL(file)}" target="_blank">View File</a>`
+            : "No File";
+
+        const buyerTypeValue =
+            buyerType.value === "Others"
+            ? "Others - " + otherBuyerType.value
+            : buyerType.value;
+
+        const fields = [
+            ["Date of Sale", dateOfSale.value],
+            ["Buyer Type", buyerTypeValue],
+            ["Buyer Name", buyerName.value],
+            ["Address", buyerAddress.value],
+            ["GST", buyerGST.value],
+            ["Email", buyerEmail.value],
+            ["Quantity", steelQty.value],
+            ["Invoice Amount", invoiceAmount.value],
+            ["Invoice Number", invoiceNumber.value],
+            ["Invoice File", filePreview]
+        ];
+
+        let rows = "";
+        fields.forEach((field, index) => {
+            rows += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${field[0]}</td>
+                    <td>${field[1]}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("previewTableBody").innerHTML = rows;
+
+        new bootstrap.Modal(document.getElementById("previewModal")).show();
+    });
+
+});
+</script>
+<script>
+    document.getElementById("buyerGST").addEventListener("input", function () {
+    this.value = this.value.toUpperCase();
+});
+</script>
+{% endblock %}

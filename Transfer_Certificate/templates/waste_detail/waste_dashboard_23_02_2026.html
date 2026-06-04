@@ -1,0 +1,166 @@
+
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables CSS & JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+<style>
+.dashboard-header {
+    background: #2c3e50;
+    color: #fff;
+    padding: 12px 0;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    margin-top: 27px;
+}
+
+.dashboard-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 20px;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.table tbody td {
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #dee2e6 !important;
+}
+
+.fyyear {
+    margin-left: 28px;
+    margin-bottom: 13px;
+}
+</style>
+
+<div>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div class="mb-3 d-flex justify-content-end">
+    <a href="{% url 'waste_form' %}" class="btn btn-success">
+        Process other Waste
+    </a>
+</div>
+
+<div class="dashboard-header">
+    <div class="container-fluid">
+        <h1 class="h5 mb-0">Other Waste Details</h1>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="fyyear">
+        <Label>FY:</Label>
+        <select name="fyyear" id="fyyear">
+            <option value="">Select Year</option>
+            <option value="1">2025-2025</option>
+        </select>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="table-responsive">
+            <table id="elvTable" class="table table-bordered table-sm w-100">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Recovered Waste</th>
+                        <th>Available/Recovered Qty (Metric Ton)</th>
+                        <th>Qty Recycled (Metric Ton)</th>
+                        <th>Qty Refurbished (Metric Ton)</th>
+                        <th>Qty Disposed (Metric Ton)</th>
+                        <th>Remaining Qty (Metric Ton)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in elv_data %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ row.recovered_waste }}</td>
+                        <td>{{ row.recovered_qty }}</td>
+                        <td>{{ row.qty_recycled }}</td>
+                        <td>{{ row.qty_refurbished }}</td>
+                        <td>{{ row.qty_disposed }}</td>
+                        <td>{{ row.remaining_qty }}</td>
+                    </tr>
+                    
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    // Check if table body is empty
+    if ($('#elvTable tbody tr').length === 1 && 
+        $('#elvTable tbody tr td').text().trim() === 'No data available') {
+        // Replace the single colspan row with proper 7 cells
+        $('#elvTable tbody tr').html('<td colspan="7" class="text-center">No data available</td>');
+    }
+
+    if ($('#elvTable').length) {
+        $('#elvTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            lengthChange: true,
+
+            pageLength: 10,
+            lengthMenu: [5, 10, 25, 50, 100],
+
+            scrollY: "300px",
+            scrollX: true,
+            scrollCollapse: true,
+
+            order: [],
+
+            columnDefs: [
+                { targets: 0, orderable: false }  // Disable sorting for S.No
+            ],
+
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                infoEmpty: "No entries available",  // Add this
+                emptyTable: "No data available in table",  // Add this
+                paginate: {
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        });
+    }
+});</script>
+
+{% endblock %}

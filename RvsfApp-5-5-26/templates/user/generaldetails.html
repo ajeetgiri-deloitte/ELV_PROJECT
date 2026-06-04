@@ -1,0 +1,536 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+
+{% block content %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rvsfappcss/user/generaldetails.css' %}">
+    {% if messages %}
+    <div class="container-fluid px-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+<style>
+    .custborder{
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 15px;
+}
+</style>
+
+    <div class="container-fluid px-4 page-container">
+        <div class="breadcrumb-container">
+            <div class="page-inner">
+                <div class="page-header">
+                    <!-- <nav class="breadcrumb-nav">
+                        <a href="{% url 'rvsf_dashboard' %}" class="breadcrumb-icon text-decoration-none text-reset">
+                            <i class="fas fa-home"></i>
+                        </a>
+                        <i class="fas fa-greater-than breadcrumb-divider"></i>
+                        <h5 class="breadcrumb-item">Dashboard</h5>
+                        <i class="fas fa-greater-than breadcrumb-divider"></i>
+                        <h5 class="breadcrumb-item active">General Details</h5>
+                    </nav> -->
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 form-card">
+            <div class="card-body">
+                <div class="section-header">
+                    <h5 class="section-title">(A). General Details</h5>
+                </div>
+
+                <form method="post" action="{% url 'generaldetails' %}" enctype="multipart/form-data" id="generalDetailsForm">
+                    {% csrf_token %}
+
+                    <!-- GST Section -->
+                    <div class="row form-row custborder">
+                        <div class="col-md-6 mb-4">
+                            {% if data.gst_no %}
+                                <label for="id_gst_no" class="form-label required"> GST No. <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="id_gst_no" name="gst_no" value="{{data.gst_no|default:''}}" disabled>
+                            {% else %}
+                                <label for="id_gst_no" class="form-label required"> GST No. <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="id_gst_no" name="gst_no" value="{{data.gst|default:''}}" disabled readonly>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            {% if data.gst_no %}
+                                {% if general.gst_pdf %}
+                                    <a href="{% url 'protected_file_rvsf' general.gst_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+                                        <i class="fas fa-file-pdf me-2"></i>View GST Document
+                                    </a>
+                                    <!-- Optional when file exists -->
+                                    <input type="file" name="gst_pdf" class="form-control" accept="application/pdf,.pdf" id="id_gst_pdf">
+                                {% else %}
+                                    <label for="id_gst_no" class="form-label required">Upload GST Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+                                    <input type="file" name="gst_pdf" class="form-control" accept="application/pdf,.pdf" id="id_gst_pdf" {% if data.gst_no or general.gst_no %}required{% endif %}>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- Basic Information -->
+                    <div class="row form-row">
+                        <div class="col-md-6 mb-4">
+                            <label for="id_company_name" class="form-label"> Legal Name <span class="text-danger">*</span></label>
+                            <input id="id_company_name" type="text" name="company_name" value="{{data.company_name}}"  placeholder="Company Name"  class="form-control" required disabled>
+                            
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="id_trade_name" class="form-label"> Trade Name <span class="text-danger">*</span></label>
+                            <input id="id_trade_name" type="text" name="trade_name" value="{{data.legal_name}}"  placeholder="trade Name"  class="form-control" required disabled>
+                            
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="id_business_category" class="form-label"> Business Category <span class="text-danger">*</span></label>
+                            <input id="id_business_category" type="text" name="business_category" value="{{data.business_category}}"  placeholder="Business Category"  class="form-control" required disabled>
+                            
+                            
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="id_email" class="form-label"> Company Email <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="id_company_email" name="company_email" value="{{data.company_email|default:''}}" disabled>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="id_address" class="form-label"> Registered Address <span class="text-danger">*</span></label>
+                            <textarea id="id_address" name="address" class="form-control" placeholder="Address" required rows="3" disabled>{{ data.registered_address }}</textarea>
+                            <!-- <textarea id="id_address" name="address" class="form-control" placeholder="Address" required rows="3" disabled>{{ data.registered_address }}, {{ districtname }}, {{ statename }},{{ data.pin_code }}</textarea> -->
+                            <input type="hidden" name="address" value="{{ data.registered_address }}, {{ data.district }}, {{ data.state }}, {{ data.pin_code }}">
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="id_state" class="form-label"> State <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="id_state" name="state" value="{{ statename }}" disabled>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="id_district" class="form-label"> District <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="id_district" name="district" value="{{ districtname }}" disabled>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="id_pin_code" class="form-label"> Pin Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="id_pin_code" name="pin_code" value="{{ data.pin_code }}" disabled>
+                        </div>
+                        <!-- <div class="col-md-6 mb-4">
+                            <label for="id_website" class="form-label">
+                                Website 
+                            </label>
+                        
+                            {% if data.website %}
+                                <input type="text"
+                                       class="form-control"
+                                       id="id_website"
+                                       name="website"
+                                       value="{{ data.website }}"
+                                       disabled>
+                            {% else %}
+                                <input type="text"
+                                       class="form-control"
+                                       id="id_website"
+                                       name="website">
+                            {% endif %}
+                        </div> -->
+                        
+                    </div>
+
+                    
+
+                    <!-- PAN Section -->
+                    <div class="row form-row custborder">
+                        <div class="col-md-6 mb-4">
+                            {% if data.company_pan %}
+                                <label for="id_pan_no" class="form-label required"> PAN No <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="id_pan_no" name="pan_no" value="{{data.company_pan|default:''}}" disabled>
+                            {% else %}
+                                <label for="id_pan_no" class="form-label required"> PAN No <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="id_pan_no" name="pan_no" value="{{data.company_pan|default:''}}" disabled readonly>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            {% if data.company_pan %}
+                                {% if general.pan_pdf %}
+                                    <a href="{% url 'protected_file_rvsf' general.pan_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+                                        <i class="fas fa-file-pdf me-2"></i>View PAN Document
+                                    </a>
+                                    <!-- Optional when file exists -->
+                                    <input type="file" name="pan_pdf" class="form-control" accept="application/pdf,.pdf" id="id_pan_pdf">
+                                {% else %}
+                                    <label for="id_gst_no" class="form-label required">Upload PAN Document (Only PDF max file size 2Mb)<span class="text-danger">*</span></label>
+                                    <input type="file" name="pan_pdf" class="form-control" accept="application/pdf,.pdf" id="id_pan_pdf" {% if data.company_pan or general.company_pan %}required{% endif %}>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- TIN Section -->
+<div class="row form-row custborder">
+    <div class="col-md-6 mb-4">
+        {% if data.tin_no %}
+            <label for="id_tin_no" class="form-label required"> Tax Identification Number (TIN)</label>
+            <input type="text" class="form-control" id="id_tin_no" maxlength="15" name="tin_no" value="{{data.tin_no|default:''}}" disabled>
+        {% else %}
+            <label for="id_tin_no" class="form-label required"> Tax Identification Number (TIN)</label>
+            <input type="text" class="form-control" id="id_tin_no" maxlength="15" name="tin_no" value="{{data.tin_no|default:''}}">
+        {% endif %}
+    </div>
+
+    <!-- Upload Section for TIN -->
+    <div class="col-md-6 mb-4" id="tin_upload_section"
+         style="display: {% if data.tin_no or general.tin_no %}block{% else %}none{% endif %};">
+
+        {% if data.tin_no %}
+            {% if general.tin_pdf %}
+                <a href="{% url 'protected_file_rvsf' general.tin_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+                    <i class="fas fa-file-pdf me-2"></i>View TIN Document
+                </a>
+                <!-- Optional when file exists -->
+                <input type="file" name="tin_pdf" class="form-control" accept="application/pdf,.pdf" id="id_tin_pdf">
+            {% else %}
+                <label class="form-label required">Upload TIN Document (Only PDF max 2Mb)</label>
+                <input type="file" name="tin_pdf" class="form-control" accept="application/pdf,.pdf" id="id_tin_pdf"
+                       {% if data.tin_no or general.tin_no %}required{% endif %}>
+            {% endif %}
+        {% else %}
+            <label class="form-label required">Upload TIN Document (Only PDF max 2Mb)</label>
+            <input type="file" name="tin_pdf" class="form-control" accept="application/pdf,.pdf" id="id_tin_pdf">
+        {% endif %}
+    </div>
+</div>
+
+                    <!-- CIN Section -->
+<div class="row form-row custborder">
+    <div class="col-md-6 mb-4">
+        {% if data.cin %}
+            <label for="id_cin_no" class="form-label required"> Corporate Identification Number (CIN)</label>
+            <input type="text" class="form-control" maxlength="21" id="id_cin_no" name="cin_no" value="{{data.cin|default:''}}" disabled>
+        {% else %}
+            <label for="id_cin_no" class="form-label required"> Corporate Identification Number (CIN)</label>
+            <input type="text" class="form-control" id="id_cin_no" maxlength="21" name="cin_no" value="{{data.cin|default:''}}">
+        {% endif %}
+    </div>
+
+    <!-- Upload Section for CIN -->
+    <div class="col-md-6 mb-4" id="cin_upload_section"
+         style="display: {% if data.cin or general.cin %}block{% else %}none{% endif %};">
+
+        {% if data.cin %}
+            {% if general.cin_pdf %}
+                <a href="{% url 'protected_file_rvsf' general.cin_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+                    <i class="fas fa-file-pdf me-2"></i>View CIN Document
+                </a>
+                <!-- Optional when file exists -->
+                <input type="file" name="cin_pdf" class="form-control" accept="application/pdf,.pdf" id="id_cin_pdf">
+            {% else %}
+                <label class="form-label required">Upload CIN Document (Only PDF max 2Mb)</label>
+                <input type="file" name="cin_pdf" class="form-control" accept="application/pdf,.pdf" id="id_cin_pdf"
+                       {% if data.cin or general.cin %}required{% endif %}>
+            {% endif %}
+        {% else %}
+            <label class="form-label required">Upload CIN Document (Only PDF max 2Mb)</label>
+            <input type="file" name="cin_pdf" class="form-control" accept="application/pdf,.pdf" id="id_cin_pdf">
+        {% endif %}
+    </div>
+</div>
+
+                    <!-- IEC Section -->
+<div class="row form-row custborder">
+    <div class="col-md-6 mb-4">
+        {% if data.iec %}
+            <label for="id_iec_no" class="form-label required"> Import Export Code (IEC)</label>
+            <input type="text" class="form-control" id="id_iec_no" maxlength="10" name="iec_no" value="{{data.iec|default:''}}" disabled>
+        {% else %}
+            <label for="id_iec_no" class="form-label required"> Import Export Code (IEC)</label>
+            <input type="text" class="form-control" id="id_iec_no" maxlength="10" name="iec_no" value="{{data.iec|default:''}}">
+        {% endif %}
+    </div>
+
+    <!-- IEC Upload Section -->
+    <div class="col-md-6 mb-4" id="iec_upload_section"
+         style="display: {% if data.iec or general.iec %}block{% else %}none{% endif %};">
+
+        {% if data.iec %}
+            {% if general.iec_pdf %}
+                <a href="{% url 'protected_file_rvsf' general.iec_pdf.name %}" target="_blank" class="document-link mt-2 d-block">
+                    <i class="fas fa-file-pdf me-2"></i>View IEC Document
+                </a>
+                <!-- REMOVE required attribute when file already exists -->
+                <input type="file" name="iec_pdf" class="form-control" accept="application/pdf,.pdf" id="id_iec_pdf">
+            {% else %}
+                <label class="form-label required">Upload IEC Document (Only PDF max 2Mb)</label>
+                <input type="file" name="iec_pdf" class="form-control" accept="application/pdf,.pdf" id="id_iec_pdf"
+                       {% if data.iec or general.iec %}required{% endif %}>
+            {% endif %}
+        {% else %}
+            <label class="form-label required">Upload IEC Document (Only PDF max 2Mb)</label>
+            <input type="file" name="iec_pdf" class="form-control" accept="application/pdf,.pdf" id="id_iec_pdf">
+        {% endif %}
+    </div>
+</div>
+
+<div class="row form-row custborder">
+    <h4>Authorized Person Details</h4>
+    <div class="col-md-6 mb-4">
+        <label for="id_auth_name" class="form-label"> Name <span class="text-danger">*</span></label>
+        <input id="id_auth_name" type="text" name="auth_name" value="{{data.authorized_person_name}}"  placeholder="Authorized Person Name"  class="form-control" required disabled>
+        
+        
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <label for="id_auth_email" class="form-label"> Email <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="id_auth_email" name="auth_email" value="{{data.auth_email|default:''}}" disabled>
+    </div>
+    <div class="col-md-6 mb-4">
+        <label for="id_auth_designation" class="form-label"> Designation <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="id_auth_designation" name="auth_auth_designation" value="{{data.auth_designation|default:''}}" disabled>
+    </div>
+    <div class="col-md-6 mb-4">
+        <label for="id_auth_pan" class="form-label"> PAN <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="id_auth_pan" name="auth_pan" value="{{data.auth_pan|default:''}}" disabled>
+    </div>
+    <div class="col-md-6 mb-4">
+        <label for="id_auth_mobile" class="form-label"> Mobile
+        <input type="text" class="form-control" id="id_auth_mobile" name="auth_mobile" value="{{data.auth_mobile|default:''}}" disabled>
+    </div>
+    </div>
+
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>Save and Next
+                        </button>
+                        <a href="{% url 'rvsf_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </div>
+                </form>
+            </div> <!-- End card-body -->
+        </div> <!-- End card -->
+    </div> <!-- End container-fluid -->
+
+    <script src="{% static 'js/rvsfappjs/user/generaldetails.js' %}"></script>
+    <script>
+        // ========== REGEX PATTERNS ==========
+        const TIN_REGEX = /^[0-9]{11}$/;
+        const CIN_REGEX = /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/;
+        const IEC_REGEX = /^[0-9]{10}$/;
+        
+        // ===================================
+
+        $(document).ready(function() {
+            console.log("Page loaded - initializing file requirements");
+            
+            // Function to remove required attribute when document exists
+            function removeRequiredIfDocumentExists() {
+                // GST Document
+                if ($("a[href*='GstDoc']").length > 0) {
+                    $("#id_gst_pdf").removeAttr('required');
+                    console.log("GST document exists - removed required");
+                }
+                
+                // PAN Document
+                if ($("a[href*='PanDoc']").length > 0) {
+                    $("#id_pan_pdf").removeAttr('required');
+                    console.log("PAN document exists - removed required");
+                }
+                
+                // TIN Document
+                if ($("a[href*='TinDoc']").length > 0) {
+                    $("#id_tin_pdf").removeAttr('required');
+                    console.log("TIN document exists - removed required");
+                }
+                
+                // CIN Document
+                if ($("a[href*='CinDoc']").length > 0) {
+                    $("#id_cin_pdf").removeAttr('required');
+                    console.log("CIN document exists - removed required");
+                }
+                
+                // IEC Document
+                if ($("a[href*='IecDoc']").length > 0) {
+                    $("#id_iec_pdf").removeAttr('required');
+                    console.log("IEC document exists - removed required");
+                }
+            }
+            
+            // Initialize on page load
+            removeRequiredIfDocumentExists();
+            
+            // =======================
+            // AUTO SHOW/HIDE UPLOAD SECTIONS
+            // =======================
+            
+            // TIN Upload Trigger
+            if (!$("#id_tin_no").is(":disabled")) {
+                $("#id_tin_no").on("keyup change", function () {
+                    let v = $(this).val().trim();
+                    if (v !== "") {
+                        $("#tin_upload_section").show();
+                        // Only make required if no existing file link
+                        if ($("a[href*='TinDoc']").length === 0) {
+                            $("#id_tin_pdf").attr("required", true);
+                        }
+                    } else {
+                        $("#tin_upload_section").hide();
+                        $("#id_tin_pdf").attr("required", false);
+                    }
+                });
+            }
+            
+            // CIN Upload Trigger
+            if (!$("#id_cin_no").is(":disabled")) {
+                $("#id_cin_no").on("keyup change", function () {
+                    let v = $(this).val().trim();
+                    if (v !== "") {
+                        $("#cin_upload_section").show();
+                        // Only make required if no existing file link
+                        if ($("a[href*='CinDoc']").length === 0) {
+                            $("#id_cin_pdf").attr("required", true);
+                        }
+                    } else {
+                        $("#cin_upload_section").hide();
+                        $("#id_cin_pdf").attr("required", false);
+                    }
+                });
+            }
+            
+            // IEC Upload Trigger
+            if (!$("#id_iec_no").is(":disabled")) {
+                $("#id_iec_no").on("keyup change", function () {
+                    let v = $(this).val().trim();
+                    if (v !== "") {
+                        $("#iec_upload_section").show();
+                        // Only make required if no existing file link
+                        if ($("a[href*='IecDoc']").length === 0) {
+                            $("#id_iec_pdf").attr("required", true);
+                        }
+                    } else {
+                        $("#iec_upload_section").hide();
+                        $("#id_iec_pdf").attr("required", false);
+                    }
+                });
+            }
+            
+            // Form submit validation
+            $("#generalDetailsForm").on("submit", function(e) {
+                console.log("Form submission started");
+                
+                // Ensure required attributes are removed for existing documents
+                removeRequiredIfDocumentExists();
+                
+                // Validation for TIN, CIN, IEC format
+                let tinValid = true, cinValid = true, iecValid = true;
+                
+                // TIN Validation
+                if ($("#id_tin_no").length && !$("#id_tin_no").is(":disabled")) {
+                    let tin = $("#id_tin_no").val().trim();
+                    if (tin !== "" && !TIN_REGEX.test(tin)) {
+                        tinValid = false;
+                        alert("Invalid TIN format. TIN must be 11 digits.");
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                
+                // CIN Validation
+                if ($("#id_cin_no").length && !$("#id_cin_no").is(":disabled")) {
+                    let cin = $("#id_cin_no").val().trim().toUpperCase();
+                    if (cin !== "" && !CIN_REGEX.test(cin)) {
+                        cinValid = false;
+                        alert("Invalid CIN format. Example: U74999DL2019PTC123456");
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                
+                // IEC Validation
+                if ($("#id_iec_no").length && !$("#id_iec_no").is(":disabled")) {
+                    let iec = $("#id_iec_no").val().trim();
+                    if (iec !== "" && !IEC_REGEX.test(iec)) {
+                        iecValid = false;
+                        alert("Invalid IEC format. IEC must be 10 digits.");
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                
+                // File size validation (2MB = 2097152 bytes)
+                $("input[type='file']").each(function() {
+                    if (this.files.length > 0) {
+                        if (this.files[0].size > 2097152) {
+                            alert("File size exceeds 2MB limit: " + this.files[0].name);
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                });
+                
+                console.log("Form validation passed, submitting...");
+                return true;
+            });
+            
+            // Debug function to check current state
+            window.checkFormState = function() {
+                console.log("=== FORM STATE ===");
+                console.log("IEC PDF required:", $("#id_iec_pdf").attr("required"));
+                console.log("TIN PDF required:", $("#id_tin_pdf").attr("required"));
+                console.log("CIN PDF required:", $("#id_cin_pdf").attr("required"));
+                console.log("PAN PDF required:", $("#id_pan_pdf").attr("required"));
+                console.log("GST PDF required:", $("#id_gst_pdf").attr("required"));
+                console.log("==================");
+            };
+            
+            // Check form state after 1 second
+            setTimeout(checkFormState, 1000);
+        });
+    </script>
+    <script>
+        // Function to validate file name for special characters
+        function validateFileName(input) {
+            if (!input || !input.files || input.files.length === 0) {
+                return true;
+            }
+            
+            const fileName = input.files[0].name;
+            // Allow only alphanumeric, spaces, underscores, hyphens, and .pdf extension
+            const validFileNameRegex = /^[a-zA-Z0-9][a-zA-Z0-9_\-\s()\.]*\.pdf$/i;
+            
+            // Check for special characters not allowed
+            const specialCharRegex = /[<>:"/\\|?*]/;
+            
+            if (specialCharRegex.test(fileName)) {
+                alert('Special characters like < > : " / \\ | ? * are not allowed in the file name.');
+                input.value = '';
+                return false;
+            }
+            
+            if (!validFileNameRegex.test(fileName)) {
+                alert('Invalid file name. Only letters, numbers, spaces, underscores, hyphens, parentheses and dots are allowed in the file name.');
+                input.value = '';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Apply onchange validation to all file inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            
+            fileInputs.forEach(function(input) {
+                input.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        validateFileName(this);
+                    }
+                });
+            });
+        });
+    </script>
+    
+{% endblock %}

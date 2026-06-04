@@ -1,0 +1,144 @@
+<form action="{% url "SavePollutionChecklist" %}" method="post" id="pollutionForm">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+
+    <table class="checklist-table">
+        <thead>
+            <tr>
+                <th>Checklist Item</th>
+                <th>Yes / No</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>Provided Air pollution control devices – Name, Number, Image *</td>
+                <td>
+                    <select name="air_pollution" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if pollution and pollution.air_pollution == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if pollution and pollution.air_pollution == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_air_pollution" value="{{ pollution.remarks_air_pollution }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided Water pollution control devices – Name, Number, Image *</td>
+                <td>
+                    <select name="water_pollution" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if pollution and pollution.water_pollution == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if pollution and pollution.water_pollution == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_water_pollution" value="{{ pollution.remarks_water_pollution }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Provided Noise pollution control devices – Name, Number, Image *</td>
+                <td>
+                    <select name="noise_pollution" class="form-control check-select" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes" {% if pollution and pollution.noise_pollution == 1 %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if pollution and pollution.noise_pollution == 0 %}selected{% endif %}>No</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="remarks_noise_pollution" value="{{ pollution.remarks_noise_pollution }}" class="form-control remarks-field" placeholder="Remarks">
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</form>
+
+
+<form action="{% url "ViewPollutionDetails" %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+    <tr>
+        <td colspan="3"> 
+            <button type="submit" class="btn btn-warning">View Submitted Data</button>
+        </td>
+    </tr>
+</form>
+
+<!-- ============================= -->
+<!-- JS VALIDATION (SAME LOGIC)   -->
+<!-- ============================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const selects = document.querySelectorAll('.check-select');
+    const form = document.getElementById('pollutionForm');
+
+    function updateRemarks(select, remarks) {
+        const hasValue = remarks.value.trim() !== '';
+
+        if (select.value === 'Yes') {
+            remarks.disabled = false;
+            remarks.removeAttribute('required');
+            remarks.style.backgroundColor = '#f0f0f0';
+            remarks.style.borderColor = '#ccc';
+        } 
+        else if (select.value === 'No') {
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        } 
+        else {
+            remarks.disabled = false;
+            remarks.setAttribute('required', 'required');
+            remarks.style.backgroundColor = 'white';
+            remarks.style.borderColor = hasValue ? '#ced4da' : 'red';
+        }
+    }
+
+    // Initialize all rows on load
+    selects.forEach(select => {
+        const row = select.closest('tr');
+        const remarks = row.querySelector('.remarks-field');
+
+        updateRemarks(select, remarks);
+
+        select.addEventListener('change', () => updateRemarks(select, remarks));
+        remarks.addEventListener('input', () => updateRemarks(select, remarks));
+    });
+
+    // Prevent form submit if No selected but remarks empty
+    form.addEventListener('submit', function (e) {
+        let valid = true;
+
+        selects.forEach(select => {
+            const row = select.closest('tr');
+            const remarks = row.querySelector('.remarks-field');
+
+            if (select.value === 'No' && remarks.value.trim() === '') {
+                remarks.style.borderColor = 'red';
+                valid = false;
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            alert("❗ Please fill remarks for all fields where 'No' is selected.");
+        }
+    });
+
+});
+</script>

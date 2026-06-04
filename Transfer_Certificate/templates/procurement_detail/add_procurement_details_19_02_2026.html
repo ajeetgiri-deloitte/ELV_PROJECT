@@ -1,0 +1,1737 @@
+{% extends "layouts/sidebar.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .table thead th {
+    background: linear-gradient(135deg, #e1e7eb, #b3d4eb);
+    color: #000000;
+    text-align: center;
+    font-size: 0.85rem;
+}
+h4 {
+    color: #ffffff !important;
+    text-align: center;
+}
+    .procurement-header {
+        background-color: #2c3e50;
+        color: white;
+        border-radius: 15px;
+        padding: 1rem 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .section-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .enhanced-btn {
+        padding: 10px 26px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: 0.25s ease-in-out;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .enhanced-btn i { font-size: 1.1rem; }
+
+    .enhanced-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+    
+    /* .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    } */
+    /* .btn-outline-primary {
+    border-color: purple;
+    color: white;
+    background-color: purple;
+    }
+    .btn-outline-primary:hover {
+    background-color: purple;
+    color: white;
+    } */
+</style>
+
+<style>
+    :root {
+        --primary-dark: #2c3e50;
+        --primary-light: #34495e;
+        --accent: #3498db;
+        --success: #27ae60;
+        --border-color: #e1e8ed;
+        --bg-light: #f8f9fb;
+    }
+
+    .main-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+    .form-card { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+    .form-header { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%); color: white; padding: 1rem; position: relative; overflow: hidden; }
+    .form-header h1 { font-size: 1.45rem; font-weight: 600; margin: 0; }
+    .form-body { padding: 2rem; }
+    .section-title { font-size: 1.1rem; font-weight: 600; color: var(--primary-dark); margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem; }
+    .input-group-modern { background: var(--bg-light); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; transition: all 0.3s ease; }
+    .form-control, .form-select { border: 2px solid var(--border-color); border-radius: 8px; padding: 0.75rem; font-size: 0.95rem; transition: all 0.3s ease; }
+    .flex-row-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .chip { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-dark); color: white; padding: 0.5rem 1rem; border-radius: 20px; margin: 0.25rem; }
+    .chips-container { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem; background: var(--bg-light); border-radius: 12px; margin-top: 1rem; }
+    .btn-primary-custom { background: linear-gradient(135deg, var(--accent) 0%, #2980b9 100%); border: none; color: white; padding: 0.875rem 2.5rem; border-radius: 8px; font-weight: 600; }
+    .readonly-field { background: #f0f0f0; cursor: not-allowed; }
+    .text-danger-small { font-size: 0.85rem; color: #d9534f; }
+    @media (max-width: 768px) { .form-body { padding: 1.5rem; } .flex-row-inputs { grid-template-columns: 1fr; } }
+
+    .enhanced-btn {
+        padding: 10px 26px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: 0.25s ease-in-out;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .enhanced-btn i { font-size: 1.1rem; }
+
+    .enhanced-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+
+    .btn-secondary-custom {
+        background: #f0f0f0;
+        color: #2c3e50;
+        border: 1px solid #dcdcdc;
+        text-decoration: none;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #e2e2e2;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    .btn-add-waste {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .btn-add-waste:hover {
+        background: #229954;
+    }
+
+    .btn-remove-waste {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .btn-remove-waste:hover {
+        background: #c0392b;
+    }
+
+    .dynamic-waste-row {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 0.5rem;
+    }
+
+    .waste-container {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+    }
+
+</style>
+
+
+{% if messages %}
+    <div class="container-fluid mt-1">
+        {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger{% endif %}
+                {% if message.tags == 'success' %}alert-success{% endif %}
+                {% if message.tags == 'warning' %}alert-warning{% endif %}
+                {% if message.tags == 'info' %}alert-info{% endif %}
+                alert-dismissible fade show"
+                role="alert">
+
+                <strong>
+                    {% if message.tags == 'error' %}❌ Error:{% endif %}
+                    {% if message.tags == 'success' %}✅ Success:{% endif %}
+                    {% if message.tags == 'warning' %}⚠ Warning:{% endif %}
+                    {% if message.tags == 'info' %}ℹ Info:{% endif %}
+                </strong>
+                {{ message }}
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- <div class="container-fluid"> -->
+<div class="form-card mb-4 pb-4">
+    <!-- Page Header -->
+    <div class="procurement-header">
+        <h4 class="mb-0">Add Procurement details</h4>
+    </div>
+    <form method="POST" enctype="multipart/form-data" id="procurementForm">
+        {% csrf_token %}
+                <div class="container-fluid">
+                    <!-- 1. Date of Procurement -->
+                    <div class="section-card">
+                        <div class="card-header">
+                            <div class="row g-3 align-items-end">
+
+                                <!-- FY -->
+                                <div class="col-md-6 col-12">
+                                    <label class="fw-bold mb-1 d-block">
+                                        Select FY <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="financial_year" id="financial_year" class="form-control w-100" required>
+                                        <option value="">Select Financial Year</option>
+                                        {% for year in fy_list %}
+                                            <option value="{{ year }}"
+                                                {% if old.financial_year == year %}selected{% endif %}>
+                                                {{ year }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+                                </div>
+
+                                <!-- Date -->
+                                <div class="col-md-6 col-12">
+                                    <label class="fw-bold mb-1 d-block">
+                                        Date of Procurement <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date"
+                                        name="procurement_date"
+                                        id="procurement_date"
+                                        class="form-control w-100"
+                                        value="{{ old.procurement_date }}"
+                                        {% if not old.procurement_date %}disabled{% endif %}
+                                        required>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="card-header d-flex align-items-center">
+                            <div class="row mb-3 align-items-center">
+                                <div class="col-md-12">
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <!-- Label -->
+                                        <label class="form-label fw-bold me-3 mb-0">Procurred Items: <span class="text-danger">*</span></label>
+
+                                        <!-- Checkboxes -->
+                                        <div class="form-check me-3 mb-0">
+                                            <input class="form-check-input" type="checkbox" name="procurement_type" id="source" value="ELV" {% if old.procurement_type == "ELV" %}checked{% endif %}>
+                                            <label class="form-check-label" for="source">End of Life Vehicles (ELV)</label>
+                                        </div>
+
+                                        <div class="form-check me-3 mb-0">
+                                            <input class="form-check-input" type="checkbox" name="procurement_type" id="automobileSteelScrap" value="AUTOMOBILE" {% if old.procurement_type == "AUTOMOBILE" %}checked{% endif %}>
+                                            <label class="form-check-label" for="automobileSteelScrap">Automobile Steel Scrap</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="vehicleSection" class="card-body border rounded p-3" style="display:none;">
+                        <!-- <div class="section-card">
+                          <div class="card-header d-flex align-items-center flex-wrap">
+                              <label class="fw-bold me-3 my-2">Type Of Collection Centre:</label>
+
+                              <div class="d-flex flex-wrap gap-3 my-1">
+                                  <div class="form-check">
+                                      <input class="form-check-input" type="radio" name="collection_centre_type"
+                                            id="collectionCentres" value="collection-centres">
+                                      <label class="form-check-label" for="collectionCentres">
+                                          Collection Centres
+                                      </label>
+                                  </div>
+
+                                  <div class="form-check">
+                                      <input class="form-check-input" type="radio" name="collection_centre_type"
+                                            id="bulkConsumer" value="bulk-consumer">
+                                      <label class="form-check-label" for="bulkConsumer">
+                                          Bulk Consumer
+                                      </label>
+                                  </div>
+
+                                  <div class="form-check">
+                                      <input class="form-check-input" type="radio" name="collection_centre_type"
+                                            id="ownerElvs" value="owner-elvs">
+                                      <label class="form-check-label" for="ownerElvs">
+                                          Owner of ELVs
+                                      </label>
+                                  </div>
+
+                                  <div class="form-check">
+                                      <input class="form-check-input" type="radio" name="collection_centre_type"
+                                            id="insuranceCompanies" value="insurance-companies">
+                                      <label class="form-check-label" for="insuranceCompanies">
+                                          Insurance Companies
+                                      </label>
+                                  </div>
+
+                                  <div class="form-check">
+                                      <input class="form-check-input" type="radio" name="collection_centre_type"
+                                            id="producers" value="producers">
+                                      <label class="form-check-label" for="producers">
+                                          Producers
+                                      </label>
+                                  </div>
+                              </div>
+                          </div>
+                        </div> -->
+                          
+                        <!-- Dropdown inline -->
+                        <div class="section-card"> 
+                            <div class="dropdown mb-0 card-header d-flex align-items-center flex-wrap">
+                                <label for="collection-centres" class="fw-bold me-2 mb-0">Source of ELV: <span class="text-danger">*</span></label>
+                                <button class="btn btn-outline-dark dropdown-toggle" type="button" id="collectionCentreDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {% if old.collection_type %}
+                                            {{ old.collection_type|title }}
+                                        {% else %}
+                                            Select Source
+                                        {% endif %}
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="collectionCentreDropdown">
+                                    <li><a class="dropdown-item" href="#" data-value="collection-centres">Collection Centres</a></li>
+                                    <li><a class="dropdown-item" href="#" data-value="bulk-consumer">Bulk Consumer</a></li>
+                                    <li><a class="dropdown-item" href="#" data-value="owner-elvs">Owner of ELV</a></li>
+                                    <li><a class="dropdown-item" href="#" data-value="insurance-companies">Insurance Companies</a></li>
+                                    <li><a class="dropdown-item" href="#" data-value="producers">Producers</a></li>
+                                </ul>
+                                <input type="hidden" name="collection_type" id="collectionTypeInput" value="{{ old.collection_type }}">
+                            </div>
+                        </div>
+                        <!-- Source of ELVs -->
+                        <div id="extraFields1" class="card-body mt-3 border rounded p-3" style="display: none;">
+                            <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Name of Collection</label>
+                                <input type="text" id="collection_name" name="source_name" class="form-control" placeholder="Enter name" value="{{ old.source_name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">GST Number</label>
+                                <input type="text" id="gst" maxlength="15" name="source_gst" class="form-control" placeholder="Enter GST No." value="{{ old.source_gst }}">
+                                <small id="gstError" class="text-danger d-none">
+                                    Invalid GST Number format
+                                </small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Address</label>
+                                <input type="text" name="source_address" id="addess" class="form-control" placeholder="Enter address" value="{{ old.source_address }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email ID</label>
+                                <input type="email" name="source_email" class="form-control" placeholder="Enter email" value="{{ old.source_email }}">
+                            </div>
+                            </div>
+                        </div>
+
+                        <!-- 🔹 Fields for Owner of ELVs -->
+                        <div id="extraFields2" class="card-body mt-3 border rounded p-3" style="display: none;">
+                            <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Name of Registered Owner </label>
+                                <input type="text" id="collection_name" name="source_name" class="form-control" placeholder="Enter owner name" value="{{ old.source_name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Address:</label>
+                                <input type="text" name="source_address" class="form-control" placeholder="Enter address" value="{{ old.source_address }}" id="addess">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email ID:</label>
+                                <input type="email" name="source_email" class="form-control" placeholder="Enter email" value="{{ old.source_email }}">
+                            </div>
+                            </div>
+                        </div>
+
+                        <!-- 🔹 Fields for Bulk Consumer / Producer -->
+                        <div id="extraFields3" class="card-body mt-3 border rounded p-3" style="display: none;">
+                            <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Registered / Unregistered:</label>
+                                <select id="registrationStatus" class="form-select">
+                                <option value="">Select</option>
+                                <option value="registered">Registered</option>
+                                <option value="unregistered">Unregistered</option>
+                                </select>
+                            </div>
+                            </div>
+
+                            <!-- Registered Fields -->
+                            <div id="registeredFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">Select Registered Entity</label>
+                                <!-- <input type="text" id="collection_name" name="source_name" class="form-control" placeholder="Enter entity name" value="{{ old.source_name }}"> -->
+                                 <select class="form-select" name="source_name">
+                        <!-- <option value="">-- Select Entity --</option> -->
+
+                        {% for item in producers %}
+                            <option value="{{ item.id }}">
+                                {{ item.company_name }} ({{ item.gst_no }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">GST Number</label>
+                                <input type="text" id="gst" maxlength="15" name="source_gst" class="form-control" placeholder="Enter GST Number" value="{{ old.source_gst }}">
+                                <small id="gstError" class="text-danger d-none">
+                                    Invalid GST Number format
+                                </small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">Address</label>
+                                <input type="text" name="source_address" class="form-control" placeholder="Enter address" value="{{ old.source_address }}" id="addess">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">Email ID</label>
+                                <input type="email" name="source_email" class="form-control" placeholder="Enter email" value="{{ old.source_email }}">
+                                </div>
+                            </div>
+                            </div>
+
+                            <!-- Unregistered Fields -->
+                            <div id="unregisteredFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">Name of Supplier</label>
+                                <input type="text" id="collection_name" name="source_name" class="form-control" placeholder="Enter supplier name" value="{{ old.source_name }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">GST Number</label>
+                                <input type="text" id="gst" maxlength="15" name="source_gst" class="form-control" placeholder="Enter GST No." value="{{ old.source_gst }}">
+                                <small id="gstError" class="text-danger d-none">
+                            Invalid GST Number format
+                        </small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">Address</label>
+                                <input type="text" name="source_address" class="form-control" placeholder="Enter address" value="{{ old.source_address }}" id="addess">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                <label class="form-label">Email ID</label>
+                                <input type="email" name="source_email" class="form-control" placeholder="Enter email" value="{{ old.source_email }}">
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    
+
+                        <div id="vehicleSectionsContainer">
+                            <!-- Initial Section -->
+                            <!-- <div class="section-card my-3 vehicle-section">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span>Vehicle / ELV Details</span>
+                                    <div>
+                                    <button type="button" class="btn btn-md btn-success add-section-btn"><i class="bi bi-plus-lg"></i> </button>
+                                    <button type="button" class="btn btn-md btn-danger remove-section-btn"><i class="bi bi-dash-lg"></i> </button>
+                                    </div>
+
+                                </div>
+                                <div class="row card-body">
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Vehicle Type</label>
+                                        <select name="vehicleType[]" class="form-select">
+                                            <option value="">Select Vehicle Type</option>
+                                            {% for t in elv_types %}
+                                                <option value="{{ t.vehicle_type }}">{{ t.vehicle_type }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Fuel Type</label>
+                                        <select name="fuelType[]" class="form-select">
+                                            <option value="">Select Fuel Type</option>
+                                            <option value="Petrol">Petrol</option>
+                                            <option value="Diesel">Diesel</option>
+                                            <option value="EV">EV</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                        </select>
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">No. of ELVs Procured</label>
+                                        <input type="number" name="elvCount[]" class="form-control" placeholder="Enter quantity" min="0" step="1" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                                    </div>
+
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Upload Certificate of Deposit</label>
+                                        <input type="file" name="certificateUpload[0]" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Invoice Number</label>
+                                        <input type="text" name="invoiceNumber[]" class="form-control" placeholder="Enter Invoice Number" oninput="this.value = this.value.replace(/[^A-Za-z0-9\-\/]/g, '');">
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Upload Invoice File (Max 2MB)</label>
+                                        <input type="file" name="invoiceFile[0]" class="form-control" accept=".pdf">
+                                    </div>
+
+                                </div>
+                            </div> -->
+                        </div>
+                </div>
+
+                    <!-- 🔹 Automobile Steel Scrap Section (hidden by default) -->
+                    <div id="automobileScrapSection" class="card-body border rounded p-3" style="display:none;">
+                        <div class="section-card p-3">
+                          <div class="row">
+                            <div class="col-md-6 mb-3">
+                              <label class="form-label fw-bold">Name of Entity <span class="text-danger">*</span></label>
+                              <input type="text" name="scrap_entity_name" class="form-control" placeholder="Enter supplier name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                              <label class="form-label fw-bold">GST Number <span class="text-danger">*</span></label>
+                              <input type="text" id="gst" maxlength="15" name="scrap_gst" class="form-control" placeholder="Enter GST No.">
+                              <small id="gstError" class="text-danger d-none">
+                                    Invalid GST Number format
+                                </small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                              <label class="form-label fw-bold">Address <span class="text-danger">*</span></label>
+                              <input type="text" name="scrap_address" class="form-control" placeholder="Enter address" id="addess">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                              <label class="form-label fw-bold">Email ID <span class="text-danger">*</span></label>
+                              <input type="email" name="scrap_email" class="form-control" placeholder="Enter email">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="section-card p-3">
+                          <div class="row">
+                            <div class="col-md-6 mb-3">
+                              <label for="scrapQuantity" class="form-label fw-bold">Quantity of Automobile Steel Scrap <span class="text-danger">*</span></label>
+                              <input type="number" name="scrapQuantity" id="scrapQuantity" class="form-control " placeholder="Enter quantity" min="0" step="1" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            </div>
+                            <div class="col-md-6 mb-3"></div>
+                            <div class="col-md-6 mb-3">
+                              <label for="invoiceNumber" class="form-label fw-bold">Invoice Number <span class="text-danger">*</span></label>
+                              <input type="text" name="scrapInvoiceNumber" id="invoiceNumber" class="form-control form-control-sm" placeholder="Enter invoice number" oninput="this.value = this.value.replace(/[^A-Za-z0-9\-\/]/g, '');">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                              <label for="invoiceFile" class="form-label fw-bold">Upload Invoice File (Max size: 2 MB) <span class="text-danger">*</span></label>
+                              <input type="file" id="upload_file"  name="scrapInvoiceFile" id="invoiceFile" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            </div>
+                            
+                          </div>
+                        </div>
+                      </div>
+
+                        <!-- Preview Button -->
+                        <!-- <div class="row mt-4">
+                            <div class="col-md-12">
+                                <button type="button" id="previewBtn" class="btn btn-primary">Preview</button>
+                            </div>
+                        </div> -->
+                        <div class="text-center mt-4">
+                            <button type="button" class="btn-primary-custom enhanced-btn me-3" id="previewBtn">
+                                <i class="far fa-eye me-2"></i> Preview & Submit
+                            </button>
+
+                            <a href="{% url 'procurement_dashboard' %}" class="btn-secondary-custom enhanced-btn">
+                                <i class="fas fa-home me-2"></i> Go to Dashboard
+                            </a>
+                        </div>
+                </div>
+
+
+            <!--  Preview Modal -->
+            <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="previewModalLabel">Preview Procurement Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    <table class="table table-bordered">
+                        <tbody id="previewTableBody">
+                        <!-- Filled dynamically by JavaScript -->
+                        </tbody>
+                    </table>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="editBtn" data-bs-dismiss="modal">Edit</button>
+                    <button type="submit" class="btn btn-success" id="submitBtn">Submit</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+      </form>
+</div>
+
+<!-- Procurement Entry Table -->
+<div class="dashboard-card">
+    <div class="card-header">
+        Procurement Entry Details
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle" id="historyTable" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Date of Entry</th>
+                        <th>Date of Procurement</th>
+                        <th>Source of Procurement</th>
+                        <th>Type of Vehicle</th>
+                        <th>Fuel Type</th>
+                        <th>No. of ELV Procured</th>
+                        <th>Invoice Number</th>
+                        <th>Certificate of Deposit</th>
+                        <th>Invoice File</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for entry in procurement_entries %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ entry.created_at|date:"d-m-Y" }}</td>
+                                <td>{{ entry.procurement_date|date:"d-m-Y" }}</td>
+
+                                <td>{{ entry.procurement_type }}</td>
+
+                                <!-- Type of Vehicle -->
+                                <td>{{ entry.vehicle_type|default:"-" }}</td>
+
+                                <!-- Number of ELVs -->
+                                <td>{{ entry.fuel_type|default:"-" }}</td>
+
+                                <!-- Fuel type -->
+                                <td>{{ entry.number_of_elvs }}</td>
+
+                                <td>{{ entry.invoice_number }}</td>
+                                <td>
+                                    {% if entry.certificate_of_deposit %}
+                                    
+                                    <a href="{% url 'protected_cert_file' entry.certificate_of_deposit.name %}" target="_blank">
+                                            Download
+                                        </a>
+                                        <!-- <a href="{{ entry.invoice_file.url }}" target="_blank">
+                                            Download
+                                        </a> -->
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if entry.invoice_file %}
+                                    
+                                    <a href="{% url 'protected_cert_file' entry.invoice_file.name %}" target="_blank">
+                                            Download
+                                        </a>
+                                        <!-- <a href="{{ entry.invoice_file.url }}" target="_blank">
+                                            Download
+                                        </a> -->
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all address fields (you have multiple with same ID - fix this!)
+    const addressFields = document.querySelectorAll('#addess');
+    
+    addressFields.forEach(function(addressField, index) {
+        // Max character limit
+        const maxLength = 50;
+        
+        // Add maxlength attribute to prevent typing beyond limit
+        addressField.setAttribute('maxlength', maxLength);
+        
+        // Real-time validation while typing
+        addressField.addEventListener('input', function() {
+            if (this.value.length > maxLength) {
+                this.value = this.value.substring(0, maxLength);
+            }
+        });
+        
+        // Also handle paste events
+        addressField.addEventListener('paste', function(e) {
+            e.preventDefault();
+            
+            // Get pasted text
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Calculate new text
+            const currentText = this.value;
+            const selectionStart = this.selectionStart;
+            const selectionEnd = this.selectionEnd;
+            
+            // Create new text with pasted content
+            const newText = currentText.substring(0, selectionStart) + 
+                          pastedText + 
+                          currentText.substring(selectionEnd);
+            
+            // Trim to max length
+            const trimmedText = newText.substring(0, maxLength);
+            
+            // Set the value
+            this.value = trimmedText;
+            
+            // Set cursor position
+            const newCursorPos = selectionStart + Math.min(pastedText.length, maxLength - (currentText.length - (selectionEnd - selectionStart)));
+            this.setSelectionRange(newCursorPos, newCursorPos);
+            
+            // Trigger input event
+            this.dispatchEvent(new Event('input'));
+        });
+    });
+});
+</script>
+
+<!-- JavaScript to clone sections -->
+<!-- <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('vehicleSectionsContainer');
+
+    container.addEventListener('click', function(e){
+        if(e.target.classList.contains('add-section-btn')){
+            const sections = container.querySelectorAll('.vehicle-section');
+            const index = sections.length;
+
+            const originalSection = e.target.closest('.vehicle-section');
+            const newSection = originalSection.cloneNode(true);
+
+            newSection.querySelectorAll('input, select').forEach(input => {
+                input.value = '';
+
+                if (input.type === 'file') {
+                    if (input.name.includes('certificateUpload')) {
+                        input.name = `certificateUpload[${index}]`;
+                    }
+                    if (input.name.includes('invoiceFile')) {
+                        input.name = `invoiceFile[${index}]`;
+                    }
+                }
+            });
+
+            container.appendChild(newSection);
+        }
+
+        if(e.target.classList.contains('remove-section-btn')){
+            const sections = container.querySelectorAll('.vehicle-section');
+            if(sections.length > 1){
+                e.target.closest('.vehicle-section').remove();
+            }
+        }
+    });
+});
+</script> -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const vehicleData = {{ vehicle_old_data|safe|default:"[]" }};
+    const container = document.getElementById("vehicleSectionsContainer");
+
+    function createVehicleRow(index, data = {}) {
+
+        const div = document.createElement("div");
+        div.className = "section-card my-3 vehicle-section";
+
+        div.innerHTML = `
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Vehicle / ELV Details</span>
+            <div>
+                <button type="button" class="btn btn-md btn-success add-section-btn">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+                <button type="button" class="btn btn-md btn-danger remove-section-btn">
+                    <i class="bi bi-dash-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="row card-body">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Vehicle Type</label>
+                <select name="vehicleType[]" class="form-select">
+                    <option value="">Select Vehicle Type</option>
+                    {% for t in elv_types %}
+                        <option value="{{ t.vehicle_type }}">{{ t.vehicle_type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Fuel Type</label>
+                <select name="fuelType[]" class="form-select">
+                    <option value="">Select Fuel Type</option>
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="EV">EV</option>
+                    <option value="Hybrid">Hybrid</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">No. of ELV Procured</label>
+                <input type="number" name="elvCount[]" class="form-control">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Upload Certificate of Deposit</label>
+                <input type="file" id="upload_file" name="certificateUpload[${index}]" class="form-control">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Invoice Number</label>
+                <input type="text" name="invoiceNumber[]" class="form-control">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Upload Invoice File</label>
+                <input type="file" id="upload_file"  name="invoiceFile[${index}]" class="form-control">
+            </div>
+        </div>
+        `;
+
+        // Populate values
+        if (data.vehicle_type) div.querySelector('[name="vehicleType[]"]').value = data.vehicle_type;
+        if (data.fuel_type) div.querySelector('[name="fuelType[]"]').value = data.fuel_type;
+        if (data.elv_count) div.querySelector('[name="elvCount[]"]').value = data.elv_count;
+        if (data.invoice_number) div.querySelector('[name="invoiceNumber[]"]').value = data.invoice_number;
+
+        return div;
+    }
+
+    // 🔹 Load existing data
+    if (vehicleData.length) {
+        vehicleData.forEach((row, i) => {
+            container.appendChild(createVehicleRow(i, row));
+        });
+    } else {
+        container.appendChild(createVehicleRow(0));
+    }
+
+    // 🔹 Add / Remove
+    container.addEventListener("click", function (e) {
+        if (e.target.closest(".add-section-btn")) {
+            container.appendChild(createVehicleRow(container.children.length));
+        }
+
+        if (e.target.closest(".remove-section-btn")) {
+            if (container.children.length > 1) {
+                e.target.closest(".vehicle-section").remove();
+            }
+        }
+    });
+});
+</script>
+
+
+<!-- ✅ JavaScript logic -->
+<script>
+  const dropdownItems = document.querySelectorAll('.dropdown-item');
+  const dropdownButton = document.getElementById('collectionCentreDropdown');
+  const collectionTypeInput = document.getElementById('collectionTypeInput');
+
+  const extraFields1 = document.getElementById('extraFields1');
+  const extraFields2 = document.getElementById('extraFields2');
+  const extraFields3 = document.getElementById('extraFields3');
+
+  const registrationSelect = document.getElementById('registrationStatus');
+  const registeredFields = document.getElementById('registeredFields');
+  const unregisteredFields = document.getElementById('unregisteredFields');
+
+  function disableAllSourceInputs() {
+    document.querySelectorAll(
+      '#extraFields1 input, #extraFields2 input, #extraFields3 input'
+    ).forEach(el => el.disabled = true);
+  }
+
+  function enableInputs(container) {
+    container.querySelectorAll('input').forEach(el => el.disabled = false);
+  }
+
+  dropdownItems.forEach(item => {
+    item.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      const selectedText = this.textContent.trim();
+      const selectedValue = this.dataset.value;
+
+      dropdownButton.textContent = selectedText;
+      collectionTypeInput.value = selectedValue;
+
+      // Hide everything
+      extraFields1.style.display = 'none';
+      extraFields2.style.display = 'none';
+      extraFields3.style.display = 'none';
+
+      disableAllSourceInputs();
+
+      if (selectedValue === 'collection-centres' || selectedValue === 'insurance-companies') {
+        extraFields1.style.display = 'block';
+        enableInputs(extraFields1);
+      }
+      else if (selectedValue === 'owner-elvs') {
+        extraFields2.style.display = 'block';
+        enableInputs(extraFields2);
+      }
+      else if (selectedValue === 'bulk-consumer' || selectedValue === 'producers') {
+        extraFields3.style.display = 'block';
+        enableInputs(extraFields3);
+      }
+    });
+  });
+
+  // Registered / Unregistered logic
+  registrationSelect.addEventListener('change', function () {
+    registeredFields.style.display = 'none';
+    unregisteredFields.style.display = 'none';
+
+    registeredFields.querySelectorAll('input').forEach(i => i.disabled = true);
+    unregisteredFields.querySelectorAll('input').forEach(i => i.disabled = true);
+
+    if (this.value === 'registered') {
+      registeredFields.style.display = 'block';
+      registeredFields.querySelectorAll('input').forEach(i => i.disabled = false);
+    } 
+    else if (this.value === 'unregistered') {
+      unregisteredFields.style.display = 'block';
+      unregisteredFields.querySelectorAll('input').forEach(i => i.disabled = false);
+    }
+  });
+</script>
+
+
+<!-- open sections - Automobile/Souce of ELVs -->
+<script>
+  const sourceCheckbox = document.getElementById('source');
+  const scrapCheckbox = document.getElementById('automobileSteelScrap');
+  const scrapSection = document.getElementById('automobileScrapSection');
+  const vehicleSection = document.getElementById('vehicleSection');
+//   const invoiceFile = document.getElementById('invoiceFile');
+
+  // Handle checkbox toggle
+  scrapCheckbox.addEventListener('change', () => {
+    if (scrapCheckbox.checked) {
+      scrapSection.style.display = 'block';
+      vehicleSection.style.display = 'none';
+      sourceCheckbox.checked = false;
+    } else {
+      scrapSection.style.display = 'none';
+    }
+  });
+
+  sourceCheckbox.addEventListener('change', () => {
+    if (sourceCheckbox.checked) {
+      vehicleSection.style.display = 'block';
+      scrapSection.style.display = 'none';
+      scrapCheckbox.checked = false;
+    } else {
+      vehicleSection.style.display = 'none';
+    }
+  });
+
+  // ✅ File size validation (2 MB max)
+  invoiceFile.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file && file.size > 2 * 1024 * 1024) {
+      alert('❌ File size exceeds 2 MB. Please select a smaller file.');
+      this.value = ''; // Clear invalid file
+    }
+  });
+</script>
+
+<!-- preview Modal -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const previewBtn = document.getElementById('previewBtn');
+    const previewTableBody = document.getElementById('previewTableBody');
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+
+    function renderFileButton(file) {
+    if (!file) return '—';
+
+    const fileURL = URL.createObjectURL(file);
+
+    return `
+        <a href="${fileURL}" 
+           target="_blank" 
+           class="btn btn-sm btn-primary">
+           Preview
+        </a>
+    `;
+}
+
+
+    // function validateGST(gstValue, fieldName = 'GST') {
+    //     if (gstValue && gstValue.length !== 15) {
+    //         alert(`${fieldName} number must be exactly 15 characters.`);
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
+
+
+    function validateGST(gstValue, fieldName = 'GST') {
+
+        const gstPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/;
+
+        if (!gstValue || gstValue.trim() === "") {
+            alert(`${fieldName} number is required.`);
+            return false;
+        }
+
+        gstValue = gstValue.trim().toUpperCase();
+
+        if (!gstPattern.test(gstValue)) {
+            alert(`${fieldName} number is invalid format.`);
+            return false;
+        }
+
+        return true;
+    }
+
+
+    function validateCollectionName(nameValue, fieldName = 'Name') {
+        const nameRegex = /^[A-Za-z\s]+$/;
+        if (nameValue && !nameRegex.test(nameValue)) {
+            alert(`${fieldName} should contain only alphabets. No numbers or special characters allowed.`);
+            return false;
+        }
+        return true;
+    }
+
+    function validateFileSize(fileInput, maxSizeMB = 2, fieldName = 'File') {
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const maxSize = maxSizeMB * 1024 * 1024;
+            
+            if (file.size > maxSize) {
+                alert(`${fieldName} size must not exceed ${maxSizeMB} MB.`);
+                fileInput.value = '';
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function validateRequiredField(value, fieldName, element = null) {
+        if (!value || value.trim() === '') {
+            alert(`${fieldName} is required.`);
+            if (element) element.focus();
+            return false;
+        }
+        return true;
+    }
+
+    previewBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // ---------- BASIC VALIDATION ----------
+        const fy = document.getElementById('financial_year').value;
+        const date = document.getElementById('procurement_date').value;
+        const sourceChecked = document.getElementById('source').checked;
+        const scrapChecked = document.getElementById('automobileSteelScrap').checked;
+        
+        // Check if any procurement type is selected
+        if (!sourceChecked && !scrapChecked) {
+            alert('Please select at least one procurement type (ELV or Automobile Steel Scrap).');
+            return false;
+        }
+        
+        // Validate required fields
+        if (!validateRequiredField(fy, 'Financial Year', document.getElementById('financial_year'))) return false;
+        if (!validateRequiredField(date, 'Date of Procurement', document.getElementById('procurement_date'))) return false;
+        
+        // ---------- SPECIFIC SECTION VALIDATION ----------
+        let validationPassed = true;
+        
+        if (scrapChecked) {
+            // Automobile Steel Scrap validation
+            const entityName = document.querySelector('input[name="scrap_entity_name"]');
+            const gstField = document.querySelector('input[name="scrap_gst"]');
+            const addressField = document.querySelector('input[name="scrap_address"]');
+            const emailField = document.querySelector('input[name="scrap_email"]');
+            const quantityField = document.getElementById('scrapQuantity');
+            const invoiceNum = document.getElementById('invoiceNumber');
+            const invoiceFile = document.querySelector('#automobileScrapSection input[type="file"]');
+            
+            if (!validateRequiredField(entityName?.value, 'Entity Name', entityName)) validationPassed = false;
+            if (!validateRequiredField(gstField?.value, 'GST Number', gstField)) validationPassed = false;
+            if (!validateRequiredField(addressField?.value, 'Address', addressField)) validationPassed = false;
+            if (!validateRequiredField(emailField?.value, 'Email ID', emailField)) validationPassed = false;
+            if (!validateRequiredField(quantityField?.value, 'Quantity', quantityField)) validationPassed = false;
+            if (!validateRequiredField(invoiceNum?.value, 'Invoice Number', invoiceNum)) validationPassed = false;
+            
+            if (gstField && !validateGST(gstField.value, 'GST')) validationPassed = false;
+            if (entityName && !validateCollectionName(entityName.value, 'Entity Name')) validationPassed = false;
+            if (invoiceFile && !validateFileSize(invoiceFile, 2, 'Invoice File')) validationPassed = false;
+            
+            // Email validation
+            if (emailField && emailField.value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailField.value)) {
+                    alert('Please enter a valid email address.');
+                    emailField.focus();
+                    validationPassed = false;
+                }
+            }
+        }
+        
+        if (sourceChecked) {
+            // ELV Source validation
+            const collectionType = document.getElementById('collectionTypeInput').value;
+            
+            if (!collectionType) {
+                alert('Please select Source of ELV.');
+                return false;
+            }
+            
+            // Validate based on collection type
+            if (collectionType === 'collection-centres' || collectionType === 'insurance-companies') {
+                const nameField = document.querySelector('#extraFields1 input[name="source_name"]');
+                const gstField = document.querySelector('#extraFields1 input[name="source_gst"]');
+                const addressField = document.querySelector('#extraFields1 input[name="source_address"]');
+                const emailField = document.querySelector('#extraFields1 input[type="email"]');
+                
+                if (!validateRequiredField(nameField?.value, 'Name of Collection', nameField)) validationPassed = false;
+                if (!validateRequiredField(gstField?.value, 'GST Number', gstField)) validationPassed = false;
+                if (!validateRequiredField(addressField?.value, 'Address', addressField)) validationPassed = false;
+                
+                if (gstField && !validateGST(gstField.value, 'GST')) validationPassed = false;
+                if (nameField && !validateCollectionName(nameField.value, 'Collection Name')) validationPassed = false;
+                
+                if (emailField && emailField.value) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailField.value)) {
+                        alert('Please enter a valid email address.');
+                        emailField.focus();
+                        validationPassed = false;
+                    }
+                }
+            }
+            else if (collectionType === 'owner-elvs') {
+                const nameField = document.querySelector('#extraFields2 input[name="source_name"]');
+                const addressField = document.querySelector('#extraFields2 input[name="source_address"]');
+                const emailField = document.querySelector('#extraFields2 input[type="email"]');
+                
+                if (!validateRequiredField(nameField?.value, 'Owner Name', nameField)) validationPassed = false;
+                if (!validateRequiredField(addressField?.value, 'Address', addressField)) validationPassed = false;
+                
+                if (nameField && !validateCollectionName(nameField.value, 'Owner Name')) validationPassed = false;
+                
+                if (emailField && emailField.value) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailField.value)) {
+                        alert('Please enter a valid email address.');
+                        emailField.focus();
+                        validationPassed = false;
+                    }
+                }
+            }
+            else if (collectionType === 'bulk-consumer' || collectionType === 'producers') {
+                const regStatus = document.getElementById('registrationStatus').value;
+                
+                if (!regStatus) {
+                    alert('Please select Registered/Unregistered status.');
+                    return false;
+                }
+                
+                if (regStatus === 'registered') {
+                    // For registered, it's a select dropdown
+                    const entityField = document.querySelector('#registeredFields select[name="source_name"]');
+                    const gstField = document.querySelector('#registeredFields input[name="source_gst"]');
+                    const addressField = document.querySelector('#registeredFields input[name="source_address"]');
+                    const emailField = document.querySelector('#registeredFields input[type="email"]');
+                    
+                    if (!validateRequiredField(entityField?.value, 'Registered Entity', entityField)) validationPassed = false;
+                    if (!validateRequiredField(gstField?.value, 'GST Number', gstField)) validationPassed = false;
+                    if (!validateRequiredField(addressField?.value, 'Address', addressField)) validationPassed = false;
+                    
+                    if (gstField && !validateGST(gstField.value, 'GST')) validationPassed = false;
+                    
+                    if (emailField && emailField.value) {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(emailField.value)) {
+                            alert('Please enter a valid email address.');
+                            emailField.focus();
+                            validationPassed = false;
+                        }
+                    }
+                }
+                else if (regStatus === 'unregistered') {
+                    // For unregistered, it's an input field
+                    const nameField = document.querySelector('#unregisteredFields input[name="source_name"]');
+                    const gstField = document.querySelector('#unregisteredFields input[name="source_gst"]');
+                    const addressField = document.querySelector('#unregisteredFields input[name="source_address"]');
+                    const emailField = document.querySelector('#unregisteredFields input[type="email"]');
+                    
+                    if (!validateRequiredField(nameField?.value, 'Supplier Name', nameField)) validationPassed = false;
+                    if (!validateRequiredField(gstField?.value, 'GST Number', gstField)) validationPassed = false;
+                    if (!validateRequiredField(addressField?.value, 'Address', addressField)) validationPassed = false;
+                    
+                    if (gstField && !validateGST(gstField.value, 'GST')) validationPassed = false;
+                    if (nameField && !validateCollectionName(nameField.value, 'Supplier Name')) validationPassed = false;
+                    
+                    if (emailField && emailField.value) {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(emailField.value)) {
+                            alert('Please enter a valid email address.');
+                            emailField.focus();
+                            validationPassed = false;
+                        }
+                    }
+                }
+            }
+            
+            // Validate vehicle sections
+            const vehicleSections = document.querySelectorAll('.vehicle-section');
+            if (vehicleSections.length === 0) {
+                alert('Please add at least one vehicle/ELV section.');
+                validationPassed = false;
+            } else {
+                vehicleSections.forEach((section, index) => {
+                    const vehicleType = section.querySelector('select[name="vehicleType[]"]');
+                    const fuelType = section.querySelector('select[name="fuelType[]"]');
+                    const elvCount = section.querySelector('input[name="elvCount[]"]');
+                    const invoiceNum = section.querySelector('input[name="invoiceNumber[]"]');
+                    const certFile = section.querySelector('input[type="file"][name^="certificateUpload"]');
+                    const invoiceFile = section.querySelector('input[type="file"][name^="invoiceFile"]');
+                    
+                    if (!validateRequiredField(vehicleType?.value, `Vehicle Type (Section ${index + 1})`, vehicleType)) validationPassed = false;
+                    if (!validateRequiredField(fuelType?.value, `Fuel Type (Section ${index + 1})`, fuelType)) validationPassed = false;
+                    if (!validateRequiredField(elvCount?.value, `ELV Count (Section ${index + 1})`, elvCount)) validationPassed = false;
+                    if (!validateRequiredField(invoiceNum?.value, `Invoice Number (Section ${index + 1})`, invoiceNum)) validationPassed = false;
+                    
+                    if (certFile && !validateFileSize(certFile, 2, `Certificate File (Section ${index + 1})`)) validationPassed = false;
+                    if (invoiceFile && !validateFileSize(invoiceFile, 2, `Invoice File (Section ${index + 1})`)) validationPassed = false;
+                });
+            }
+        }
+        
+        if (!validationPassed) {
+            return false;
+        }
+        
+        // ---------- PREVIEW LOGIC ----------
+        previewTableBody.innerHTML = '';
+        
+        /* =========================
+           AUTOMOBILE STEEL SCRAP
+        ========================== */
+        if (scrapChecked) {
+            const qty = document.getElementById('scrapQuantity').value || '—';
+            const invoiceInput = document.querySelector('#automobileScrapSection #invoiceFile');
+            const invoiceFile = invoiceInput?.files[0] || null;
+            const invoiceNum = document.getElementById('invoiceNumber').value || '—';
+            const entity = document.querySelector('input[name="scrap_entity_name"]').value || '—';
+            const gst = document.querySelector('input[name="scrap_gst"]').value || '—';
+            const address = document.querySelector('input[name="scrap_address"]').value || '—';
+            const email = document.querySelector('input[name="scrap_email"]').value || '—';
+
+            previewTableBody.innerHTML = `
+                <tr><th>Financial Year</th><td>${fy}</td></tr>
+                <tr><th>Date of Procurement</th><td>${date}</td></tr>
+                <tr><th>Procurement Type</th><td>Automobile Steel Scrap</td></tr>
+                <tr><th>Name of Entity</th><td>${entity}</td></tr>
+                <tr><th>GST Number</th><td>${gst}</td></tr>
+                <tr><th>Address</th><td>${address}</td></tr>
+                <tr><th>Email</th><td>${email}</td></tr>
+                <tr><th>Quantity</th><td>${qty}</td></tr>
+                <tr><th>Invoice Number</th><td>${invoiceNum}</td></tr>
+                <tr><th>Invoice File</th><td>${renderFileButton(invoiceFile)}</td></tr>
+            `;
+        }
+
+        /* =========================
+           SOURCE OF ELVs
+        ========================== */
+        if (sourceChecked) {
+            const centreType = document.getElementById('collectionCentreDropdown').innerText.trim();
+
+            previewTableBody.innerHTML = `
+                <tr><th>Financial Year</th><td>${fy}</td></tr>
+                <tr><th>Date of Procurement</th><td>${date}</td></tr>
+                <tr><th>Procurement Type</th><td>Source of ELV</td></tr>
+                <tr><th>Collection Centre Type</th><td>${centreType}</td></tr>
+            `;
+            
+            const extra1Visible = document.getElementById('extraFields1').style.display === 'block';
+            const extra2Visible = document.getElementById('extraFields2').style.display === 'block';
+            const extra3Visible = document.getElementById('extraFields3').style.display === 'block';
+            
+            let extraHTML = '';
+            if (extra1Visible) {
+                const name = document.querySelector('#extraFields1 input[name="source_name"]').value || '—';
+                const gst = document.querySelector('#extraFields1 input[name="source_gst"]').value || '—';
+                const addr = document.querySelector('#extraFields1 input[name="source_address"]').value || '—';
+                const email = document.querySelector('#extraFields1 input[type="email"]').value || '—';
+                extraHTML = `
+                    <tr><th>Name of Collection</th><td>${name}</td></tr>
+                    <tr><th>GST Certificate No.</th><td>${gst}</td></tr>
+                    <tr><th>Address</th><td>${addr}</td></tr>
+                    <tr><th>Email ID</th><td>${email}</td></tr>
+                `;
+            } else if (extra2Visible) {
+                const owner = document.querySelector('#extraFields2 input[name="source_name"]').value || '—';
+                const addr = document.querySelector('#extraFields2 input[name="source_address"]').value || '—';
+                const email = document.querySelector('#extraFields2 input[type="email"]').value || '—';
+                extraHTML = `
+                    <tr><th>Name of Registered Owner</th><td>${owner}</td></tr>
+                    <tr><th>Address</th><td>${addr}</td></tr>
+                    <tr><th>Email ID</th><td>${email}</td></tr>
+                `;
+            } else if (extra3Visible) {
+                const regStatus = document.getElementById('registrationStatus').value || '—';
+                let supplierData = '';
+                if (regStatus === 'registered') {
+                    // Handle select element for registered entities
+                    const entitySelect = document.querySelector('#registeredFields select[name="source_name"]');
+                    const selectedOption = entitySelect?.selectedOptions[0];
+                    const entity = selectedOption ? selectedOption.textContent.split('(')[0].trim() : '—';
+                    
+                    const gst = document.querySelector('#registeredFields input[name="source_gst"]').value || '—';
+                    const addr = document.querySelector('#registeredFields input[name="source_address"]').value || '—';
+                    const email = document.querySelector('#registeredFields input[type="email"]').value || '—';
+                    
+                    supplierData = `
+                        <tr><th>Select Registered Entity</th><td>${entity}</td></tr>
+                        <tr><th>GST Number</th><td>${gst}</td></tr>
+                        <tr><th>Address</th><td>${addr}</td></tr>
+                        <tr><th>Email ID</th><td>${email}</td></tr>
+                    `;
+                } else if (regStatus === 'unregistered') {
+                    const name = document.querySelector('#unregisteredFields input[name="source_name"]').value || '—';
+                    const gst = document.querySelector('#unregisteredFields input[name="source_gst"]').value || '—';
+                    const addr = document.querySelector('#unregisteredFields input[name="source_address"]').value || '—';
+                    const email = document.querySelector('#unregisteredFields input[type="email"]').value || '—';
+                    supplierData = `
+                        <tr><th>Name of Supplier</th><td>${name}</td></tr>
+                        <tr><th>GST Certificate No.</th><td>${gst}</td></tr>
+                        <tr><th>Address</th><td>${addr}</td></tr>
+                        <tr><th>Email ID</th><td>${email}</td></tr>
+                    `;
+                }
+                extraHTML = `<tr><th>Registered / Unregistered</th><td>${regStatus}</td></tr>${supplierData}`;
+            }
+           
+            previewTableBody.innerHTML += extraHTML;
+            
+            /* VEHICLE ROWS */
+            document.querySelectorAll('.vehicle-section').forEach((section, index) => {
+                const vehicleType = section.querySelector('select[name="vehicleType[]"]').value || '—';
+                const fuelType = section.querySelector('select[name="fuelType[]"]').value || '—';
+                const count = section.querySelector('input[name="elvCount[]"]').value || '—';
+
+                const certInput = section.querySelector('input[type="file"][name^="certificateUpload"]');
+                const certFile = certInput?.files[0] || null;
+
+                const invoiceNum = section.querySelector('input[name="invoiceNumber[]"]').value || '—';
+                const invoiceInput = section.querySelector('input[type="file"][name^="invoiceFile"]');
+                const invoiceFile = invoiceInput?.files[0] || null;
+
+                previewTableBody.innerHTML += `
+                    <tr class="table-secondary">
+                        <th colspan="2">Vehicle / ELV #${index + 1}</th>
+                    </tr>
+                    <tr><th>Vehicle Type</th><td>${vehicleType}</td></tr>
+                    <tr><th>Fuel Type</th><td>${fuelType}</td></tr>
+                    <tr><th>No. of ELV</th><td>${count}</td></tr>
+                    <tr><th>Certificate of Deposit</th><td>${renderFileButton(certFile)}</td></tr>
+                    <tr><th>Invoice Number</th><td>${invoiceNum}</td></tr>
+                    <tr><th>Invoice File</th><td>${renderFileButton(invoiceFile)}</td></tr>
+                `;
+            });
+        }
+        
+        // Show modal if validation passed
+        previewModal.show();
+    });
+});
+</script>
+
+
+<!-- Auto opens when old data fills -->
+<script>
+/* ===========================
+   UTILITY: CLEAR SECTION DATA
+=========================== */
+function clearSectionInputs(section) {
+    if (!section) return;
+
+    section.querySelectorAll("input, select, textarea").forEach(el => {
+        if (el.type === "checkbox" || el.type === "radio") {
+            el.checked = false;
+        } else {
+            el.value = "";
+        }
+    });
+}
+
+/* ===========================
+   PAGE LOAD (AUTO OPEN)
+   ⚠️ NO CLEARING HERE
+=========================== */
+document.addEventListener("DOMContentLoaded", function () {
+
+    const procurementType = "{{ old.procurement_type|default:'' }}";
+    const collectionType  = "{{ old.collection_type|default:'' }}";
+
+    const vehicleSection = document.getElementById("vehicleSection");
+    const scrapSection   = document.getElementById("automobileScrapSection");
+
+    const extraFields1 = document.getElementById("extraFields1"); // collection centres
+    const extraFields2 = document.getElementById("extraFields2"); // owner elvs
+    const extraFields3 = document.getElementById("extraFields3"); // bulk / producer
+
+    // ---------- RESET VISIBILITY ----------
+    [extraFields1, extraFields2, extraFields3].forEach(el => {
+        if (el) el.style.display = "none";
+    });
+
+    // ---------- PROCUREMENT TYPE ----------
+    if (procurementType === "ELV" && vehicleSection) {
+        vehicleSection.style.display = "block";
+    }
+
+    if (procurementType === "AUTOMOBILE" && scrapSection) {
+        scrapSection.style.display = "block";
+    }
+
+    // ---------- COLLECTION CENTRE ----------
+    if (collectionType) {
+
+        // Hidden input
+        document.getElementById("collectionTypeInput").value = collectionType;
+
+        // Dropdown label
+        document.getElementById("collectionCentreDropdown").innerText =
+            collectionType.replace(/-/g, " ").toUpperCase();
+
+        // Show ONLY correct section
+        if (collectionType === "collection-centres" || collectionType === "insurance-companies") {
+            extraFields1.style.display = "block";
+        }
+
+        if (collectionType === "owner-elvs") {
+            extraFields2.style.display = "block";
+        }
+
+        if (collectionType === "bulk-consumer" || collectionType === "producers") {
+            extraFields3.style.display = "block";
+        }
+    }
+});
+
+/* ===========================
+   DROPDOWN CHANGE HANDLER
+   ✅ CLEAR + SWITCH
+=========================== */
+document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const value = this.dataset.value;
+
+        const extraFields1 = document.getElementById('extraFields1');
+        const extraFields2 = document.getElementById('extraFields2');
+        const extraFields3 = document.getElementById('extraFields3');
+
+        // ---------- CLEAR & HIDE ALL ----------
+        [extraFields1, extraFields2, extraFields3].forEach(section => {
+            clearSectionInputs(section);
+            section.style.display = "none";
+        });
+
+        // ---------- SET DROPDOWN ----------
+        document.getElementById('collectionTypeInput').value = value;
+        document.getElementById('collectionCentreDropdown').innerText =
+            this.innerText;
+
+        // ---------- SHOW SELECTED ----------
+        if (value === "collection-centres" || value === "insurance-companies") {
+            extraFields1.style.display = "block";
+        }
+
+        if (value === "owner-elvs") {
+            extraFields2.style.display = "block";
+        }
+
+        if (value === "bulk-consumer" || value === "producers") {
+            extraFields3.style.display = "block";
+        }
+    });
+});
+</script>
+
+
+<!-- file size validations -->
+<script>
+  const invoiceFile = document.getElementById('invoiceFile');
+
+  invoiceFile.addEventListener('change', function() {
+    const file = this.files[0];
+
+    if (file) {
+      // Check file size (in bytes)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('❌ File size exceeds 2 MB. Please select a smaller file.');
+        this.value = ''; // clear the input
+        return;
+      }
+
+      // Optional: show success message
+      alert(`✅ File selected: ${file.name}`);
+    }
+  });
+</script>
+
+<!-- Calendar based on FY -->
+<!-- <script>
+document.getElementById('fy').addEventListener('change', function () {
+    const fy = this.value;
+    const dateInput = document.getElementById('procurement_date');
+
+    if (!fy) {
+        // Freeze date again if FY is cleared
+        dateInput.value = '';
+        dateInput.disabled = true;
+        dateInput.removeAttribute('min');
+        dateInput.removeAttribute('max');
+        return;
+    }
+
+    // Enable date field
+    dateInput.disabled = false;
+
+    // FY format: 2023-24
+    const years = fy.split('-');
+    const startYear = years[0];
+    const endYear = years[1];
+
+    // Set FY date range
+    dateInput.min = `${startYear}-04-01`;
+    dateInput.max = `${endYear}-03-31`;
+
+    dateInput.value = '';
+});
+</script> -->
+
+<script>
+document.getElementById('financial_year').addEventListener('change', function () {
+    const fy = this.value;
+    const dateInput = document.getElementById('procurement_date');
+
+    if (!fy) {
+        dateInput.value = '';
+        dateInput.disabled = true;
+        dateInput.removeAttribute('min');
+        dateInput.removeAttribute('max');
+        return;
+    }
+
+    dateInput.disabled = false;
+
+    // FY format: 2023-24
+    const years = fy.split('-');
+    const startYear = years[0];
+    const endYear =  years[1];
+
+    // FY date range
+    const fyStart = new Date(`${startYear}-04-01`);
+    const fyEnd = new Date(`${endYear}-03-31`);
+
+    // Today's date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Use whichever is earlier: FY end OR today
+    const maxDate = today < fyEnd ? today : fyEnd;
+
+    // Set min & max
+    dateInput.min = fyStart.toISOString().split('T')[0];
+    dateInput.max = maxDate.toISOString().split('T')[0];
+
+    dateInput.value = '';
+});
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                alert.classList.remove('show'); // start fade out
+                alert.classList.add('fade');
+
+                // remove element after animation
+                setTimeout(() => {
+                    alert.remove();
+                }, 500); // Bootstrap fade duration
+            });
+        }, 4000); // 4 seconds visible
+    });
+</script>
+
+<!-- History Table -->
+<!-- <script>
+    $(document).ready(function () {
+
+        const table = $('#historyTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [5, 10, 25, 50, 100],
+            // order: [[1, 'desc']], // Date of Entry DESC
+            columnDefs: [
+                { orderable: false }, // S.No not sortable
+            ],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search history…",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            }
+        });
+
+        // Column-wise filters
+        $('#historyTable tfoot th').each(function (i) {
+            if (i === 0) return;
+            $(this).html('<input type="text" class="form-control form-control-sm" placeholder="Filter" />');
+        });
+
+        table.columns().every(function () {
+            const that = this;
+            $('input', this.footer()).on('keyup change clear', function () {
+                if (that.search() !== this.value) {
+                    that.search(this.value).draw();
+                }
+            });
+        });
+
+    });
+</script> -->
+
+<script>
+$(document).ready(function () {
+    $('#historyTable').DataTable({
+        responsive: true,
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        scrollY: "300px",
+        scrollCollapse: true,
+        scrollX: true,
+        order: [],
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        // order: [[1, 'desc']], // Date of Entry DESC
+        columnDefs: [
+            { orderable: false }, // S.No not sortable
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search history…",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+        }
+    });
+});
+</script>
+
+<!-- ✅ Bootstrap Validation Styles -->
+<style>
+  .is-valid {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+  }
+  .is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+  }
+</style>
+
+<style>
+  /* Smooth show/hide transition (optional) */
+  #extraFields1, #extraFields2, #extraFields3 {
+    transition: all 0.3s ease-in-out;
+  }
+</style>
+
+<style>
+    /* Increase width of DataTables entries dropdown */
+    .dataTables_length select {
+        width: 100px !important;   /* adjust as needed */
+        padding: 6px 10px;
+    }
+</style>
+
+{% endblock %}

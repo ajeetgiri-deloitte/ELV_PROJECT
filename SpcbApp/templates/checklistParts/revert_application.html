@@ -1,0 +1,91 @@
+<form id="markFormInternal" method="POST" action="{% url 'mark_application' %}">
+    {% csrf_token %}
+    <input type="hidden" name="userid" id="useridField">
+    <input type="hidden" name="appno" id="fetchappno">
+
+    <p><strong>Application No:</strong> <span id="appNoText"></span></p>
+
+    <div class="mb-3" id="appstatusDiv">
+        <label class="form-label">Application Status:</label>
+        <input type="hidden" name="appstatus1" id="appstatusField1">
+        <select class="form-select" id="statusDropdown" name="appstatus" required>
+            <option value="" selected disabled>Please Select</option>
+            {% for fetchappstage in fetchappstage %}
+                <option value="{{ fetchappstage.AppStatus }}">{{ fetchappstage.Description }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+
+    <div class="mb-3">
+        <label class="form-label">Select Authority:</label>
+        <select class="form-select" name="marked_to_role" required>
+            <option value="">-- Choose --</option>
+            {% for key, label in Roles.items %}
+                <option value="{{ key }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3" id="appstatusDiv">
+        <label class="form-label">User Select</label>
+        <input type="hidden" name="appstatus1" id="appstatusField1">
+        <select class="form-select" id="statusDropdown" name="appstatus" required>
+            <option value="" selected disabled>Please Select</option>
+            {% for fetchappstage in fetchappstage %}
+                <option value="{{ fetchappstage.AppStatus }}">{{ fetchappstage.Description }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <textarea class="form-control" name="comment" placeholder="Add remarks" required></textarea>
+    </div>
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-success">Mark Internally</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    </div>
+</form>
+
+
+
+
+
+<form method="POST" action="{% url 'MarkIncomplete' %}" id="revertForm" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="industryid" value="{{ IndustryId }}">
+    <input type="hidden" name="appno" value="{{ AppNo }}">
+    <div class="mb-3">
+      <label for="finalRemark" class="form-label">Final Remark <span class="text-danger">*</span></label>
+      <textarea class="form-control" id="finalRemark" name="final_remark" rows="4" required
+        placeholder="Enter your final remark explaining the revert"></textarea>
+      <div class="invalid-feedback">
+        Please provide a remark before submitting.
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Mark as Incomplete</button>
+</form>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('revertForm');
+    const textarea = document.getElementById('finalRemark');
+    form.addEventListener('submit', function (e) {
+        // Trim textarea, check if empty
+        if (!textarea.value.trim()) {
+            textarea.classList.add('is-invalid');
+            e.preventDefault();
+        } else {
+            textarea.classList.remove('is-invalid');
+        }
+    });
+
+    textarea.addEventListener('input', function () {
+        if (textarea.value.trim()) {
+            textarea.classList.remove('is-invalid');
+        }
+    });
+});
+</script>
