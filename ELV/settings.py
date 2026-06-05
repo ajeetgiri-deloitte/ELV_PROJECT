@@ -39,7 +39,7 @@ if not SECRET_KEY:
 
 CRYPTOGRAPHY_ENCRYPTION_KEY = b"HsCih6RKKPZlY55SECelx0lv3ahuPi3lERT_WI9ErqE="
 
-DEBUG = False  # default, override for dev
+DEBUG = True  # default, override for dev
 ALLOWED_HOSTS = ['*']  # update for production
 TRUSTED_PROXIES = ['*']
 

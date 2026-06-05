@@ -4914,6 +4914,64 @@ function openTab(tabId) {
 
     const vehicleData = JSON.parse('{{ vehicle_data_json|escapejs }}');
     const fyData = JSON.parse('{{ fy_data|escapejs }}');
+
+    const vehicleFormSnapshots = new WeakMap();
+
+    function getVehicleFormSnapshot(form) {
+        return Array.from(form.querySelectorAll('input, select, textarea'))
+            .filter(field => !['button', 'submit', 'reset'].includes(field.type))
+            .map(field => {
+                if (field.type === 'file') {
+                    const fileNames = Array.from(field.files || []).map(file => file.name).join('|');
+                    return `${field.name}:${fileNames}`;
+                }
+
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    return `${field.name}:${field.checked}`;
+                }
+
+                return `${field.name}:${field.value}`;
+            })
+            .join('||');
+    }
+
+    function isVehicleFormDirty(form) {
+        if (!form) {
+            return false;
+        }
+
+        return vehicleFormSnapshots.get(form) !== getVehicleFormSnapshot(form);
+    }
+
+    function syncVehicleSaveButton(form) {
+        if (!form) {
+            return;
+        }
+
+        const saveButton = form.querySelector('.save-btn');
+        if (saveButton) {
+            saveButton.disabled = !isVehicleFormDirty(form);
+        }
+    }
+
+    function registerVehicleForms(scope = document) {
+        scope.querySelectorAll('form[id^="vehicle-sales-form-"]').forEach(form => {
+            if (!vehicleFormSnapshots.has(form)) {
+                vehicleFormSnapshots.set(form, getVehicleFormSnapshot(form));
+            }
+
+            syncVehicleSaveButton(form);
+        });
+    }
+
+    function resetVehicleFormState(form) {
+        if (!form) {
+            return;
+        }
+
+        vehicleFormSnapshots.set(form, getVehicleFormSnapshot(form));
+        syncVehicleSaveButton(form);
+    }
     
     function toFinancialYearStringShort(startYear) {
         const start = parseInt(startYear, 10);
@@ -5070,7 +5128,7 @@ function openTab(tabId) {
                                     Total Tentative EPR Target (MT) for FY 
                                     ${type === 'transport' ? year + 15 : year + 20}-${(type === 'transport' ? (year + 15 + 1) : (year + 20 + 1)).toString().slice(-2)}
                                 </label>
-                                <input type="number" name="total_epr_qty_${type}${year}" id="total_epr_qty${type}_${year}" class="form-control non-int" required placeholder="Enter quantity" value="${(fydata.total_epr_target != null && fydata.total_epr_target !== '') ? Number(fydata.total_epr_target).toFixed(3) : ''}" readonly>
+                                <input type="number" name="total_epr_qty_${type}_${year}" id="total_epr_qty_${type}_${year}" class="form-control non-int" required placeholder="Enter quantity" value="${(fydata.total_epr_target != null && fydata.total_epr_target !== '') ? Number(fydata.total_epr_target).toFixed(3) : ''}" readonly>
                             </div>
                             <div class="col-md-5">
                                 <label class="form-label required" for="ca_cert_${type}_${year}">
@@ -5100,6 +5158,7 @@ function openTab(tabId) {
                 </div>
             `;
             container.appendChild(section);
+            registerVehicleForms(section);
         }
 
         // Enable next year's option
@@ -5239,6 +5298,11 @@ function openTab(tabId) {
                 <label>No. of Vehicles</label>
                 <input type="number" step="1" min="0" pattern="\d*" name="exports_vehicles_${year}_${type}_${vehicleType}" class="form-control integer-only" value="${(data.export_vehicles != null && data.export_vehicles !== '') ? data.export_vehicles : '0'}">
             </div>
+            
+            <div class="mt-4 d-flex justify-content-end">
+            <button type="button" class="btn btn-success save-btn" name="save_btn_${year}_${type}_${vehicleType}"  data-year="${year}" data-type="${type}" data-vehicle-type="${vehicleType}" disabled>Save ${vehicleType} Data</button>
+
+            </div>
 
             <!-- EPR Info -->
             <div class="my-4" style="background-color: #e0f7fc; padding: 8px 12px; border-left: 4px solid #0dcaf0; border-radius: 4px;">
@@ -5264,10 +5328,7 @@ function openTab(tabId) {
                 <input type="number" step="0.0001" name="epr_target_${year}_${type}_${vehicleType}" class="form-control tentative-epr-output non-int decimal-restrict" readonly data-year="${year}" data-type="${type}" data-vehicletype="${vehicleType}" value="${(data.epr_target != null && data.epr_target !== '') ? parseFloat(data.epr_target).toFixed(3) : '0'}">
             </div>
         </div>
-        <div class="mt-4 d-flex justify-content-end">
-            <button type="button" class="btn btn-warning save-btn" data-year="${year}" data-type="${type}" data-vehicle-type="${vehicleType}" disabled>Save ${vehicleType} Data</button>
-
-            </div>        
+                
         `;
     }
 
@@ -5392,6 +5453,7 @@ function openTab(tabId) {
         
 
     $(document).ready(function () {
+        registerVehicleForms();
         
         const storedTransport = localStorage.getItem('transportCheck_${CURRENT_USER_ID}') === 'true';
         const storedNonTransport = localStorage.getItem('nonTransportCheck_${CURRENT_USER_ID}') === 'true';
@@ -5439,6 +5501,14 @@ function openTab(tabId) {
         $(document).on("click", ".submit-fy-data", function (event) {
             event.preventDefault();
             
+            const section = event.currentTarget.closest('.section');
+            const hasUnsavedChanges = section && Array.from(section.querySelectorAll('form[id^="vehicle-sales-form-"]')).some(form => isVehicleFormDirty(form));
+
+            if (hasUnsavedChanges) {
+                alert('Click the "Save Vehicle Data" button to proceed further.');
+                return false;
+            }
+
             const form = event.currentTarget.closest("form");
             const idParts = form.id.split("-");
             const type = idParts[1];
@@ -5767,6 +5837,11 @@ function openTab(tabId) {
 
 <script>
     document.addEventListener('input', function(e) {
+    const vehicleForm = e.target.closest('form[id^="vehicle-sales-form-"]');
+    if (vehicleForm) {
+        syncVehicleSaveButton(vehicleForm);
+    }
+
     const target = e.target;
     if (target.matches('input[name^="manufactured_"], input[name^="imported_"], input[name^="procurred_"], input[name^="open_market_vehicles_"],input[name^="open_market_vehicle_weight_"],input[name^="open_market_steel_weight_"],input[name^="brand_market_"],input[name^="producer_vehicles_"],input[name^="producer_vehicle_weight_"],input[name^="producer_steel_weight_"],input[name^="cobranded_vehicles_"],input[name^="cobranded_vehicle_weight_"],input[name^="cobranded_steel_weight_"],input[name^="brand_cobranded_"],input[name^="selfuse_vehicles_"],input[name^="selfuse_vehicle_weight_"],input[name^="selfuse_steel_weight_"],input[name^="exports_vehicles_"]')) {
         const form = target.closest('form');
@@ -5792,16 +5867,15 @@ function openTab(tabId) {
         const selfuse_vehicle_weight = form.querySelector(`input[name="selfuse_vehicle_weight_${year}_${type}_${vehicleType}"]`).value;
         const selfuse_steel_weight = form.querySelector(`input[name="selfuse_steel_weight_${year}_${type}_${vehicleType}"]`).value;
         const exports_vehicles = form.querySelector(`input[name="exports_vehicles_${year}_${type}_${vehicleType}"]`).value;
-        
-        const saveButton = form.querySelector('.save-btn');
-        
-        if (manufactured || imported || procurred || open_market_vehicles || open_market_vehicle_weight || open_market_steel_weight || brand_market || producer_vehicles || producer_vehicle_weight || producer_steel_weight || cobranded_vehicles || cobranded_vehicle_weight || cobranded_steel_weight || brand_cobranded || selfuse_vehicles || selfuse_vehicle_weight || selfuse_steel_weight || exports_vehicles
-            
-        ) {
-            saveButton.disabled = false;
-        } else {
-            saveButton.disabled = true;
-        }
+
+        syncVehicleSaveButton(form);
+    }
+});
+
+document.addEventListener('change', function(e) {
+    const vehicleForm = e.target.closest('form[id^="vehicle-sales-form-"]');
+    if (vehicleForm) {
+        syncVehicleSaveButton(vehicleForm);
     }
 });
 
@@ -5815,6 +5889,7 @@ function openTab(tabId) {
             const year = $(this).data('year');
             const type = $(this).data('type');  // category in Python
             const vehicleType = $(this).data('vehicle-type');
+            const vehicleForm = $(this).closest('form')[0];
 
             // Get the form context (parent row)
         const parentRow = $(this).closest('.row');
@@ -5912,6 +5987,28 @@ function openTab(tabId) {
                 processData: false,
                 contentType: false,
                 success: function(response) {
+ const eprInput = document.querySelector(`input[name="epr_qty_${year}_${type}_${vehicleType}"]`);
+         if (eprInput) eprInput.value = response.data.epr_qty;
+
+          const eprTargetOutput = document.querySelector(`input[name="epr_target_${year}_${type}_${vehicleType}"]`);
+         if (eprTargetOutput) eprTargetOutput.value = response.data.epr_target;
+
+
+          const totalEprQtyInput = document.querySelector(`input[name="total_epr_qty_${type}_${year}"]`);
+          // document.querySelector(`#total_epr_qty${type}_${year}`);
+        if (totalEprQtyInput) totalEprQtyInput.value = response.data.total_epr_qty;
+
+
+                const saveButton = document.querySelector(`[name="save_btn_${year}_${type}_${vehicleType}"]`);
+            if(saveButton) {
+                // saveButton.style.backgroundColor = '#28a745';
+                // saveButton.style.borderColor = '#28a745';
+                // saveButton.style.color = 'white';
+                saveButton.disabled = true;
+            }
+
+                    resetVehicleFormState(vehicleForm);
+
                     alert('Data saved successfully!');
                 },
                 error: function(xhr, status, error) {
@@ -6117,7 +6214,7 @@ document.addEventListener('input', function(e) {
 
         // Update EPR quantity
         const eprInput = document.querySelector(`input[name="epr_qty_${year}_${type}_${vehicleType}"]`);
-        if (eprInput) eprInput.value = totalSteelWeight.toFixed(2);
+      //  if (eprInput) eprInput.value = totalSteelWeight.toFixed(2);
 
         // Calculate EPR target percentage
         let percentage = 0;
@@ -6133,7 +6230,7 @@ document.addEventListener('input', function(e) {
 
         const tentativeEpr = (totalSteelWeight * (percentage / 100)).toFixed(2);
         const eprTargetOutput = document.querySelector(`input[name="epr_target_${year}_${type}_${vehicleType}"]`);
-        if (eprTargetOutput) eprTargetOutput.value = tentativeEpr;
+     //   if (eprTargetOutput) eprTargetOutput.value = tentativeEpr;
 
         // Update total EPR for year/type
         let totalEpr = 0;
@@ -6141,7 +6238,7 @@ document.addEventListener('input', function(e) {
             .forEach(input => totalEpr += parseFloat(input.value) || 0);
 
         const totalEprQtyInput = document.querySelector(`#total_epr_qty_${type}_${year}`);
-        if (totalEprQtyInput) totalEprQtyInput.value = totalEpr.toFixed(2);
+      //  if (totalEprQtyInput) totalEprQtyInput.value = totalEpr.toFixed(2);
     }
 
     // ============================

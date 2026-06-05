@@ -1371,6 +1371,46 @@ def check_redis_connection():
         return False
 
 
+def _login_otp_session_key(username):
+    return f"login_otp_{username}"
+
+
+def _store_login_otp(request, username, otp, timeout=120):
+    cache_ok = False
+
+    try:
+        cache.set(f"otp_{username}", otp, timeout=timeout)
+        cache_ok = True
+    except Exception:
+        cache_ok = False
+
+    request.session[_login_otp_session_key(username)] = otp
+    request.session[_login_otp_session_key(f"{username}_ts")] = int(time.time())
+
+    return cache_ok
+
+
+def _get_login_otp(request, username):
+    try:
+        stored_otp = cache.get(f"otp_{username}")
+        if stored_otp:
+            return stored_otp
+    except Exception:
+        pass
+
+    return request.session.get(_login_otp_session_key(username))
+
+
+def _clear_login_otp(request, username):
+    try:
+        cache.delete(f"otp_{username}")
+    except Exception:
+        pass
+
+    request.session.pop(_login_otp_session_key(username), None)
+    request.session.pop(_login_otp_session_key(f"{username}_ts"), None)
+
+
 
 def refresh_captcha(request):
     # Create a new form instance to regenerate the captcha
@@ -2190,18 +2230,14 @@ def otpviewpage1(request):
             messages.error(request, "Invalid username or password.")
             return redirect('home')
 
-        # OTP logic (same as your code)
-        conn = check_redis_connection()
-        if conn == False:
-            return HttpResponse('Please try again — Redis not connected.')
-        
-        stored_otp = cache.get(f"otp_{username}")
+        # OTP logic: prefer Redis cache, fall back to session storage when Redis is unavailable.
+        stored_otp = _get_login_otp(request, username)
         if stored_otp:
             messages.error(request, 'OTP already sent, please wait.')
             return redirect('home')
         
         otp = str(random.randint(100000, 999999))
-        cache.set(f"otp_{username}", otp, timeout=120)
+        _store_login_otp(request, username, otp, timeout=120)
 
         # sendtitanemail(user.company_name, username, user.company_email, otp)
         sendOtpEmail(user.company_name, username, user.company_email, otp)
@@ -2245,7 +2281,7 @@ def verify_otp1(request):
             })
 
         # Step 2: Validate OTP
-        stored_otp = cache.get(f"otp_{username}")
+        stored_otp = _get_login_otp(request, username)
         if stored_otp is None:
             messages.error(request, 'OTP expired or not found. Please request a new one.')
             return render(request, 'auth/otpverify.html', {
@@ -2263,7 +2299,7 @@ def verify_otp1(request):
             })
 
         # Step 3: OTP correct → proceed
-        cache.delete(f"otp_{username}")
+        _clear_login_otp(request, username)
         try:
             user = Registration.objects.get(username=username)
         except Registration.DoesNotExist:
@@ -2319,7 +2355,7 @@ def resend_otp1(request):
             return JsonResponse({"status": "error", "message": "User not found."})
 
         # Step 2: Check if OTP already exists in cache (prevent spam)
-        stored_otp = cache.get(f"otp_{username}")
+        stored_otp = _get_login_otp(request, username)
         if stored_otp:
             return JsonResponse({
                 "status": "error",
@@ -2329,7 +2365,7 @@ def resend_otp1(request):
         # Step 3: Generate new OTP and store in cache
         otp = str(random.randint(100000, 999999))
         # otp="123456"
-        cache.set(f"otp_{username}", otp, timeout=120)  # valid for 2 minutes
+        _store_login_otp(request, username, otp, timeout=120)  # valid for 2 minutes
 
         # Step 4: Send OTP via email
         # sendtitanemail(user.company_name, username, user.company_email, otp)
@@ -3238,25 +3274,76 @@ def producer(request):
             vehicle_records = None
             vehicle_data = {}
             
+        # if vehicle_records:
+        #     producer_ids = vehicle_records.values_list('producer_id', flat=True)
+        #     fy_records = ProducerSalesSummary.objects.filter(producer_id__in=producer_ids)
+        #     fy_data = {}
+        #     for record in fy_records:
+        #         year = str(record.financial_year)
+        #         category = record.category  # 'transport' or 'non_transport'
+
+        #         # Safely get the nested dictionary
+        #         category_dict = fy_data.setdefault(year, {}).setdefault(category, {})
+
+        #         # Now update it with values
+        #         category_dict['ca_certificate'] = record.ca_certificate
+        #         category_dict['total_epr_target'] = record.total_epr_target
+
+        # else:
+        #     fy_records = None
+        #     fy_data = {}
+        fy_data = {}
+
         if vehicle_records:
-            producer_ids = vehicle_records.values_list('producer_id', flat=True)
-            fy_records = ProducerSalesSummary.objects.filter(producer_id__in=producer_ids)
-            fy_data = {}
-            for record in fy_records:
-                year = str(record.financial_year)
-                category = record.category  # 'transport' or 'non_transport'
+            producer_ids = list(vehicle_records.values_list('producer_id', flat=True))
 
-                # Safely get the nested dictionary
-                category_dict = fy_data.setdefault(year, {}).setdefault(category, {})
+            if producer_ids:
 
-                # Now update it with values
-                category_dict['ca_certificate'] = record.ca_certificate
-                category_dict['total_epr_target'] = record.total_epr_target
+                fy_records = (
+                    ProducerSalesData.objects
+                    .filter(producer_id__in=producer_ids)
+                    .values('producer_id', 'financial_year', 'category')
+                    .annotate(total_epr_target=Sum('epr_target'))
+                )
 
+                summary_records = (
+                    ProducerSalesSummary.objects
+                    .filter(producer_id__in=producer_ids)
+                )
+
+               
+                summary_lookup = {
+                    (record.producer_id, str(record.financial_year).split('-')[0].strip(), record.category): record
+                    for record in summary_records
+                }
+
+                
+                for record in fy_records:
+                    producer_id = record['producer_id']
+                    financial_year = record['financial_year']
+                    category = record['category']
+
+                    summary = summary_lookup.get((producer_id, financial_year, category))
+
+
+                    if summary and summary.financial_year:
+                        year_key = str(summary.financial_year)
+                    else:
+                        year_key = str(financial_year)
+
+                    if '-' not in year_key and year_key.isdigit() and len(year_key) == 4:
+                        year_key = f"{year_key}-{str(int(year_key) + 1)[-2:]}"
+
+                    category_dict = fy_data.setdefault(year_key, {}).setdefault(category, {})
+                    category_dict['id'] = summary.id if summary else None
+                    category_dict['producer_id'] = producer_id
+                    category_dict['financial_year'] = year_key
+                    category_dict['total_epr_target'] = record['total_epr_target']
+                    category_dict['ca_certificate'] = summary.ca_certificate if summary else None
+            
         else:
             fy_records = None
             fy_data = {}
-
 
         try:
             vehicle_sales_data = ProducerSalesData.objects.filter(producer_id=general.id)
@@ -4251,7 +4338,7 @@ def save_vehicle_data(request):
     if request.method == 'POST':
         producer = get_object_or_404(producerGeneralDetails, gst_no=userdata.gst_no)
 
-        year = request.POST.get('year')
+        year = int(request.POST.get('year', 0))
         vehicle_type = request.POST.get('vehicle_type')
         category = request.POST.get('category')
         
@@ -4287,9 +4374,28 @@ def save_vehicle_data(request):
         vehicle_number_qty = safe_float(request.POST.get(f'vehicle_number_qty_{year}_{category}_{vehicle_type}', '0.0'))
         vehicle_weight_qty = safe_float(request.POST.get(f'vehicle_weight_qty_{year}_{category}_{vehicle_type}', '0.0'))
 
-        epr_qty = safe_float(request.POST.get(f'epr_qty_{year}_{category}_{vehicle_type}', '0.0'))
-        epr_target = safe_float(request.POST.get(f'epr_target_{year}_{category}_{vehicle_type}', '0.0'))
+        # epr_qty = safe_float(request.POST.get(f'epr_qty_{year}_{category}_{vehicle_type}', '0.0'))
+        # epr_target = safe_float(request.POST.get(f'epr_target_{year}_{category}_{vehicle_type}', '0.0'))
         
+        epr_qty = selfuse_steel_weight + cobranded_steel_weight + producer_steel_weight + open_market_steel_weight
+        percentage = 0
+        if category == "transport":
+            if 2010 <= year <= 2014:
+                percentage = 8
+            elif 2015 <= year <= 2019:
+                percentage = 13
+            elif year >= 2020:
+                percentage = 18
+
+        elif category == "non_transport":
+            if 2005 <= year <= 2009:
+                percentage = 8
+            elif 2010 <= year <= 2014:
+                percentage = 13
+            elif year >= 2015:
+                percentage = 18
+        epr_target = round(epr_qty * (percentage / 100), 2)
+
         existing_data = ProducerSalesData.objects.filter(
             producer=producer,
             financial_year=year,
@@ -4387,7 +4493,7 @@ def save_vehicle_data(request):
         if cobranded_partner_file_uploaded:
             defaults['cobranded_partner_file'] = cobranded_partner_file_uploaded
 
-
+        
         sales_data, created = ProducerSalesData.objects.update_or_create(
             producer=producer,
             financial_year=year,
@@ -4419,9 +4525,17 @@ def save_vehicle_data(request):
             item.producer_id = producer.id
 
         CobrandedExcelData.objects.bulk_create(file_cobranded_response_or_data_list, ignore_conflicts=True)
-        
+        total_epr_target = (
+            ProducerSalesData.objects.filter(
+            producer=producer,
+            financial_year=year
+            ).aggregate(
+            total=Sum('epr_target')
+            )['total'] or 0
+        ) 
         return JsonResponse({
-            'message': 'Vehicle data {} successfully!'.format('created' if created else 'updated')
+            'message': 'Vehicle data {} successfully!'.format('created' if created else 'updated'),
+            'data':{'epr_target':epr_target,'epr_qty':epr_qty,'total_epr_qty':total_epr_target}
         })
         # return redirect('producer_dashboard')  # Adjust your redirect URL
 
@@ -4557,7 +4671,7 @@ def submit_sales_summary(request):
         category = request.POST.get('category')
         financial_year = request.POST.get('financial_year')
         base_year = financial_year.split('-')[0]
-        total_epr_target = request.POST.get(f'total_epr_qty_{category}_{base_year}')
+        total_epr_target = request.POST.get(f'total_epr_qty_{category}_{base_year}') or request.POST.get(f'total_epr_qty_{category}{base_year}')
         file_field_name = f"ca_cert_{category}_{base_year}"
         ca_certificate = request.FILES.get(file_field_name)
 

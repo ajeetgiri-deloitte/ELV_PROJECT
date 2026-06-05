@@ -947,6 +947,8 @@ def otpviewpage(request):
                 krishan_logger.error(f"Exact otpviewpage  Error: {str(db_error)}")
                 
                 krishan_logger.info(f"Exact otpviewpage Error: {str(db_error)}")
+                messages.error(request, "Something went wrong. Please try again.")
+                return redirect("rvsf_home")
 
 # def verify_otp(request):
 #     if request.method == 'POST':

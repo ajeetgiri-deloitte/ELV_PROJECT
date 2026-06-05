@@ -159,39 +159,74 @@
                             {% if show_certificate_section %}
                             <div>
                                 {% with certificate_urls='opening-balance production_dashboard waste_dashboard certificate_generation_dashboard denominate_epr_dashboard certificate_transfer_dashboard certificate_details' %}
-                                <a class="nav-link {% if 'opening-balance' in request.path %}active{% endif %}" 
+                                <!-- <a class="nav-link {% if 'opening-balance' in request.path %}active{% endif %}" 
                                    id="production" 
                                    href="/transfer_certificate/opening-balance/">
                                     <i class="bi bi-person-lines-fill mx-3"></i> Procurement Details
+                                </a> -->
+                                <a class="nav-link {% if 'opening-balance' in request.path %}active{% endif %}" 
+                                   id="production" 
+                                    href="{% url 'opening_balance' %}">
+                                    <i class="bi bi-person-lines-fill mx-3"></i> Procurement Details
                                 </a>
-                                <a class="nav-link {% if 'production_dashboard' in request.path %}active{% endif %}" 
+                                <!-- <a class="nav-link {% if 'production_dashboard' in request.path %}active{% endif %}" 
                                    id="production" 
                                    href="/transfer_certificate/production_dashboard/">
                                     <i class="bi bi-person-lines-fill mx-3"></i> Production Details
+                                </a> -->
+                                <a class="nav-link {% if 'production_dashboard' in request.path %}active{% endif %}" 
+                                   id="production" 
+                                   href="{% url 'production_dashboard' %}">
+                                    <i class="bi bi-person-lines-fill mx-3"></i> Production Details
                                 </a>
-                                <a class="nav-link {% if 'waste_dashboard' in request.path %}active{% endif %}" 
+                                <!-- <a class="nav-link {% if 'waste_dashboard' in request.path %}active{% endif %}" 
                                    id="generation" 
                                    href="/transfer_certificate/waste_dashboard/">
                                     <i class="bi bi-patch-check mx-3"></i> Process Other Waste
+                                </a> -->
+                                <a class="nav-link {% if 'waste_dashboard' in request.path %}active{% endif %}" 
+                                   id="generation" 
+                                   href="{% url 'waste_dashboard' %}">
+                                    <i class="bi bi-patch-check mx-3"></i> Process Other Waste
                                 </a>
-                                <a class="nav-link {% if 'certificate_generation_dashboard' in request.path %}active{% endif %}" 
+                                <!-- <a class="nav-link {% if 'certificate_generation_dashboard' in request.path %}active{% endif %}" 
                                    id="generation" 
                                    href="/transfer_certificate/certificate_generation_dashboard/">
                                     <i class="bi bi-patch-check mx-3"></i> Certificate Generation
+                                </a> -->
+                                <a class="nav-link {% if 'certificate_generation_dashboard' in request.path %}active{% endif %}" 
+                                   id="generation" 
+                                   href="{% url 'certificate_generation_dashboard' %}">
+                                    <i class="bi bi-patch-check mx-3"></i> Certificate Generation
                                 </a>
-                                <a class="nav-link {% if 'denominate_epr_dashboard' in request.path %}active{% endif %}" 
+                                <!-- <a class="nav-link {% if 'denominate_epr_dashboard' in request.path %}active{% endif %}" 
                                    id="denomination" 
                                    href="/transfer_certificate/denominate_epr_dashboard/">
                                     <i class="bi bi-check-circle mx-3"></i> Denominate EPR Certificates 
+                                </a> -->
+                                <a class="nav-link {% if 'denominate_epr_dashboard' in request.path %}active{% endif %}" 
+                                   id="denomination" 
+                                   href="{% url 'denominate_epr_dashboard' %}">
+                                    <i class="bi bi-check-circle mx-3"></i> Denominate EPR Certificates 
                                 </a>
-                                <a class="nav-link {% if 'certificate_transfer_dashboard' in request.path %}active{% endif %}" 
+                                <!-- <a class="nav-link {% if 'certificate_transfer_dashboard' in request.path %}active{% endif %}" 
                                    id="transfer" 
                                    href="/transfer_certificate/certificate_transfer_dashboard/">
                                     <i class="bi bi-send mx-3"></i> Transfer of EPR Certificates
+                                </a> -->
+                                <a class="nav-link {% if 'certificate_transfer_dashboard' in request.path %}active{% endif %}" 
+                                   id="transfer" 
+                                   href="{% url 'certificate_transfer_dashboard' %}">
+                                    <i class="bi bi-send mx-3"></i> Transfer of EPR Certificates
                                 </a>
-                                <a class="nav-link {% if 'certificate_details' in request.path %}active{% endif %}" 
+                                <!-- <a class="nav-link {% if 'certificate_details' in request.path %}active{% endif %}" 
                                    id="certificateDetails" 
                                    href="/transfer_certificate/certificate_details/">
+                                    <i class="bi bi-info-circle mx-3"></i> Certificate Details
+                                </a> -->
+                                <a class="nav-link {% if 'certificate_details' in request.path %}active{% endif %}" 
+                                   id="certificateDetails" 
+                                   href="{% url 'certificate_details' %}">
                                     <i class="bi bi-info-circle mx-3"></i> Certificate Details
                                 </a>
                                 {% endwith %}
